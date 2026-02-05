@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Reflex: Ultimate</title>
+    <title>Neon Reflex: Final</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Orbitron:wght@900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -23,9 +23,13 @@
         .card { background: white; border-radius: 25px; padding: 30px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
         h1 { font-family: 'Orbitron'; color: #222; margin: 0; }
         #qrcode { margin: 15px auto; display: flex; justify-content: center; }
+        
         .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: white; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-ai { background: #f1f3f5; color: #666; font-size: 0.8rem; margin-top: 15px; }
         .btn-whatsapp { background: #25D366; color: white; margin-top: 15px; }
+        
         input { width: 100%; padding: 12px; background: #f1f3f5; border: 1px solid #ddd; color: #333; border-radius: 8px; text-align: center; font-size: 1.2rem; margin-bottom: 10px; font-family: 'Orbitron'; }
 
         /* GAME AREA */
@@ -81,7 +85,8 @@
             <div id="mainMenu">
                 <button class="btn btn-primary" onclick="createRoom()">CREATE LOBBY</button>
                 <input type="text" id="roomInput" placeholder="ENTER CODE">
-                <button class="btn" style="border:2px solid var(--primary); color:var(--primary); background:white;" onclick="joinRoom()">JOIN LOBBY</button>
+                <button class="btn btn-outline" onclick="joinRoom()">JOIN LOBBY</button>
+                <button class="btn btn-ai" onclick="startLocalGame()">🤖 Practice vs AI</button>
             </div>
             <div id="waitingUi" class="hidden">
                 <div id="qrcode"></div>
@@ -152,17 +157,27 @@
         let myId = Math.random().toString(36).substr(2, 6);
         let myAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${myId}`;
         let myReactionTimes = [];
-        let roomId, isHost = false, state = "lobby", currentRound = 1, myScore = 0, oppScore = 0, goTime = 0;
+        let roomId, isHost = false, gameMode = "online";
+        let state = "lobby", currentRound = 1, myScore = 0, oppScore = 0, goTime = 0;
+        let localTimers = [];
 
         document.getElementById('myAvatar').src = myAvatar;
 
-        // Auto Code
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             if(urlParams.get('room')) document.getElementById('roomInput').value = urlParams.get('room');
         };
 
+        // --- GAME MODES ---
+        function startLocalGame() {
+            gameMode = "local";
+            document.getElementById('oppAvatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=computer`;
+            setupGameUI();
+            startLocalRound();
+        }
+
         function createRoom() {
+            gameMode = "online";
             roomId = Math.random().toString(36).substr(2, 4).toUpperCase();
             const joinUrl = window.location.origin + window.location.pathname + "?room=" + roomId;
             new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 140, height: 140 });
@@ -175,19 +190,24 @@
         }
 
         function joinRoom() {
+            gameMode = "online";
             roomId = document.getElementById('roomInput').value.toUpperCase().trim();
+            
+            // 🛑 BUG FIX: Check if code is empty
+            if (roomId.length < 1) return alert("Please enter a Room Code!");
+
             db.ref('reflex/' + roomId).once('value', snap => {
                 if (snap.exists()) {
                     db.ref('reflex/' + roomId).update({ status: "ready", guestAvatar: myAvatar });
                     startGame();
-                } else alert("Invalid Code!");
+                } else alert("Invalid Code! Room nahi mila.");
             });
         }
 
         function listenForOpponent() {
             db.ref('reflex/' + roomId).on('value', snap => {
                 const data = snap.val();
-                if (data.status === "ready") {
+                if (data && data.status === "ready") {
                     document.getElementById('oppAvatar').src = data.guestAvatar;
                     startGame();
                 }
@@ -195,19 +215,56 @@
         }
 
         function startGame() {
+            setupGameUI();
+            if (gameMode === "online") {
+                if (isHost) startOnlineRound();
+                listenForRounds();
+            }
+        }
+
+        function setupGameUI() {
             document.getElementById('lobby').classList.add('hidden');
             document.getElementById('gameArea').style.display = 'flex';
             document.getElementById('scoreboard').classList.remove('hidden');
-            document.getElementById('chatWrapper').style.display = 'block';
-            if (isHost) startRound();
-            listenForRounds();
+            if(gameMode === "online") document.getElementById('chatWrapper').style.display = 'block';
+            resetRoundUI();
         }
 
-        function startRound() {
+        function resetRoundUI() {
+            document.getElementById('gameArea').className = "bg-waiting";
+            document.getElementById('gameMessage').innerText = "WAIT";
+            state = "wait";
+        }
+
+        // --- ROUND LOGIC ---
+        function startOnlineRound() {
             db.ref('reflex/' + roomId).update({ winner: "", status: "wait", round: currentRound });
             setTimeout(() => {
                 db.ref('reflex/' + roomId).update({ status: "go", goTime: Date.now() });
             }, Math.random() * 3000 + 2000);
+        }
+
+        function startLocalRound() {
+            if (currentRound > 5) return showFinalScreen();
+            resetRoundUI();
+            
+            const delay = Math.random() * 3000 + 2000;
+            localTimers.push(setTimeout(() => {
+                if(state !== "wait") return;
+                
+                // GO STATE
+                document.getElementById('gameArea').className = "bg-go";
+                document.getElementById('gameMessage').innerText = "TAP!";
+                goTime = Date.now();
+                state = "go";
+
+                // 🤖 AI LOGIC (Balanced: 280ms - 550ms)
+                const aiReaction = Math.random() * 270 + 280; 
+                localTimers.push(setTimeout(() => {
+                    if (state === "go") handleRoundEnd("computer");
+                }, aiReaction));
+
+            }, delay));
         }
 
         function listenForRounds() {
@@ -220,12 +277,11 @@
                     goTime = data.goTime;
                     state = "go";
                 } else if (data.status === "wait") {
-                    document.getElementById('gameArea').className = "bg-waiting";
-                    document.getElementById('gameMessage').innerText = "WAIT";
-                    state = "wait";
+                    resetRoundUI();
                 }
                 if (data.winner && state !== "end") handleRoundEnd(data.winner);
             });
+            
             // Chat Listener
             db.ref('reflex/' + roomId + '/chats').limitToLast(3).on('child_added', snap => {
                 const msg = snap.val();
@@ -242,34 +298,47 @@
             if (state === "go") {
                 const reaction = Date.now() - goTime;
                 myReactionTimes.push(reaction);
-                db.ref('reflex/' + roomId).update({ winner: myId });
+                if (gameMode === "local") handleRoundEnd(myId);
+                else db.ref('reflex/' + roomId).update({ winner: myId });
             } else if (state === "wait") {
-                db.ref('reflex/' + roomId).update({ winner: "early" });
+                if (gameMode === "local") handleRoundEnd("computer"); // Local penalty
+                else db.ref('reflex/' + roomId).update({ winner: "early" });
             }
         }
 
         function handleRoundEnd(winner) {
             state = "end";
-            if (winner === myId) myScore++; else if (winner !== "early") oppScore++;
+            localTimers.forEach(t => clearTimeout(t));
+
+            let isWin = (winner === myId);
+            if (winner === "early") {
+                // If checking who clicked early in online, logic is handled by "early" flag
+                // For simplicity, we assume if I receive "early", opponent won round.
+                isWin = false; 
+            }
+            
+            if (isWin) myScore++; else oppScore++;
             document.getElementById('scoreMy').innerText = myScore;
             document.getElementById('scoreOpp').innerText = oppScore;
             
             if (currentRound < 5) {
                 currentRound++;
                 document.getElementById('roundDisplay').innerText = currentRound + "/5";
-                if (isHost) setTimeout(startRound, 2000);
+                
+                setTimeout(() => {
+                    if (gameMode === "local") startLocalRound();
+                    else if (isHost) startOnlineRound();
+                }, 2000);
             } else {
                 setTimeout(showFinalScreen, 1000);
             }
         }
 
-        // CHAT LOGIC
-        function sendEmoji(emoji) {
-            if (roomId) db.ref('reflex/' + roomId + '/chats').push({ sender: myId, text: emoji });
-        }
+        // CHAT
+        function sendEmoji(emoji) { if (gameMode === "online") db.ref('reflex/' + roomId + '/chats').push({ sender: myId, text: emoji }); }
         function sendMessage() {
             const input = document.getElementById('chatInput');
-            if (input.value.trim() && roomId) {
+            if (input.value.trim() && gameMode === "online") {
                 db.ref('reflex/' + roomId + '/chats').push({ sender: myId, text: input.value });
                 input.value = "";
             }
