@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Reflex: Sync Fixed</title>
+    <title>Neon Reflex: Final</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Orbitron:wght@900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
-        :root { --primary: #007bff; --bg: #f8f9fa; --success: #28a745; --danger: #dc3545; }
+        :root { --primary: #007bff; --bg: #f8f9fa; --success: #28a745; --danger: #d9534f; } /* Red for Loss */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #333; font-family: 'Poppins', sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
@@ -19,7 +19,7 @@
         .player-info { display: flex; flex-direction: column; align-items: center; width: 70px; }
         .score-val { font-weight: bold; font-size: 1.2rem; }
 
-        /* UI CARDS */
+        /* MENU CARDS */
         .center-container { flex: 1; display: flex; justify-content: center; align-items: center; padding-bottom: 50px; margin-top: 70px; }
         .card { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         h1 { font-family: 'Orbitron'; color: #222; margin: 0; font-size: 1.8rem; }
@@ -36,10 +36,13 @@
         /* GAME AREA */
         #gameArea { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 50; }
         .status-text { font-family: 'Orbitron'; font-size: 3.5rem; text-align: center; pointer-events: none; user-select: none; }
+        
+        /* COLORS */
         .bg-waiting { background: #fff; } 
         .bg-go { background: var(--success); }
         .bg-win { background: var(--primary); } 
-        .bg-lose { background: #333; } 
+        .bg-lose { background: var(--danger); } /* Now Red */
+        
         .text-white { color: white !important; }
         .text-dark { color: #333 !important; }
 
@@ -151,7 +154,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // GLOBALS
         let myId = localStorage.getItem('neon_id') || Math.random().toString(36).substr(2, 6);
         localStorage.setItem('neon_id', myId);
         let myAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${myId}`;
@@ -163,41 +165,32 @@
         let canTap = false;
         let localTimers = [];
 
-        // INIT
         document.getElementById('myAvatar').src = myAvatar;
+        
+        // Auto-Fill Code
         window.onload = () => {
             const params = new URLSearchParams(window.location.search);
             if(params.get('room')) document.getElementById('roomInput').value = params.get('room');
         };
 
-        // --- ROOM MANAGEMENT ---
+        // --- ROOMS ---
         function createRoom() {
             gameMode = "online";
             roomId = Math.random().toString(36).substr(2, 4).toUpperCase();
-            
-            // Clean URL for QR
             const joinUrl = window.location.href.split('?')[0] + "?room=" + roomId;
             document.getElementById("qrcode").innerHTML = "";
             new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 120, height: 120 });
             
-            // Set Initial State
-            db.ref('reflex/' + roomId).set({ 
-                status: "waiting", 
-                hostAvatar: myAvatar,
-                round: 1,
-                rematchCount: 0 
-            });
-            
+            db.ref('reflex/' + roomId).set({ status: "waiting", hostAvatar: myAvatar, round: 1 });
             isHost = true;
             document.getElementById('mainMenu').classList.add('hidden');
             document.getElementById('waitingUi').classList.remove('hidden');
             document.getElementById('roomCodeDisplay').innerText = roomId;
             
-            // Wait for guest
             const listener = db.ref('reflex/' + roomId).on('value', snap => {
                 const data = snap.val();
                 if (data && data.status === "ready") {
-                    db.ref('reflex/' + roomId).off('value', listener); // Stop waiting listener
+                    db.ref('reflex/' + roomId).off('value', listener);
                     document.getElementById('oppAvatar').src = data.guestAvatar || "https://api.dicebear.com/7.x/bottts/svg?seed=guest";
                     setupGame();
                 }
@@ -213,9 +206,7 @@
                 if (snap.exists()) {
                     db.ref('reflex/' + roomId).update({ status: "ready", guestAvatar: myAvatar });
                     setupGame();
-                } else {
-                    alert("Room Not Found!");
-                }
+                } else alert("Room Not Found!");
             });
         }
 
@@ -225,9 +216,7 @@
             setupGame();
         }
 
-        // --- GAME STARTUP ---
         function setupGame() {
-            // UI Reset
             document.getElementById('lobby').classList.add('hidden');
             document.getElementById('waitingUi').classList.add('hidden');
             document.getElementById('gameArea').style.display = 'flex';
@@ -235,40 +224,34 @@
             document.getElementById('finalScreen').style.display = 'none';
             if(gameMode === "online") document.getElementById('chatWrapper').style.display = 'block';
 
-            // Variable Reset
             currentRound = 1; myScore = 0; oppScore = 0; myReactionTimes = [];
             updateScoreUI();
 
             if (gameMode === "online") {
-                startOnlineListener(); // Start listening for HOST signals
-                if (isHost) hostStartRound(); // Host triggers logic
+                startOnlineListener();
+                if (isHost) setTimeout(hostStartRound, 1000); // Small delay before start
             } else {
                 localRoundLogic();
             }
         }
 
-        // --- ONLINE LOGIC (STRICT SYNC) ---
+        // --- ONLINE LOGIC ---
         function startOnlineListener() {
             const roomRef = db.ref('reflex/' + roomId);
-            
-            // 1. CLEAR OLD LISTENERS (Fixes Duplicate Chat/Events)
-            roomRef.off(); 
-            roomRef.child('chats').off();
+            roomRef.off(); roomRef.child('chats').off(); // Clear old
 
-            // 2. GAME STATUS LISTENER
             roomRef.on('value', snap => {
                 const data = snap.val();
                 if (!data) return;
 
-                // Sync Avatars
                 if (!isHost && data.hostAvatar) document.getElementById('oppAvatar').src = data.hostAvatar;
 
-                // STATE MACHINE
+                // Sync States
                 if (data.status === "wait") {
                     setScreen("wait");
                 } 
                 else if (data.status === "go") {
-                    if (state !== "go") { // Only trigger once
+                    if (state !== "go" && state !== "end") { 
                         setScreen("go");
                         goTime = data.goTime;
                     }
@@ -276,52 +259,42 @@
                 else if (data.status === "round_end") {
                     if (state !== "end") handleOnlineRoundEnd(data.winner);
                 }
-                else if (data.status === "game_over") {
-                    // Handled inside handleOnlineRoundEnd logic usually, but safeguard
-                }
                 else if (data.status === "rematch_ready") {
-                    setupGame(); // Both players restart
+                    setupGame();
                 }
             });
 
-            // 3. CHAT LISTENER
-            roomRef.child('chats').limitToLast(1).on('child_added', snap => {
-                const msg = snap.val();
-                if (msg) showMessage(msg);
-            });
+            roomRef.child('chats').limitToLast(1).on('child_added', snap => showMessage(snap.val()));
         }
 
         function hostStartRound() {
-            if (currentRound > 5) return; // Game Over
-            
-            // Host sets state to WAIT
+            if (currentRound > 5) return;
+            // Set Wait
             db.ref('reflex/' + roomId).update({ status: "wait", round: currentRound, winner: null });
             
-            // Host calculates delay
+            // Random Delay for GO
             const delay = Math.random() * 2000 + 2000;
             setTimeout(() => {
-                // Host sets state to GO
                 db.ref('reflex/' + roomId).update({ status: "go", goTime: Date.now() });
             }, delay);
         }
 
         function handleTap() {
-            if (!canTap) return; // Debounce
-            canTap = false; // LOCK IMMEDIATELY
+            // STOP if clicking on Result Screen
+            if (state === "end" || state === "lobby") return; 
+            if (!canTap) return; 
+            
+            canTap = false; // Lock
 
             if (gameMode === "local") {
                 localHandleTap();
                 return;
             }
 
-            // ONLINE TAP
             if (state === "go") {
-                // I claim win
-                db.ref('reflex/' + roomId).transaction(currentData => {
-                    if (currentData && currentData.status === "go") {
-                        return { ...currentData, status: "round_end", winner: myId, reaction: Date.now() - goTime };
-                    }
-                    return; // Abort if already claimed
+                db.ref('reflex/' + roomId).transaction(d => {
+                    if (d && d.status === "go") return { ...d, status: "round_end", winner: myId };
+                    return;
                 });
                 myReactionTimes.push(Date.now() - goTime);
             } 
@@ -333,39 +306,24 @@
 
         function handleOnlineRoundEnd(winnerId) {
             state = "end";
-            canTap = false;
+            canTap = false; // Disable clicks
 
-            let iWon = false;
-            if (winnerId === myId) iWon = true;
-            else if (winnerId === "opponent_default" && isHost) iWon = true; // Wait... logic is tricky.
-            // Simplified:
-            // If winnerID matches my ID -> I won.
-            // If winnerID is "opponent_default", it means someone tapped early. Who?
-            // Actually, simplified logic: The cloud determines winner.
-            
-            // To fix "Multiple Click" confusing logic, let's trust the ID.
-            if (winnerId === myId) {
-                iWon = true;
-                setScreen("win");
-            } else {
-                setScreen("lose");
-            }
+            let iWon = (winnerId === myId);
+            setScreen(iWon ? "win" : "lose");
 
             if (iWon) myScore++; else oppScore++;
             updateScoreUI();
 
-            // Next Round Logic (Controlled by Host)
+            // Next Round Logic
             if (currentRound < 5) {
                 currentRound++;
-                if (isHost) {
-                    setTimeout(() => hostStartRound(), 2500);
-                }
+                if (isHost) setTimeout(hostStartRound, 3000); // 3 Sec Wait to see Result
             } else {
-                setTimeout(showFinalScreen, 2000);
+                setTimeout(showFinalScreen, 3000);
             }
         }
 
-        // --- LOCAL AI LOGIC ---
+        // --- LOCAL LOGIC ---
         function localRoundLogic() {
             if (currentRound > 5) { showFinalScreen(); return; }
             setScreen("wait");
@@ -374,15 +332,15 @@
             localTimers.push(setTimeout(() => {
                 setScreen("go");
                 goTime = Date.now();
-                // AI CLICK
-                const aiTime = Math.random() * 400 + 400; // 400-800ms
+                // AI Reaction
+                const aiTime = Math.random() * 400 + 400; 
                 localTimers.push(setTimeout(() => {
                     if (state === "go") {
                         state = "end";
                         setScreen("lose");
                         oppScore++;
                         updateScoreUI();
-                        nextLocalRound();
+                        setTimeout(nextLocalRound, 3000); // 3 Sec freeze
                     }
                 }, aiTime));
             }, delay));
@@ -395,24 +353,23 @@
                 setScreen("win");
                 myScore++;
                 updateScoreUI();
-                nextLocalRound();
+                setTimeout(nextLocalRound, 3000);
             } else if (state === "wait") {
                 state = "end";
-                setScreen("lose");
+                setScreen("lose"); // Penalty
                 oppScore++;
                 updateScoreUI();
-                nextLocalRound();
+                setTimeout(nextLocalRound, 3000);
             }
         }
 
         function nextLocalRound() {
             localTimers.forEach(t => clearTimeout(t));
             currentRound++;
-            setTimeout(localRoundLogic, 2000);
+            localRoundLogic();
         }
 
-
-        // --- UI HELPERS ---
+        // --- UI ---
         function setScreen(type) {
             state = type;
             const msg = document.getElementById('gameMessage');
@@ -421,16 +378,18 @@
             if (type === "wait") {
                 area.className = "bg-waiting"; msg.innerText = "WAIT"; 
                 msg.classList.remove('text-white'); msg.classList.add('text-dark');
-                canTap = true; // Enable tapping
+                canTap = true;
             } else if (type === "go") {
                 area.className = "bg-go"; msg.innerText = "TAP!"; 
                 msg.classList.add('text-white');
-                navigator.vibrate?.(50);
             } else if (type === "win") {
-                area.className = "bg-win"; msg.innerText = "WON!"; 
-            } else if (type === "lose") {
-                area.className = "bg-lose"; msg.innerText = "LOST"; 
+                area.className = "bg-win"; msg.innerText = "YOU WON!"; 
                 msg.classList.add('text-white');
+                canTap = false; // Freeze
+            } else if (type === "lose") {
+                area.className = "bg-lose"; msg.innerText = "YOU LOST"; 
+                msg.classList.add('text-white');
+                canTap = false; // Freeze
             }
         }
 
@@ -481,15 +440,14 @@
             }
         }
         function showMessage(msg) {
+            if(!msg) return;
             const box = document.getElementById('chatDisplay');
             const div = document.createElement('div');
             div.className = "msg " + (msg.sender === myId ? "msg-me" : "msg-opp");
             div.innerText = msg.text;
             box.appendChild(div);
-            // Limit messages
             while(box.children.length > 3) box.removeChild(box.firstChild);
         }
-
     </script>
 </body>
 </html>
