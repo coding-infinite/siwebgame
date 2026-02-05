@@ -3,201 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Reflex: Championship</title>
+    <title>Neon Reflex: Cyberpunk Arena</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         :root {
             --neon-blue: #00f3ff;
-            --neon-pink: #ff00ff;
-            --neon-red: #ff3131;
+            --neon-pink: #bc13fe;
             --neon-green: #0fff50;
+            --neon-red: #ff3131;
             --bg-dark: #050505;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border-glow: 0 0 10px rgba(0, 243, 255, 0.5);
         }
 
-        * { box-sizing: border-box; touch-action: manipulation; }
+        * { box-sizing: border-box; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
         body {
             background-color: var(--bg-dark);
             color: white;
-            font-family: 'Exo 2', sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            width: 100vw;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0; padding: 0;
+            height: 100vh; width: 100vw;
             overflow: hidden;
             position: fixed;
+            /* Cyberpunk Grid Background */
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-position: center;
         }
 
-        /* SCOREBOARD */
+        /* --- HUD SCOREBOARD --- */
         #scoreboard {
-            position: absolute; top: 0; left: 0; width: 100%;
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            width: 95%; max-width: 500px;
             height: 70px;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px;
-            background: rgba(0,0,0,0.6); 
-            z-index: 20;
-            font-weight: bold;
-            backdrop-filter: blur(5px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 0 25px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 15px;
+            z-index: 100;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
         }
-        .score-box { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
-        .score-num { color: var(--neon-blue); font-size: 1.5rem; line-height: 1.2; }
-        .score-label { font-size: 0.7rem; opacity: 0.7; letter-spacing: 1px; }
 
-        /* LOBBY UI */
+        .score-box { text-align: center; }
+        .score-label { font-size: 0.75rem; color: #888; letter-spacing: 2px; font-family: 'Orbitron', sans-serif; }
+        .score-num { 
+            font-size: 1.8rem; font-weight: 700; color: white;
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        /* --- MAIN CARD --- */
         .center-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
-            z-index: 10;
-            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
-            padding-bottom: 60px; /* Ad space fix */
+            z-index: 50;
+            padding-bottom: 60px; /* Space for Ad */
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 25px; 
+            padding: 30px;
             border-radius: 20px;
-            width: 90%; 
-            max-width: 400px;
+            width: 90%; max-width: 380px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.1);
+            position: relative;
+            overflow: hidden;
         }
 
-        h1 { margin: 0 0 10px; color: var(--neon-blue); text-transform: uppercase; font-size: 2rem; }
-        p { color: #aaa; margin-bottom: 20px; }
-
-        .btn { 
-            width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; 
-            font-weight: bold; cursor: pointer; border: none; font-size: 1rem;
-            text-transform: uppercase; letter-spacing: 1px;
+        /* Scanline Effect on Card */
+        .card::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+            background: rgba(0, 243, 255, 0.3);
+            animation: scan 3s linear infinite;
+            pointer-events: none;
         }
-        .btn:active { transform: scale(0.96); opacity: 0.8; }
-        
-        .btn-ai { background: #ffee00; color: #000; box-shadow: 0 0 15px rgba(255, 238, 0, 0.3); }
-        .btn-create { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); }
-        .btn-join { background: transparent; border: 2px solid var(--neon-pink); color: var(--neon-pink); }
-        
-        input { 
-            width: 100%; padding: 15px; background: #222; border: 1px solid #444; 
-            color: white; text-align: center; margin-bottom: 10px; border-radius: 8px; 
-            font-size: 1.2rem; outline: none;
-        }
-        input:focus { border-color: var(--neon-blue); }
+        @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
 
-        /* GAME AREA */
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2rem; margin: 0 0 5px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+        }
+        p { color: #aaa; margin-bottom: 25px; font-size: 1rem; letter-spacing: 1px; }
+
+        /* --- BUTTONS --- */
+        .btn {
+            width: 100%; padding: 16px; margin: 10px 0;
+            border-radius: 8px; border: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700; font-size: 1rem; letter-spacing: 1.5px;
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-ai {
+            background: transparent; border: 2px solid #ffee00; color: #ffee00;
+            box-shadow: 0 0 10px rgba(255, 238, 0, 0.2);
+        }
+        .btn-create {
+            background: var(--neon-blue); color: black;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+        .btn-join {
+            background: transparent; border: 2px solid var(--neon-pink); color: var(--neon-pink);
+            box-shadow: 0 0 10px rgba(188, 19, 254, 0.2);
+        }
+        .btn:active { transform: scale(0.96); }
+
+        input {
+            width: 100%; padding: 15px; background: rgba(0,0,0,0.5);
+            border: 1px solid #333; color: var(--neon-blue);
+            text-align: center; border-radius: 8px; font-size: 1.4rem;
+            outline: none; font-family: 'Orbitron', sans-serif; letter-spacing: 3px;
+            margin-bottom: 10px; transition: 0.3s;
+        }
+        input:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 243, 255, 0.2); }
+
+        /* --- GAME AREA --- */
         #gameArea {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: none; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 15;
-            padding-bottom: 60px; /* Ad space fix */
+            z-index: 20; padding-bottom: 60px;
+            transition: background 0.1s ease;
         }
 
-        .status-text { 
-            font-size: clamp(3rem, 15vw, 6rem); 
-            font-weight: 900; pointer-events: none; line-height: 1;
-            text-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        .status-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(3rem, 15vw, 6rem);
+            font-weight: 900; pointer-events: none;
+            text-shadow: 0 0 30px currentColor;
+            z-index: 2;
         }
-        .sub-text { 
-            margin-top: 20px; font-size: clamp(1rem, 4vw, 1.5rem); 
-            opacity: 0.8; pointer-events: none; padding: 0 20px;
-        }
-
-        /* ADVERTISEMENT BAR */
-        #ad-container {
-            position: fixed;
-            bottom: 0; left: 0; width: 100%; height: 60px;
-            background-color: #000;
-            z-index: 9999;
-            display: flex; justify-content: center; align-items: center;
-            border-top: 1px solid #333;
+        .sub-text {
+            margin-top: 10px; font-size: 1.2rem; opacity: 0.8;
+            letter-spacing: 2px; text-transform: uppercase;
+            z-index: 2;
         }
 
-        /* STATES */
+        /* --- STATES COLORS --- */
         .bg-waiting { background: #000; }
-        .bg-go { background: var(--neon-green); }
-        .bg-early { background: var(--neon-red); }
-        .bg-win { background: var(--neon-blue); }
-        .bg-lose { background: #1a1a1a; }
-
-        .pulse { animation: pulse 1s infinite; }
-        @keyframes pulse { 50% { opacity: 0.5; } }
-
-        #finalScreen {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 30;
-            flex-direction: column; justify-content: center; align-items: center;
-            padding: 20px; text-align: center;
-            padding-bottom: 80px; /* Ad space fix */
-        }
+        .bg-waiting .status-text { color: #333; animation: pulse 1.5s infinite; }
         
+        .bg-go { background: var(--neon-green); }
+        .bg-go .status-text { color: black; text-shadow: none; animation: shake 0.2s; }
+
+        .bg-early { background: var(--neon-red); }
+        .bg-early .status-text { color: white; }
+
+        .bg-win { background: var(--neon-blue); }
+        .bg-win .status-text { color: black; text-shadow: none; }
+
+        .bg-lose { background: #1a1a1a; }
+        .bg-lose .status-text { color: var(--neon-red); }
+
+        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 0.8; text-shadow: 0 0 20px white; } 100% { opacity: 0.3; } }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-1deg); } 75% { transform: translate(3px, 1px) rotate(1deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+
+        /* --- AD & UTILS --- */
+        #ad-container {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            border-top: 1px solid #222;
+        }
+        #finalScreen { display: none; background: rgba(0,0,0,0.95); z-index: 150; position:fixed; top:0; left:0; width:100%; height:100%; flex-direction:column; justify-content:center; align-items:center; }
         .hidden { display: none !important; }
-        #qrcode img { margin: 0 auto; border: 5px solid white; border-radius: 5px; }
+        #qrcode { background: white; padding: 10px; border-radius: 10px; margin: 10px auto; display: inline-block; }
     </style>
 </head>
 <body>
 
     <div id="scoreboard" class="hidden">
         <div class="score-box">
-            <span class="score-label">YOU</span>
-            <span class="score-num" id="scoreMy">0</span>
+            <div class="score-label">YOU</div>
+            <div class="score-num" id="scoreMy" style="color:var(--neon-blue)">0</div>
         </div>
         <div class="score-box">
-            <span class="score-label">ROUND</span>
-            <span class="score-num"><span id="roundDisplay">1</span>/5</span>
+            <div class="score-label">RND</div>
+            <div class="score-num"><span id="roundDisplay">1</span><span style="font-size:1rem;color:#555">/5</span></div>
         </div>
         <div class="score-box">
-            <span class="score-label">OPP</span>
-            <span class="score-num" id="scoreOpp">0</span>
+            <div class="score-label">OPP</div>
+            <div class="score-num" id="scoreOpp" style="color:var(--neon-pink)">0</div>
         </div>
     </div>
 
     <div id="lobby" class="center-container">
         <div class="card">
-            <h1>Reflex League</h1>
-            <p>Best of 5 Wins</p>
+            <h1>NEON REFLEX</h1>
+            <p>CYBERPUNK DUEL ARENA</p>
             
             <div id="mainMenu">
-                <button class="btn btn-ai" onclick="startLocalGame()">⚡ Play vs AI</button>
-                <div style="margin: 10px 0; font-size: 0.8rem; opacity: 0.5;">— OR —</div>
-                <button class="btn btn-create" onclick="createRoom()">Create Room</button>
-                <input type="text" id="roomInput" placeholder="Enter Code" maxlength="4">
-                <button class="btn btn-join" onclick="joinRoom()">Join Room</button>
+                <button class="btn btn-ai" onclick="startLocalGame()">⚡ VS AI SYSTEM</button>
+                <div style="margin: 15px 0; font-size: 0.8rem; opacity: 0.4; letter-spacing: 2px;">— OR MULTIPLAYER —</div>
+                <button class="btn btn-create" onclick="createRoom()">CREATE LOBBY</button>
+                <input type="text" id="roomInput" placeholder="CODE" maxlength="4">
+                <button class="btn btn-join" onclick="joinRoom()">JOIN LOBBY</button>
             </div>
 
             <div id="waitingUi" class="hidden">
                 <div id="qrcode"></div>
-                <h2 id="roomCodeDisplay" style="color:var(--neon-blue); font-size: 2.5rem; margin: 15px 0;"></h2>
-                <div class="pulse" style="color:var(--neon-green); margin-bottom: 20px; font-weight:bold;">Waiting for opponent...</div>
-                <button class="btn" style="background: #333; color: white; padding: 10px;" onclick="location.reload()">Cancel</button>
+                <h2 id="roomCodeDisplay" style="color:var(--neon-blue); font-family:'Orbitron'; font-size: 2.5rem; margin: 15px 0; letter-spacing: 5px;"></h2>
+                <div style="color:var(--neon-green); margin-bottom: 20px; font-weight:bold; letter-spacing:1px;" class="status-text" style="font-size:1rem!important;">WAITING FOR PLAYER...</div>
+                <button class="btn" style="background: rgba(255,255,255,0.1); color: white; border:1px solid #333;" onclick="location.reload()">ABORT</button>
             </div>
         </div>
     </div>
 
     <div id="gameArea" class="bg-waiting" onclick="handleTap()">
         <div class="status-text" id="gameMessage">WAIT</div>
-        <div class="sub-text" id="gameSubtext">Round 1 starts...</div>
+        <div class="sub-text" id="gameSubtext">SYNCING NEURAL LINK...</div>
     </div>
 
     <div id="finalScreen">
-        <h1 id="finalTitle" style="font-size: 2.5rem; margin-bottom: 10px;">GAME OVER</h1>
-        <div id="finalScore" style="font-size:1.5rem; color:#aaa; margin-bottom:30px;"></div>
-        <button class="btn btn-create" style="max-width:250px;" onclick="requestRematch()">PLAY AGAIN 🔄</button>
+        <h1 id="finalTitle" style="font-size: 3rem; margin-bottom: 10px;">GAME OVER</h1>
+        <div id="finalScore" style="font-size:1.5rem; color:#aaa; margin-bottom:30px; font-family:'Orbitron'"></div>
+        <button class="btn btn-create" style="max-width:250px;" onclick="requestRematch()">REMATCH 🔄</button>
     </div>
 
     <div id="ad-container">
         <script type="text/javascript">
-            atOptions = {
-                'key' : '697d465f55b34630746380bf6791eb54',
-                'format' : 'iframe',
-                'height' : 50,
-                'width' : 320,
-                'params' : {}
-            };
+            atOptions = { 'key' : '697d465f55b34630746380bf6791eb54', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
         </script>
         <script type="text/javascript" src="https://www.highperformanceformat.com/697d465f55b34630746380bf6791eb54/invoke.js"></script>
     </div>
@@ -207,7 +247,7 @@
 
     <script>
         // ===========================================
-        // ✅ YOUR FIREBASE CONFIG (INTEGRATED)
+        // ✅ APKA CONFIGURATON ADD HO GAYA HAI
         // ===========================================
         const firebaseConfig = {
             apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
@@ -221,13 +261,11 @@
         };
         // ===========================================
 
-        // Initialize Firebase
-        try {
-            firebase.initializeApp(firebaseConfig);
-            // Analytics is loaded but not used in logic to avoid errors
-        } catch (e) {
-            console.error("Firebase Error:", e);
-            alert("Firebase connect nahi hua. Config check karein.");
+        try { 
+            firebase.initializeApp(firebaseConfig); 
+        } catch (e) { 
+            console.error(e); 
+            alert("Firebase Connection Failed"); 
         }
         const db = firebase.database();
 
@@ -236,45 +274,40 @@
         let isHost = false;
         let gameMode = "online"; 
         let currentRound = 1;
-        let myScore = 0;
-        let oppScore = 0;
+        let myScore = 0; let oppScore = 0;
         let state = "lobby"; 
         let localTimers = [];
+        let serverOffset = 0;
+
+        // SYNC LOGIC
+        db.ref(".info/serverTimeOffset").on("value", function(snap) { serverOffset = snap.val(); });
+        function getServerTime() { return Date.now() + serverOffset; }
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('room')) {
-                document.getElementById('roomInput').value = urlParams.get('room');
-            }
+            if (urlParams.get('room')) document.getElementById('roomInput').value = urlParams.get('room');
         };
 
-        // --- LOCAL GAME ---
-        function startLocalGame() {
-            gameMode = "local"; setupGameUI(); startLocalRound();
-        }
+        function startLocalGame() { gameMode = "local"; setupGameUI(); startLocalRound(); }
+        
         function startLocalRound() {
             if (currentRound > 5) return showFinalScreen();
-            resetRoundUI(); 
+            resetRoundUI();
             const delay = Math.floor(Math.random() * 3000) + 2000;
             localTimers.push(setTimeout(() => {
                 if (state !== "waiting") return;
                 setScreen("go");
-                const reaction = Math.floor(Math.random() * 300) + 200;
-                localTimers.push(setTimeout(() => {
-                    if (state === "go") handleRoundEnd("computer");
-                }, reaction));
+                localTimers.push(setTimeout(() => { if (state === "go") handleRoundEnd("computer"); }, Math.floor(Math.random() * 300) + 200));
             }, delay));
         }
 
-        // --- ONLINE GAME ---
         function createRoom() {
             gameMode = "online";
             roomId = Math.random().toString(36).substr(2, 4).toUpperCase();
-            
             const joinUrl = window.location.href.split('?')[0] + "?room=" + roomId;
             document.getElementById("qrcode").innerHTML = "";
             new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 120, height: 120 });
-
+            
             db.ref('reflex/' + roomId).set({ status: "waiting_for_player", round: 1, winner: "" });
             isHost = true;
             
@@ -283,26 +316,20 @@
             document.getElementById('mainMenu').classList.add('hidden'); 
             document.getElementById('waitingUi').classList.remove('hidden'); 
             document.getElementById('roomCodeDisplay').innerText = roomId;
-
             waitForOpponent();
         }
 
         function joinRoom() {
             gameMode = "online";
             roomId = document.getElementById('roomInput').value.toUpperCase().trim();
-            if (!roomId) return alert("Please enter a Room Code!");
+            if (!roomId) return alert("ENTER ROOM CODE");
             
             db.ref('reflex/' + roomId).once('value', snap => {
                 if (snap.exists()) {
                     db.ref('reflex/' + roomId).update({ status: "ready" });
-                    setupGameUI();
-                    listenForUpdates();
-                } else {
-                    alert("❌ Invalid Code! Room nahi mila.");
-                }
-            }).catch(err => {
-                alert("Connection Error. Check internet/rules.");
-            });
+                    setupGameUI(); listenForUpdates();
+                } else alert("INVALID CODE");
+            }).catch(e => alert("CONNECTION ERROR"));
         }
 
         function waitForOpponent() {
@@ -311,20 +338,25 @@
                 if (data && data.status === "ready") {
                     db.ref('reflex/' + roomId).off('value', listener);
                     setupGameUI(); listenForUpdates();
-                    if (isHost) startOnlineRound();
+                    if (isHost) scheduleNextRound();
                 }
             });
         }
 
-        function startOnlineRound() {
+        function scheduleNextRound() {
             if (currentRound > 5) return;
-            db.ref('reflex/' + roomId).update({ winner: "", status: "waiting" });
-            const delay = Math.floor(Math.random() * 4000) + 2000;
+            db.ref('reflex/' + roomId).update({ winner: "", status: "waiting", triggerTime: 0 });
+            
+            const randomDelay = Math.floor(Math.random() * 3000) + 2000; 
+            const futureTime = getServerTime() + randomDelay;
+
             setTimeout(() => {
                 db.ref('reflex/' + roomId).once('value', s => {
-                    if(s.val().status === 'waiting') db.ref('reflex/' + roomId).update({ status: "GO" });
+                    if(s.val().status === 'waiting') {
+                        db.ref('reflex/' + roomId).update({ status: "SCHEDULED", triggerTime: futureTime });
+                    }
                 });
-            }, delay);
+            }, 500);
         }
 
         function listenForUpdates() {
@@ -334,21 +366,26 @@
                 
                 if (data.status === "waiting" && state !== "waiting") resetRoundUI();
                 if (data.status === "restart") { location.reload(); return; }
-                if (data.status === "GO" && state === "waiting") setScreen("go");
+
+                if (data.status === "SCHEDULED" && data.triggerTime && state === "waiting") {
+                    const now = getServerTime();
+                    const timeLeft = data.triggerTime - now;
+                    if (timeLeft > 0) {
+                        localTimers.push(setTimeout(() => { if(state === "waiting") setScreen("go"); }, timeLeft));
+                    } else { setScreen("go"); }
+                }
+
                 if (data.winner && state !== "round_end") handleRoundEnd(data.winner);
             });
         }
 
-        // --- GAMEPLAY ---
         function handleTap() {
             if (state === "waiting") {
                 if (gameMode === "local") handleRoundEnd("computer"); 
                 else db.ref('reflex/' + roomId).update({ winner: "OPPONENT_FORCE_WIN" });
             } else if (state === "go") {
                 if (gameMode === "local") handleRoundEnd(myId);
-                else db.ref('reflex/' + roomId).transaction(curr => {
-                    return (curr && !curr.winner) ? { ...curr, winner: myId } : undefined;
-                });
+                else db.ref('reflex/' + roomId).transaction(curr => { return (curr && !curr.winner) ? { ...curr, winner: myId } : undefined; });
             }
         }
 
@@ -357,8 +394,8 @@
             localTimers.forEach(t => clearTimeout(t)); 
             
             let msg = ""; let isWin = false;
-            if (winnerId === myId) { myScore++; isWin = true; msg = "WON!"; } 
-            else { oppScore++; isWin = false; msg = "LOST"; }
+            if (winnerId === myId) { myScore++; isWin = true; msg = "VICTORY"; } 
+            else { oppScore++; isWin = false; msg = "DEFEAT"; }
             
             document.getElementById('scoreMy').innerText = myScore;
             document.getElementById('scoreOpp').innerText = oppScore;
@@ -370,7 +407,7 @@
                 setTimeout(() => {
                     document.getElementById('roundDisplay').innerText = currentRound;
                     if (gameMode === "local") startLocalRound();
-                    if (gameMode === "online" && isHost) startOnlineRound();
+                    if (gameMode === "online" && isHost) scheduleNextRound();
                 }, 2500); 
             }
         }
@@ -382,36 +419,33 @@
             area.className = ""; area.classList.add("bg-" + type);
             
             if (type === "waiting") {
-                state = "waiting"; txt.innerText = "WAIT"; sub.innerText = "Round " + currentRound + "/5";
+                state = "waiting"; txt.innerText = "WAIT"; sub.innerText = "LINKING...";
             } else if (type === "go") {
-                state = "go"; txt.innerText = "TAP!"; sub.innerText = ""; navigator.vibrate?.(200);
+                state = "go"; txt.innerText = "TAP!"; sub.innerText = "NOW!"; navigator.vibrate?.(200);
             } else {
-                txt.innerText = text || ""; sub.innerText = "Next round soon...";
+                txt.innerText = text; sub.innerText = "NEXT ROUND INITIATING...";
+                if(type === "early") { txt.innerText = "FALSE START"; sub.innerText = "PENALTY APPLIED"; navigator.vibrate?.([50,50,50]); }
             }
         }
-
         function resetRoundUI() { setScreen("waiting"); }
-        
         function setupGameUI() {
             document.getElementById('lobby').classList.add('hidden');
             document.getElementById('gameArea').style.display = 'flex';
             document.getElementById('scoreboard').classList.remove('hidden');
             resetRoundUI();
         }
-
         function showFinalScreen() {
             document.getElementById('gameArea').style.display = 'none';
             document.getElementById('scoreboard').classList.add('hidden');
             const screen = document.getElementById('finalScreen');
             screen.style.display = 'flex';
             
-            let resultText = myScore > oppScore ? "VICTORY 🏆" : "DEFEAT 💀";
+            let resultText = myScore > oppScore ? "CHAMPION 🏆" : "ELIMINATED 💀";
             let color = myScore > oppScore ? "var(--neon-blue)" : "var(--neon-red)";
             document.getElementById('finalTitle').innerText = resultText;
             document.getElementById('finalTitle').style.color = color;
-            document.getElementById('finalScore').innerText = `Final Score: ${myScore} - ${oppScore}`;
+            document.getElementById('finalScore').innerText = `${myScore} - ${oppScore}`;
         }
-
         function requestRematch() {
             if (gameMode === "local") location.reload();
             else db.ref('reflex/' + roomId).update({ status: "restart" });
