@@ -3,47 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Pro | Professional Login</title>
+    <title>Neon Pro | Ultra Secure</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <style>
+        /* --- KEEPING YOUR EXACT DESIGN --- */
         :root { --primary: #007bff; --bg: #dcdcd5; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); font-family: 'Outfit', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
 
-        /* --- STYLISH TERMS POPUP (NEW) --- */
-        #termsModal {
-            position: fixed; inset: 0; z-index: 6000;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px); /* Glass Effect */
-            display: none; /* Hidden by default */
-            align-items: center; justify-content: center; padding: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .terms-card {
-            background: white; width: 100%; max-width: 350px;
-            border-radius: 25px; padding: 25px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            display: flex; flex-direction: column; gap: 15px;
-            transform: scale(0.9); animation: popUp 0.3s forwards;
-        }
-
+        /* Terms Modal */
+        #termsModal { position: fixed; inset: 0; z-index: 6000; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
+        .terms-card { background: white; width: 100%; max-width: 350px; border-radius: 25px; padding: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; transform: scale(0.9); animation: popUp 0.3s forwards; }
         .terms-header { font-family: 'Orbitron'; color: var(--primary); font-size: 1.2rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 5px; }
         .terms-body { max-height: 300px; overflow-y: auto; font-size: 0.85rem; color: #555; line-height: 1.6; text-align: left; }
-        .terms-body h4 { margin: 10px 0 5px 0; color: #333; }
-        .terms-body ul { padding-left: 20px; margin: 0; }
-        
         .btn-agree { background: var(--primary); color: white; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-close { background: #eee; color: #333; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes popUp { to { transform: scale(1); } }
+        /* Red Ban Screen */
+        #banOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, #8b0000 0%, #1a0000 100%); z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 30px; }
+        .ban-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; animation: shake 0.5s infinite; }
+        .ban-title { font-family: 'Orbitron'; font-size: 2.5rem; color: #ff4444; margin-bottom: 10px; }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -2px); } }
 
-        /* --- LOGIN & APP STYLES --- */
+        /* Login & App UI */
         #authLayer { position: fixed; inset: 0; background: white; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .auth-card { background: white; width: 100%; max-width: 380px; padding: 35px 25px; border-radius: 30px; box-shadow: 0 15px 45px rgba(0,0,0,0.1); text-align: center; border: 1px solid #f0f0f0; }
         .auth-card h1 { font-family: 'Orbitron'; color: var(--primary); font-size: 2rem; margin: 0; letter-spacing: 2px; }
@@ -51,23 +37,11 @@
         .auth-card input { width: 100%; padding: 14px; margin-top: 10px; border-radius: 12px; border: 1.5px solid #eee; font-size: 1rem; }
         .btn-login { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 20px; cursor: pointer; }
 
-        /* --- DANGER BAN SCREEN --- */
-        #banOverlay {
-            position: fixed; inset: 0; 
-            background: linear-gradient(135deg, #8b0000 0%, #1a0000 100%);
-            z-index: 99999; display: none; flex-direction: column;
-            align-items: center; justify-content: center; color: white; text-align: center; padding: 30px;
-        }
-        .ban-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; animation: shake 0.5s infinite; }
-        .ban-title { font-family: 'Orbitron'; font-size: 2.5rem; color: #ff4444; margin-bottom: 10px; }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -2px); } }
-
-        /* --- APP UI --- */
         #appLayer { display: none; flex-direction: column; height: 100vh; }
         header { padding: 10px 15px; background: white; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; z-index: 1001; }
         .secure-tag { font-size: 0.65rem; color: #28a745; font-weight: bold; display: flex; align-items: center; gap: 4px; background: #f0fff4; padding: 4px 8px; border-radius: 20px; border: 1px solid #c6f6d5; }
 
-        #chatDisplay { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 190px ; background-color: #d8d4d0; background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); background-blend-mode: multiply; }
+        #chatDisplay { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 250px !important; background-color: #d8d4d0; background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); background-blend-mode: multiply; }
         .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; overflow: hidden; flex-shrink: 0; }
         .msg-me { align-self: flex-end; background: #dcf8c6; color: #303030; border-top-right-radius: 4px; }
         .msg-them { align-self: flex-start; background: white; color: #303030; border-top-left-radius: 4px; }
@@ -77,37 +51,34 @@
         .input-bar { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: white; }
         #msgInput { flex: 1; padding: 12px 18px; border-radius: 30px; border: 1.5px solid #eee; background: #f1f3f4; font-size: 1rem; }
         .btn-send { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        
         #ad-box { height: 60px; width: 100%; display: flex; justify-content: center; align-items: center; }
         .overlay { position: fixed; inset: 0; background: white; z-index: 4000; display: none; flex-direction: column; padding: 25px; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popUp { to { transform: scale(1); } }
     </style>
 </head>
 <body>
+
+    <div id="banOverlay">
+        <i class="fas fa-ban ban-icon"></i>
+        <div class="ban-title">BLOCKED</div>
+        <p style="font-size:1.1rem; opacity:0.8;">Access Permanently Denied.</p>
+        <div style="margin-top:20px; font-family:monospace; background:rgba(0,0,0,0.5); padding:10px; border-radius:5px; font-size:0.8rem;">CODE: SUPER_BAN_ACTIVE</div>
+    </div>
 
     <div id="termsModal">
         <div class="terms-card">
             <div class="terms-header"><i class="fas fa-file-contract"></i> TERMS OF SERVICE</div>
             <div class="terms-body">
-                <h4>1. Privacy & Encryption</h4>
-                <p>Neon Pro uses End-to-End Encryption. We cannot see your messages. You are responsible for keeping your 'Key' safe.</p>
-                
-                <h4>2. Security Logging</h4>
-                <p>We log your <b>IP Address</b> and <b>Device ID</b> solely for security purposes to prevent abuse and spam.</p>
-                
-                <h4>3. User Conduct</h4>
-                <p>Zero tolerance for harassment, hate speech, or illegal content. Violation leads to an instant <b>Permanent Device Ban</b>.</p>
-                
-                <h4>4. Liability</h4>
-                <p>By using this app, you agree that the developers are not liable for any data loss or user interactions.</p>
+                <h4>1. Security</h4><p>We log IP addresses to prevent abuse.</p>
+                <h4>2. Zero Tolerance</h4><p>Harassment leads to a permanent Device & Account Ban.</p>
+                <h4>3. Encryption</h4><p>Chats are E2EE protected.</p>
             </div>
-            <button class="btn-agree" onclick="agreeTerms()">I AGREE & CONTINUE</button>
+            <button class="btn-agree" onclick="agreeTerms()">I AGREE</button>
             <button class="btn-close" onclick="closeTerms()">CANCEL</button>
         </div>
-    </div>
-
-    <div id="banOverlay">
-        <i class="fas fa-ban ban-icon"></i>
-        <div class="ban-title">BLOCKED</div>
-        <p style="font-size:1.1rem; opacity:0.8;">Your device is permanently banned.</p>
     </div>
 
     <div id="authLayer">
@@ -116,12 +87,10 @@
             <div class="enc-badge"><i class="fas fa-lock"></i> 100% E2EE ENCRYPTED</div>
             <input type="text" id="uName" placeholder="Username">
             <input type="password" id="uPass" placeholder="Password">
-            
             <div style="font-size: 0.8rem; text-align: left; margin: 20px 0; color: #666; display: flex; gap: 8px; align-items: center;">
                 <input type="checkbox" id="legalCheck"> 
                 <span>I accept the <b style="color:var(--primary); text-decoration:underline; cursor:pointer;" onclick="showTerms()">Terms & Conditions</b></span>
             </div>
-            
             <button class="btn-login" onclick="startLogin()">LOG IN</button>
         </div>
     </div>
@@ -195,32 +164,37 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let myName, partner, chatId, myIp;
-
-        // --- TERMS POPUP LOGIC ---
-        function showTerms() { document.getElementById('termsModal').style.display = 'flex'; }
-        function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
-        
-        function agreeTerms() {
-            document.getElementById('legalCheck').checked = true; // Auto-check
-            closeTerms();
+        // --- 1. SUPER BAN SECURITY ---
+        // Step A: Check Browser Poisoning (Agar IP badal ke aaya to pakda jayega)
+        if(localStorage.getItem('isPermanentlyBanned') === 'true') {
+            document.addEventListener('DOMContentLoaded', showRedScreen);
         }
 
-        // BAN CHECK
+        let myIp, myName, partner, chatId;
+
+        // Step B: Check IP Ban on Load
         fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { 
             myIp = d.ip; 
-            db.ref('security/bans/' + myIp.replace(/\./g, '_')).once('value', s => {
+            db.ref('security/bans/' + myIp.replace(/\./g, '_')).on('value', s => {
                 if(s.exists()) { 
-                    document.getElementById('banOverlay').style.display = 'flex';
-                    document.getElementById('authLayer').remove();
+                    permanentBanTrigger(); // IP Match = Ban Trigger
                 }
             });
-        });
+        }).catch(e => console.log("IP Blocked"));
 
-        function getK() { return document.getElementById('topKey').value || "NEON_SAFE"; }
-        function encrypt(t) { return CryptoJS.AES.encrypt(t, getK()).toString(); }
-        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, getK()).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } }
+        // --- HELPER FUNCTIONS ---
+        function permanentBanTrigger() {
+            localStorage.setItem('isPermanentlyBanned', 'true'); // Poison the browser
+            showRedScreen();
+        }
 
+        function showRedScreen() {
+            document.getElementById('banOverlay').style.display = 'flex';
+            if(document.getElementById('authLayer')) document.getElementById('authLayer').remove();
+            if(document.getElementById('appLayer')) document.getElementById('appLayer').remove();
+        }
+
+        // --- AUTH & LOGIN LOGIC ---
         function startLogin() {
             if(!document.getElementById('legalCheck').checked) return alert("Please accept Terms & Conditions!");
             myName = document.getElementById('uName').value.trim().toLowerCase();
@@ -228,16 +202,42 @@
             if(!myName || p.length < 4) return alert("Invalid credentials");
             
             db.ref('users/' + myName).once('value', s => {
-                if(s.exists() && s.val().pass !== p) return alert("Wrong pass");
-                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: p, ip: myIp, joinedAt: Date.now() });
+                let data = s.val();
+
+                // Step C: Check Account Ban (Agar IP nayi hai par account purana banned hai)
+                if(data && data.banned === true) {
+                    permanentBanTrigger();
+                    return;
+                }
+
+                if(s.exists() && data.pass !== p) return alert("Wrong pass");
+                
+                // Login Success
+                if(!s.exists()) {
+                    // New User
+                    db.ref('users/' + myName).set({ username: myName, pass: p, ip: myIp, joinedAt: Date.now() });
+                } else {
+                    // Existing User - UPDATE NEW IP (Very Important)
+                    if(myIp) db.ref('users/' + myName + '/ip').set(myIp);
+                }
+
                 document.getElementById('authLayer').style.display='none';
                 document.getElementById('appLayer').style.display='flex';
                 loadFriends();
                 monitorRequests();
             });
         }
-        
-        // ... REST OF THE FUNCTIONS (SAME AS BEFORE) ...
+
+        // --- TERMS ---
+        function showTerms() { document.getElementById('termsModal').style.display = 'flex'; }
+        function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
+        function agreeTerms() { document.getElementById('legalCheck').checked = true; closeTerms(); }
+
+        // --- ENCRYPTION & APP LOGIC ---
+        function getK() { return document.getElementById('topKey').value || "NEON_SAFE"; }
+        function encrypt(t) { return CryptoJS.AES.encrypt(t, getK()).toString(); }
+        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, getK()).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } }
+
         function loadFriends() { db.ref('friends/' + myName).on('value', s => { const bar = document.getElementById('friendSidebar'); bar.innerHTML = ""; s.forEach(f => { let d = document.createElement('div'); d.style = "width:50px; height:50px; cursor:pointer;"; d.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}" style="width:100%; border-radius:50%; border:2px solid transparent;" id="av-${f.key}">`; d.onclick = () => { partner = f.key; document.querySelectorAll('#friendSidebar img').forEach(i=>i.style.borderColor='transparent'); document.getElementById('av-'+f.key).style.borderColor='#007bff'; openChat(); }; bar.appendChild(d); }); }); }
         
         function openChat() { chatId = [myName, partner].sort().join("_"); db.ref('chats/' + chatId).limitToLast(25).on('value', s => { const box = document.getElementById('chatDisplay'); box.innerHTML = ""; s.forEach(m => { let d = document.createElement('div'); let dat = m.val(); d.className = `msg ${dat.from === myName ? 'msg-me' : 'msg-them'}`; if(dat.type === 'img') { let decryptedImg = decrypt(dat.val); if(decryptedImg) d.innerHTML = `<img src="${decryptedImg}" style="width:100%; border-radius:10px;">`; else d.innerHTML = `<div style="padding:10px; color:red; font-size:0.8rem;">🔒 Locked Image</div>`; } else { d.innerText = decrypt(dat.val) || "🔒 Encrypted Message"; } if(dat.from !== myName) { let rep = document.createElement('span'); rep.className = "report-link"; rep.innerText = "Report"; rep.onclick = () => { if(confirm("Report to Admin?")) { db.ref('reports').push({ reporter: myName, user: dat.from, msg: dat.val, time: Date.now() }); alert("Report Sent!"); } }; d.appendChild(rep); } box.appendChild(d); }); box.scrollTop = box.scrollHeight; }); }
