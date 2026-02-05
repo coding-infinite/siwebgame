@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Reflex: Final</title>
+    <title>Neon Reflex: Ultimate</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Orbitron:wght@900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -13,10 +13,10 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #333; font-family: 'Poppins', sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* SCOREBOARD - Optimized */
+        /* SCOREBOARD */
         #scoreboard { width: 100%; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 100; position: absolute; top: 0; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary); background: #eee; }
-        .player-info { display: flex; flex-direction: column; align-items: center; width: 60px; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); background: #eee; object-fit: cover; }
+        .player-info { display: flex; flex-direction: column; align-items: center; width: 70px; }
         .score-val { font-weight: bold; font-size: 1.2rem; }
 
         /* LOBBY CARD */
@@ -29,16 +29,12 @@
         .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary); color: white; }
         .btn-outline { background: white; border: 2px solid var(--primary); color: var(--primary); }
-        .btn-ai { background: #f1f3f5; color: #666; font-size: 0.8rem; margin-top: 10px; }
+        .btn-rematch { background: #6f42c1; color: white; box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3); } 
         
-        /* SOCIAL BUTTONS */
-        .btn-whatsapp { background: #25D366; color: white; margin-top: 10px; }
-        .btn-insta { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: white; margin-top: 5px; }
-
         input { width: 100%; padding: 10px; background: #f1f3f5; border: 1px solid #ddd; color: #333; border-radius: 8px; text-align: center; font-size: 1.1rem; margin-bottom: 8px; font-family: 'Orbitron'; }
 
-        /* GAME AREA - Hardware Accelerated */
-        #gameArea { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 50; transform: translateZ(0); will-change: background-color; transition: background-color 0.1s linear; }
+        /* GAME AREA */
+        #gameArea { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 50; }
         .status-text { font-family: 'Orbitron'; font-size: 3.5rem; text-align: center; pointer-events: none; user-select: none; }
         .bg-waiting { background: #fff; } 
         .bg-go { background: var(--success); }
@@ -59,12 +55,15 @@
         @keyframes slideUp { from{transform:translateY(10px); opacity:0;} to{transform:translateY(0); opacity:1;} }
 
         .chat-input-row { display: flex; gap: 5px; pointer-events: auto; background: white; padding: 5px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        #chatInput { margin: 0; padding: 8px; font-size: 0.9rem; font-family: sans-serif; text-align: left; border: none; background: transparent; }
+        #chatInput { margin: 0; padding: 8px; font-size: 0.9rem; font-family: sans-serif; text-align: left; border: none; background: transparent; flex: 1; }
         #chatInput:focus { outline: none; }
 
         /* FINAL SCREEN */
         #finalScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 300; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
         .hidden { display: none !important; }
+
+        /* REMATCH OVERLAY */
+        #rematchOverlay { display: none; position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 30px; z-index: 400; font-size: 0.9rem; }
 
         /* AD BAR */
         #ad-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; border-top: 1px solid #eee; }
@@ -81,25 +80,24 @@
             <div id="roundDisplay" style="font-family:Orbitron; font-size:1.5rem; color:#888">1/5</div>
         </div>
         <div class="player-info">
-            <img id="oppAvatar" class="avatar" src="">
-            <div id="scoreOpp" class="score-val">0</div>
+            <img id="oppAvatar" class="avatar" src=""> <div id="scoreOpp" class="score-val">0</div>
         </div>
     </div>
 
     <div id="lobby" class="center-container">
         <div class="card">
             <h1>NEON REFLEX</h1>
-            <p style="color:#777; font-size:0.9rem;">No Lag. Pure Speed.</p>
+            <p style="color:#777; font-size:0.9rem;">Tap Faster to Win!</p>
             <div id="mainMenu">
                 <button class="btn btn-primary" onclick="createRoom()">CREATE ROOM</button>
                 <input type="text" id="roomInput" placeholder="ENTER CODE">
                 <button class="btn btn-outline" onclick="joinRoom()">JOIN ROOM</button>
-                <button class="btn btn-ai" onclick="startLocalGame()">🤖 PRACTICE VS AI</button>
+                <button class="btn" style="background:#f1f3f5; color:#666; margin-top:10px" onclick="startLocalGame()">🤖 PRACTICE VS AI</button>
             </div>
             <div id="waitingUi" class="hidden">
                 <div id="qrcode"></div>
                 <h2 id="roomCodeDisplay" style="color:var(--primary); font-size:2.5rem; margin:10px 0;"></h2>
-                <div style="color:#888; margin-bottom:15px">Scan to Join</div>
+                <div style="color:#888; margin-bottom:15px">Wait for friend to join...</div>
                 <button class="btn" style="background:#eee" onclick="location.reload()">CANCEL</button>
             </div>
         </div>
@@ -108,6 +106,8 @@
     <div id="gameArea" class="bg-waiting" onclick="handleTap()">
         <div id="gameMessage" class="status-text text-dark">WAIT</div>
     </div>
+
+    <div id="rematchOverlay">Opponent wants a rematch...</div>
 
     <div id="chatWrapper">
         <div id="chatDisplay"></div>
@@ -133,9 +133,8 @@
             <div id="avgTime" style="color:var(--primary); font-size:1.8rem; font-weight:bold;">0ms</div>
         </div>
 
-        <button class="btn btn-primary" onclick="location.reload()">PLAY AGAIN</button>
-        <button id="shareBtnWa" class="btn btn-whatsapp">SHARE ON WHATSAPP 💚</button>
-        <button id="shareBtnInsta" class="btn btn-insta">SHARE ON INSTA 📸</button>
+        <button class="btn btn-rematch" onclick="triggerRematch()">🔄 REMATCH SAME FRIEND</button>
+        <button class="btn" style="background:#eee" onclick="location.reload()">MAIN MENU</button>
     </div>
 
     <div id="ad-container">
@@ -167,52 +166,37 @@
         let roomId, isHost = false, gameMode = "online";
         let state = "lobby", currentRound = 1, myScore = 0, oppScore = 0, goTime = 0;
         let localTimers = [];
-        
-        // Caching DOM elements for performance
-        const elGameArea = document.getElementById('gameArea');
-        const elMsg = document.getElementById('gameMessage');
+        let canTap = true; // FIX: Prevents multiple taps per round
 
         document.getElementById('myAvatar').src = myAvatar;
-
+        
+        // Auto-Fill Code Logic
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
-            if(urlParams.get('room')) {
-                document.getElementById('roomInput').value = urlParams.get('room');
-            }
+            if(urlParams.get('room')) document.getElementById('roomInput').value = urlParams.get('room');
         };
 
-        // --- CORE FUNCTIONS ---
-        function setScreenState(newState, text, bgColor, textColor) {
-            state = newState;
-            elMsg.innerText = text;
-            elGameArea.className = bgColor;
-            if(textColor === 'white') {
-                elMsg.classList.remove('text-dark');
-                elMsg.classList.add('text-white');
-            } else {
-                elMsg.classList.remove('text-white');
-                elMsg.classList.add('text-dark');
-            }
-        }
-
+        // --- GAME SETUP ---
         function createRoom() {
             gameMode = "online";
             roomId = Math.random().toString(36).substr(2, 4).toUpperCase();
-            const joinUrl = window.location.origin + window.location.pathname + "?room=" + roomId;
+            const joinUrl = window.location.href.split('?')[0] + "?room=" + roomId;
             
             document.getElementById("qrcode").innerHTML = "";
             new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 140, height: 140 });
             
-            db.ref('reflex/' + roomId).set({ status: "waiting", hostAvatar: myAvatar });
+            db.ref('reflex/' + roomId).set({ status: "waiting", hostAvatar: myAvatar, round: 1, myScore: 0, oppScore: 0 });
             isHost = true;
-            showWaitingScreen();
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('waitingUi').classList.remove('hidden');
+            document.getElementById('roomCodeDisplay').innerText = roomId;
             listenForOpponent();
         }
 
         function joinRoom() {
             gameMode = "online";
             roomId = document.getElementById('roomInput').value.toUpperCase().trim();
-            if (roomId.length < 1) return alert("Code daal bhai!");
+            if (roomId.length < 1) return alert("Enter Code!");
 
             db.ref('reflex/' + roomId).once('value', snap => {
                 if (snap.exists()) {
@@ -222,61 +206,68 @@
             });
         }
 
+        function listenForOpponent() {
+            db.ref('reflex/' + roomId).on('value', snap => {
+                const data = snap.val();
+                if (data && data.status === "ready") {
+                    // FIX: Ensure guest avatar loads correctly for host
+                    document.getElementById('oppAvatar').src = data.guestAvatar || "https://api.dicebear.com/7.x/bottts/svg?seed=guest"; 
+                    startGame();
+                }
+            });
+        }
+
         function startLocalGame() {
             gameMode = "local";
             document.getElementById('oppAvatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=computer`;
             startGame();
         }
 
-        function showWaitingScreen() {
-            document.getElementById('mainMenu').classList.add('hidden');
-            document.getElementById('waitingUi').classList.remove('hidden');
-            document.getElementById('roomCodeDisplay').innerText = roomId;
-        }
-
-        function listenForOpponent() {
-            db.ref('reflex/' + roomId).on('value', snap => {
-                const data = snap.val();
-                if (data && data.status === "ready") {
-                    document.getElementById('oppAvatar').src = data.guestAvatar;
-                    startGame();
-                }
-            });
-        }
-
         function startGame() {
             document.getElementById('lobby').classList.add('hidden');
+            document.getElementById('waitingUi').classList.add('hidden');
             document.getElementById('gameArea').style.display = 'flex';
             document.getElementById('scoreboard').classList.remove('hidden');
+            document.getElementById('finalScreen').style.display = 'none';
             if(gameMode === "online") document.getElementById('chatWrapper').style.display = 'block';
             
+            // RESET SCORES FOR REMATCH
+            myScore = 0; oppScore = 0; currentRound = 1; myReactionTimes = [];
+            updateScoreUI();
+
             if (gameMode === "local") startLocalRound();
             else if (isHost) startOnlineRound();
             
             if(gameMode === "online") listenForGameUpdates();
         }
 
-        // --- ROUND LOGIC (OPTIMIZED) ---
+        function updateScoreUI() {
+            document.getElementById('scoreMy').innerText = myScore;
+            document.getElementById('scoreOpp').innerText = oppScore;
+            document.getElementById('roundDisplay').innerText = currentRound + "/5";
+        }
+
+        // --- ROUND LOGIC ---
         function startOnlineRound() {
+            canTap = false; // Disable tapping during wait
             db.ref('reflex/' + roomId).update({ winner: null, status: "wait", round: currentRound });
             setTimeout(() => {
+                // Random time between 2-5 seconds
                 db.ref('reflex/' + roomId).update({ status: "go", goTime: Date.now() });
-            }, Math.random() * 2000 + 2000); // 2-4 sec delay
+            }, Math.random() * 3000 + 2000); 
         }
 
         function startLocalRound() {
             if (currentRound > 5) return showFinalScreen();
-            setScreenState("wait", "WAIT", "bg-waiting", "dark");
+            resetScreen("wait");
             
-            const delay = Math.random() * 2000 + 2000;
+            const delay = Math.random() * 3000 + 2000;
             localTimers.push(setTimeout(() => {
-                if(state !== "wait") return;
-                
-                setScreenState("go", "TAP!", "bg-go", "white");
+                resetScreen("go");
                 goTime = Date.now();
                 
-                // AI Logic
-                const aiReaction = Math.random() * 250 + 280; 
+                // FIX: AI Difficulty Tuned (Easier: 400ms - 700ms)
+                const aiReaction = Math.random() * 300 + 400; 
                 localTimers.push(setTimeout(() => {
                     if (state === "go") handleRoundEnd("computer");
                 }, aiReaction));
@@ -289,21 +280,28 @@
                 const data = snap.val();
                 if (!data) return;
 
+                // Sync Avatar for Guest if missing
+                if (!isHost && data.hostAvatar) document.getElementById('oppAvatar').src = data.hostAvatar;
+
+                // Game Logic
                 if (data.status === "go" && state !== "go") {
-                    setScreenState("go", "TAP!", "bg-go", "white");
+                    resetScreen("go");
                     goTime = data.goTime;
-                    navigator.vibrate?.(50); // Haptic feedback
+                    navigator.vibrate?.(50);
                 } else if (data.status === "wait" && state !== "wait") {
-                    setScreenState("wait", "WAIT", "bg-waiting", "dark");
+                    resetScreen("wait");
+                } else if (data.status === "rematch") {
+                    // Both players restart
+                    startGame(); 
                 }
-                
-                // Winner logic - Only process if we haven't ended the round locally
+
+                // Winner Sync
                 if (data.winner && state !== "end") {
                     handleRoundEnd(data.winner);
                 }
             });
 
-            // Chat
+            // Chat Listener
             db.ref('reflex/' + roomId + '/chats').limitToLast(1).on('child_added', snap => {
                 const msg = snap.val();
                 if(!msg) return;
@@ -312,21 +310,35 @@
                 div.className = "msg " + (msg.sender === myId ? "msg-me" : "msg-opp");
                 div.innerText = msg.text;
                 display.appendChild(div);
-                
-                // Auto clean chat
-                if(display.children.length > 4) display.removeChild(display.firstChild);
+                if(display.children.length > 3) display.removeChild(display.firstChild);
             });
         }
 
+        function resetScreen(mode) {
+            state = mode;
+            canTap = (mode === "go" || mode === "wait"); // Enable tap only in game
+            const elArea = document.getElementById('gameArea');
+            const elMsg = document.getElementById('gameMessage');
+            
+            if (mode === "wait") {
+                elArea.className = "bg-waiting"; elMsg.innerText = "WAIT"; elMsg.classList.add('text-dark'); elMsg.classList.remove('text-white');
+            } else if (mode === "go") {
+                elArea.className = "bg-go"; elMsg.innerText = "TAP!"; elMsg.classList.remove('text-dark'); elMsg.classList.add('text-white');
+            }
+        }
+
         function handleTap() {
+            if (!canTap) return; // FIX: Prevents multiple taps (spam click)
+
             if (state === "go") {
+                canTap = false; // Lock tap immediately
                 const reaction = Date.now() - goTime;
                 myReactionTimes.push(reaction);
                 if (gameMode === "local") handleRoundEnd(myId);
                 else db.ref('reflex/' + roomId).update({ winner: myId });
             } else if (state === "wait") {
-                // Early tap penalty
-                setScreenState("end", "EARLY!", "bg-lose", "white");
+                canTap = false; // Lock tap
+                // Early penalty
                 if (gameMode === "local") handleRoundEnd("computer");
                 else db.ref('reflex/' + roomId).update({ winner: "early_opponent_wins" }); 
             }
@@ -334,36 +346,65 @@
 
         function handleRoundEnd(winner) {
             state = "end";
+            canTap = false;
             localTimers.forEach(t => clearTimeout(t));
 
-            // Determine if I won
-            let iWon = false;
-            if (winner === myId) iWon = true;
-            else if (winner === "early_opponent_wins") iWon = false; // I tapped early (opponent sent this)
-            else if (winner.includes("early") && winner !== "early_opponent_wins") iWon = true; // Opponent tapped early
+            let iWon = (winner === myId) || (winner.includes("early") && winner !== "early_opponent_wins");
             
-            // UI Update
+            const elArea = document.getElementById('gameArea');
+            const elMsg = document.getElementById('gameMessage');
+            
             if (iWon) {
                 myScore++;
-                setScreenState("end", "WON!", "bg-win", "white");
+                elArea.className = "bg-win"; elMsg.innerText = "WON!";
             } else {
                 oppScore++;
-                setScreenState("end", "LOST", "bg-lose", "white");
+                elArea.className = "bg-lose"; elMsg.innerText = "LOST";
             }
+            elMsg.classList.remove('text-dark'); elMsg.classList.add('text-white');
 
-            document.getElementById('scoreMy').innerText = myScore;
-            document.getElementById('scoreOpp').innerText = oppScore;
+            updateScoreUI();
 
             if (currentRound < 5) {
                 currentRound++;
                 setTimeout(() => {
-                    document.getElementById('roundDisplay').innerText = currentRound + "/5";
                     if (gameMode === "local") startLocalRound();
                     else if (isHost) startOnlineRound();
-                }, 2000); // 2 sec cooldown before next round
+                }, 2000);
             } else {
                 setTimeout(showFinalScreen, 2000);
             }
+        }
+
+        // --- REMATCH & END SCREEN ---
+        function showFinalScreen() {
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('chatWrapper').style.display = 'none';
+            document.getElementById('scoreboard').classList.add('hidden');
+            document.getElementById('finalScreen').style.display = 'flex';
+            
+            const avg = Math.round(myReactionTimes.reduce((a,b) => a+b, 0) / (myReactionTimes.length || 1));
+            document.getElementById('avgTime').innerText = avg + "ms";
+            document.getElementById('resultAvatar').src = myAvatar;
+
+            const title = document.getElementById('finalTitle');
+            if (myScore > oppScore) {
+                title.innerText = "VICTORY!"; title.style.color = "var(--success)";
+                document.getElementById('funnyMessage').innerText = "Speed King! ⚡";
+            } else {
+                title.innerText = "DEFEAT"; title.style.color = "var(--danger)";
+                document.getElementById('funnyMessage').innerText = "Need more coffee? ☕";
+            }
+        }
+
+        function triggerRematch() {
+            if(gameMode === "local") return startLocalGame();
+            
+            document.getElementById('rematchOverlay').style.display = 'block';
+            document.getElementById('rematchOverlay').innerText = "Waiting for friend...";
+            
+            // Set status to rematch (listener will restart game for both)
+            db.ref('reflex/' + roomId).update({ status: "rematch" });
         }
 
         // --- UTILS ---
@@ -377,47 +418,8 @@
                 input.focus();
             }
         }
-        
-        // Enter key for chat
-        document.getElementById('chatInput').addEventListener("keypress", function(event) {
-            if (event.key === "Enter") sendMessage();
-        });
+        document.getElementById('chatInput').addEventListener("keypress", (e) => { if(e.key==="Enter") sendMessage(); });
 
-        function showFinalScreen() {
-            document.getElementById('gameArea').style.display = 'none';
-            document.getElementById('chatWrapper').style.display = 'none';
-            document.getElementById('scoreboard').classList.add('hidden');
-            document.getElementById('finalScreen').style.display = 'flex';
-            
-            const avg = Math.round(myReactionTimes.reduce((a,b) => a+b, 0) / (myReactionTimes.length || 1));
-            document.getElementById('avgTime').innerText = avg + "ms";
-            document.getElementById('resultAvatar').src = myAvatar;
-
-            const msgs = myScore > oppScore 
-                ? ["Flash who? You are the speed! ⚡", "Too easy for you! 😎", "Champion Material 🏆"]
-                : ["Reflexes need coffee ☕", "Too slow this time! 🐢", "Better luck next time!"];
-            
-            document.getElementById('finalTitle').innerText = myScore > oppScore ? "VICTORY!" : "DEFEAT";
-            document.getElementById('finalTitle').style.color = myScore > oppScore ? "var(--success)" : "var(--danger)";
-            document.getElementById('funnyMessage').innerText = msgs[Math.floor(Math.random()*msgs.length)];
-
-            // Social Sharing Logic
-            const shareText = `Neon Reflex ⚡\nScore: ${myScore}-${oppScore}\nAvg Speed: ${avg}ms\nPlay here: ${window.location.href}`;
-            
-            document.getElementById('shareBtnWa').onclick = () => {
-                window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`);
-            };
-            
-            document.getElementById('shareBtnInsta').onclick = () => {
-                // Insta direct share is restricted via web, so we copy to clipboard + redirect
-                navigator.clipboard.writeText(shareText).then(() => {
-                    alert("Score copied! Paste it in your Story.");
-                    window.location.href = "instagram://story-camera";
-                }).catch(() => {
-                     window.location.href = "https://instagram.com";
-                });
-            };
-        }
     </script>
 </body>
 </html>
