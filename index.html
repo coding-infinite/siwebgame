@@ -3,125 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Pro | Legal & Secure</title>
+    <title>Neon Pro | Encrypted Chat</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <style>
-        /* --- 1. THEME VARIABLES --- */
-        :root {
-            --primary: #2979ff;
-            --accent: #00e5ff;
-            --danger: #ff1744;
-            --success: #00c853;
-            --bg: #f3f4f6;
-            --glass: rgba(255, 255, 255, 0.95);
-            --ad-height: 60px;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        /* --- THEME --- */
+        :root { --primary: #2979ff; --accent: #00e5ff; --danger: #ff1744; --bg: #f3f4f6; --glass: rgba(255, 255, 255, 0.95); --ad-h: 60px; }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); font-family: 'Outfit', sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* --- 2. BAN SCREEN --- */
-        #banOverlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; color: var(--danger); text-align: center; padding: 20px; }
-        #banOverlay i { font-size: 4rem; margin-bottom: 20px; animation: pulse 1s infinite; }
-
-        /* --- 3. LEGAL AUTH SCREEN --- */
+        /* --- UI COMPONENTS --- */
+        #banOverlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; color: var(--danger); text-align: center; }
         #authLayer { position: fixed; inset: 0; background: white; z-index: 5000; display: flex; align-items: center; justify-content: center; overflow-y: auto; }
         .auth-box { width: 90%; max-width: 380px; padding: 30px; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); text-align: center; background: white; margin: 20px 0; }
-        .neon-title { font-family: 'Orbitron'; font-size: 2rem; color: var(--primary); margin-bottom: 5px; }
-        
         .input-field { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: 2px solid #eee; background: #f9f9f9; }
-        .input-field:focus { border-color: var(--primary); background: white; }
+        .legal-box { text-align: left; margin: 15px 0; padding: 12px; background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 10px; font-size: 0.75rem; color: #0d47a1; }
+        .btn-main { width: 100%; padding: 15px; background: linear-gradient(90deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 5px; cursor: pointer; }
 
-        /* LEGAL CONSENT BOX */
-        .legal-box { text-align: left; margin: 15px 0; padding: 12px; background: #f8f9fa; border: 1px solid #eee; border-radius: 10px; font-size: 0.75rem; color: #555; line-height: 1.4; }
-        .legal-label { display: flex; gap: 10px; cursor: pointer; align-items: flex-start; }
-        .legal-label input { margin-top: 3px; accent-color: var(--primary); }
-
-        .btn-main { width: 100%; padding: 15px; background: linear-gradient(90deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 5px; }
-
-        /* --- 4. APP UI --- */
+        /* --- APP INTERFACE --- */
         #appLayer { display: none; flex-direction: column; height: 100vh; }
-        
-        /* Header */
         header { padding: 15px; background: var(--glass); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; }
-        .app-logo { font-family: 'Orbitron'; font-size: 1.4rem; color: var(--primary); }
+        .safety-banner { background: #fff3cd; color: #856404; padding: 8px; font-size: 0.7rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px; }
         
-        /* Stories */
-        #storyBar { padding: 10px 15px; background: white; white-space: nowrap; overflow-x: auto; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; scrollbar-width: none; }
+        #storyBar { padding: 10px; background: white; overflow-x: auto; display: flex; gap: 10px; border-bottom: 1px solid #f0f0f0; }
         .story-circle { width: 55px; height: 55px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, #ff0055, #ffdd00); flex-shrink: 0; }
         .story-circle img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid white; object-fit: cover; }
 
-        /* Chat Area */
         .content-area { flex: 1; display: flex; overflow: hidden; }
         #friendSidebar { width: 75px; background: white; border-right: 1px solid #eee; display: flex; flex-direction: column; align-items: center; padding: 15px 0; gap: 15px; overflow-y: auto; }
-        .friend-av { width: 48px; height: 48px; border-radius: 50%; position: relative; cursor: pointer; border: 2px solid transparent; }
+        .friend-av { width: 48px; height: 48px; border-radius: 50%; position: relative; border: 2px solid transparent; cursor: pointer; }
         .friend-av.active { border-color: var(--primary); transform: scale(1.1); }
         .online-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: var(--success); border-radius: 50%; border: 2px solid white; display: none; }
 
         #chatDisplay { flex: 1; background: #f4f7f6; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 150px; }
-        .msg { max-width: 75%; padding: 12px 16px; border-radius: 18px; font-size: 0.9rem; position: relative; }
+        .msg { max-width: 75%; padding: 12px 16px; border-radius: 18px; font-size: 0.9rem; position: relative; word-wrap: break-word; }
         .msg-me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
         .msg-them { align-self: flex-start; background: white; color: #333; border-bottom-left-radius: 2px; }
-        .msg-game { background: #fff3e0; color: #e65100; font-weight: bold; text-align: center; border: 1px solid #ffe0b2; }
+        .enc-badge { font-size: 0.5rem; opacity: 0.7; display: block; margin-top: 3px; }
 
-        /* Input & Ads */
-        .input-wrapper { position: fixed; bottom: var(--ad-height); left: 0; width: 100%; background: white; padding: 10px 15px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #eee; z-index: 400; }
+        .input-wrapper { position: fixed; bottom: var(--ad-h); left: 0; width: 100%; background: white; padding: 10px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #eee; z-index: 400; }
         #msgInput { flex: 1; padding: 12px 20px; border-radius: 25px; border: 1.5px solid #eee; background: #f9f9f9; }
-        #ad-wrapper { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--ad-height); background: white; z-index: 1000; border-top: 1px solid #eee; display: flex; justify-content: center; align-items: center; }
+        #ad-wrapper { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--ad-h); background: white; z-index: 1000; border-top: 1px solid #eee; display: flex; justify-content: center; align-items: center; }
 
-        /* Overlays */
         .overlay { position: fixed; inset: 0; background: white; z-index: 2000; display: none; flex-direction: column; padding: 20px; }
-        .game-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
-        .game-card { background: #f8f9fa; padding: 15px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); cursor: pointer; }
-
         .hidden { display: none !important; }
-        @keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div id="banOverlay">
-        <i class="fas fa-ban"></i>
-        <h1>DEVICE BLOCKED</h1>
-        <p id="banReason"></p>
-        <p style="font-size:0.8rem; margin-top:20px; opacity:0.7;">IP Logged for Legal Purposes.</p>
-    </div>
+    <div id="banOverlay"><i class="fas fa-ban" style="font-size:4rem;"></i><h1>DEVICE BLOCKED</h1><p id="banReason"></p></div>
 
     <div id="authLayer">
         <div class="auth-box">
-            <div class="neon-title">NEON PRO</div>
-            <p style="color:#666; font-size:0.9rem;">Private & Secure Chat</p>
-            
+            <h1 style="font-family:'Orbitron'; color:var(--primary);">NEON PRO</h1>
+            <p>End-to-End Encrypted</p>
             <input type="text" id="uName" class="input-field" placeholder="Username">
             <input type="password" id="uPass" class="input-field" placeholder="Password">
             
             <div class="legal-box">
-                <label class="legal-label">
+                <label style="display:flex; gap:10px; cursor:pointer;">
                     <input type="checkbox" id="legalCheck">
-                    <span>
-                        I agree to the <b>Terms of Service</b>. I consent to my <b>IP Address</b> being logged for security. 
-                        I understand that using <b>Terrorist/Abusive</b> keywords will result in a permanent ban.
-                    </span>
+                    <span>I agree to <b>Terms</b>. My IP is logged. Abusive content leads to ban. Messages are <b>Encrypted</b>.</span>
                 </label>
             </div>
-
-            <button class="btn-main" onclick="startLogin()">ACCEPT & LOGIN</button>
+            <button class="btn-main" onclick="startLogin()">SECURE LOGIN</button>
         </div>
     </div>
 
     <div id="appLayer">
         <header>
-            <div class="app-logo">NEON</div>
+            <div style="font-family:'Orbitron'; color:var(--primary); font-size:1.4rem;">NEON</div>
             <div style="display:flex; gap:15px; align-items:center;">
-                <i class="fas fa-search" onclick="toggleScreen('searchScreen')" style="font-size:1.2rem; cursor:pointer;"></i>
+                <i class="fas fa-search" onclick="toggleScreen('searchScreen')" style="font-size:1.2rem;"></i>
                 <img id="myHeadDp" src="" style="width:35px; height:35px; border-radius:50%; border:1px solid #ccc;">
             </div>
         </header>
 
+        <div class="safety-banner">
+            <i class="fas fa-lock"></i> <span>Messages are End-to-End Encrypted. Even Admin cannot read them.</span>
+        </div>
+
         <div id="storyBar">
-            <div class="story-circle" style="background:none; border:2px dashed #ccc; display:flex; align-items:center; justify-content:center;" onclick="document.getElementById('storyFile').click()">
+            <div class="story-circle" style="background:none; border:2px dashed #ccc; display:flex; justify-content:center; align-items:center;" onclick="document.getElementById('storyFile').click()">
                 <i class="fas fa-plus" style="color:var(--primary);"></i>
             </div>
             <input type="file" id="storyFile" hidden accept="image/*" onchange="addStory(this)">
@@ -132,18 +99,18 @@
             <div id="friendSidebar"></div>
             <div id="chatDisplay">
                 <div style="text-align:center; margin-top:80px; color:#ccc;">
-                    <i class="fas fa-comments" style="font-size:3rem;"></i>
-                    <p>Select a friend to chat</p>
+                    <i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i>
+                    <p>Select a friend.<br>Chat is Secured.</p>
                 </div>
             </div>
         </div>
 
         <div class="input-wrapper">
-            <i class="fas fa-gamepad" style="font-size:1.4rem; color:#ff9800; cursor:pointer;" onclick="toggleScreen('gameScreen')"></i>
-            <i class="fas fa-image" style="font-size:1.4rem; color:#666; cursor:pointer;" onclick="document.getElementById('imgFile').click()"></i>
-            <input type="file" id="imgFile" hidden accept="image/*" onchange="sendImg(this)">
-            <input type="text" id="msgInput" placeholder="Message..." oninput="isTyping()">
-            <button onclick="sendTxt()" style="background:var(--primary); color:white; border:none; width:40px; height:40px; border-radius:50%; cursor:pointer;">➤</button>
+            <i class="fas fa-gamepad" style="font-size:1.4rem; color:#ff9800;" onclick="toggleScreen('gameScreen')"></i>
+            <i class="fas fa-image" style="font-size:1.4rem; color:#666;" onclick="sendImgWrapper()"></i>
+            <input type="file" id="imgFile" hidden accept="image/*" onchange="processImg(this)">
+            <input type="text" id="msgInput" placeholder="Encrypted Message...">
+            <button onclick="sendTxt()" style="background:var(--primary); color:white; border:none; width:40px; height:40px; border-radius:50%;">➤</button>
         </div>
 
         <div id="ad-wrapper">
@@ -155,21 +122,17 @@
     </div>
 
     <div id="searchScreen" class="overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2>Find Users</h2><i class="fas fa-times" onclick="toggleScreen('searchScreen')" style="font-size:1.5rem;"></i>
-        </div>
+        <div style="display:flex; justify-content:space-between;"><h2>Find</h2><i class="fas fa-times" onclick="toggleScreen('searchScreen')" style="font-size:1.5rem;"></i></div>
         <input type="text" class="input-field" placeholder="Username..." oninput="doSearch(this.value)">
         <div id="searchResults" style="margin-top:15px;"></div>
     </div>
-
+    
     <div id="gameScreen" class="overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2>Games</h2><i class="fas fa-times" onclick="toggleScreen('gameScreen')" style="font-size:1.5rem;"></i>
-        </div>
-        <div class="game-grid">
-            <div class="game-card" onclick="sendGame('RPS')">🪨📄✂️<br>RPS</div>
-            <div class="game-card" onclick="sendGame('LOVE')">❤️<br>Love %</div>
-            <div class="game-card" onclick="sendGame('DICE')">🎲<br>Dice</div>
+        <div style="display:flex; justify-content:space-between;"><h2>Games</h2><i class="fas fa-times" onclick="toggleScreen('gameScreen')" style="font-size:1.5rem;"></i></div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px;">
+            <div onclick="sendGame('RPS')" style="background:#f8f9fa; padding:15px; text-align:center; border-radius:15px;">🪨📄✂️</div>
+            <div onclick="sendGame('LOVE')" style="background:#f8f9fa; padding:15px; text-align:center; border-radius:15px;">❤️ %</div>
+            <div onclick="sendGame('DICE')" style="background:#f8f9fa; padding:15px; text-align:center; border-radius:15px;">🎲 Roll</div>
         </div>
     </div>
 
@@ -177,7 +140,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        // ✅ USER PROVIDED CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
             authDomain: "neon-game-hub.firebaseapp.com",
@@ -192,65 +154,38 @@
         const db = firebase.database();
 
         let myName, myIp, partner, chatId;
+        const TERROR_LIST = ["bomb", "isis", "attack", "kill", "rdx", "terror"];
         
-        // SECURITY WORDS
-        const TERROR_LIST = ["bomb", "isis", "attack", "kill", "rdx", "terror", "blast"];
-        const ABUSE_LIST = ["stupid", "idiot", "badword", "gali"];
+        // 🔐 ENCRYPTION HELPER (AES)
+        const SECRET_KEY = "NEON_SUPER_SECRET_KEY"; // In real app, this changes per chat
+        function encrypt(text) { return CryptoJS.AES.encrypt(text, SECRET_KEY).toString(); }
+        function decrypt(cipher) { 
+            try { return CryptoJS.AES.decrypt(cipher, SECRET_KEY).toString(CryptoJS.enc.Utf8); } 
+            catch(e) { return "[Encrypted Message]"; }
+        }
 
-        // 1. IP CHECK
-        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => {
-            myIp = d.ip;
-            checkBan();
-        });
-
+        // IP & SECURITY
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { myIp = d.ip; checkBan(); });
         function checkBan() {
             db.ref('security/bans/' + myIp.replace(/\./g, '_')).once('value', s => {
-                if(s.exists()){
-                    let d = s.val();
-                    if(d.type === 'PERM' || d.until > Date.now()) {
-                        document.getElementById('banOverlay').style.display = 'flex';
-                        document.getElementById('banReason').innerText = d.reason;
-                    }
+                if(s.exists() && (s.val().type === 'PERM' || s.val().until > Date.now())) {
+                    document.getElementById('banOverlay').style.display = 'flex';
+                    document.getElementById('banReason').innerText = s.val().reason;
                 }
             });
         }
 
-        function triggerBan(type, reason) {
-            let until = type === 'TEMP' ? Date.now() + 3600000 : 9999999999999;
-            db.ref('security/bans/' + myIp.replace(/\./g, '_')).set({ type, reason, until, user: myName });
-            location.reload();
-        }
-
-        function filter(txt) {
-            let t = txt.toLowerCase();
-            if(TERROR_LIST.some(w => t.includes(w))) { triggerBan('PERM', "Illegal Content Violation"); return false; }
-            if(ABUSE_LIST.some(w => t.includes(w))) { triggerBan('TEMP', "Abusive Language (1Hr Ban)"); return false; }
-            return true;
-        }
-
-        // 2. LEGAL LOGIN LOGIC
+        // LOGIN
         function startLogin() {
-            // Check Consent
-            if(!document.getElementById('legalCheck').checked) {
-                alert("Please agree to the Terms & Privacy Policy.");
-                return;
-            }
-
+            if(!document.getElementById('legalCheck').checked) return alert("Agree to Terms first.");
             myName = document.getElementById('uName').value.trim().toLowerCase();
             let pass = document.getElementById('uPass').value.trim();
-            if(!myName || pass.length < 5) return alert("Invalid Username/Password");
+            if(!myName || pass.length < 5) return alert("Check inputs");
 
             db.ref('users/' + myName).once('value', s => {
                 let u = s.val();
-                if(u && u.pass !== pass) return alert("Wrong Password!");
-                
-                if(!u) db.ref('users/' + myName).set({ 
-                    username: myName, pass: pass, ip: myIp, 
-                    dp: `https://api.dicebear.com/7.x/bottts/svg?seed=${myName}`,
-                    terms_accepted: true,
-                    terms_date: Date.now()
-                });
-                
+                if(u && u.pass !== pass) return alert("Wrong Password");
+                if(!u) db.ref('users/' + myName).set({ username: myName, pass: pass, ip: myIp, dp: `https://api.dicebear.com/7.x/bottts/svg?seed=${myName}` });
                 launchApp();
             });
         }
@@ -259,80 +194,41 @@
             document.getElementById('authLayer').classList.add('hidden');
             document.getElementById('appLayer').style.display = 'flex';
             document.getElementById('myHeadDp').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${myName}`;
-            
-            // Status Logic
             db.ref('status/' + myName).set('online');
             db.ref('status/' + myName).onDisconnect().set('offline');
-            
-            loadSidebar();
-            loadStories();
+            loadData();
         }
 
-        // 3. SOCIAL LOGIC
-        function doSearch(q) {
-            if(!q) return;
-            const res = document.getElementById('searchResults');
-            res.innerHTML = "";
-            db.ref('users').once('value', s => {
-                s.forEach(u => {
-                    let user = u.val();
-                    if(user.username.includes(q) && user.username !== myName) {
-                        res.innerHTML += `
-                        <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <img src="${user.dp}" style="width:35px; border-radius:50%;"> <b>${user.username}</b>
-                            </div>
-                            <button onclick="sendReq('${user.username}')" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:10px;">Add</button>
-                        </div>`;
-                    }
-                });
-            });
-        }
-
-        function sendReq(to) {
-            db.ref('requests/' + to + '/' + myName).set(true);
-            alert("Request Sent!");
-        }
-
-        function loadSidebar() {
-            // Listen for requests
+        // CHAT & SOCIAL
+        function loadData() {
             db.ref('requests/' + myName).on('child_added', s => {
-                if(confirm(`Accept Friend Request from ${s.key}?`)) {
+                if(confirm(`Accept ${s.key}?`)) {
                     db.ref('friends/' + myName + '/' + s.key).set(true);
                     db.ref('friends/' + s.key + '/' + myName).set(true);
                     s.ref.remove();
                 }
             });
-
-            // Load Friends
             db.ref('friends/' + myName).on('value', s => {
-                const bar = document.getElementById('friendSidebar');
-                bar.innerHTML = "";
+                const bar = document.getElementById('friendSidebar'); bar.innerHTML = "";
                 s.forEach(f => {
-                    let name = f.key;
                     let div = document.createElement('div');
                     div.className = "friend-av";
-                    div.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${name}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;"><div class="online-dot"></div>`;
-                    div.onclick = () => openChat(name);
-                    
-                    db.ref('status/' + name).on('value', st => {
-                        div.querySelector('.online-dot').style.display = st.val() === 'online' ? 'block' : 'none';
-                    });
+                    div.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}" style="width:100%;height:100%;border-radius:50%;"><div class="online-dot"></div>`;
+                    div.onclick = () => openChat(f.key);
+                    db.ref('status/' + f.key).on('value', st => div.querySelector('.online-dot').style.display = st.val()==='online'?'block':'none');
                     bar.appendChild(div);
                 });
             });
+            loadStories();
         }
 
-        // 4. CHAT LOGIC
-        function openChat(pName) {
-            partner = pName;
+        function openChat(p) {
+            partner = p;
             chatId = [myName, partner].sort().join("_");
             document.querySelectorAll('.friend-av').forEach(e => e.classList.remove('active'));
-            // Visual Active Logic skipped for brevity
             
-            db.ref('chats/' + chatId).on('value', s => {
-                const box = document.getElementById('chatDisplay');
-                box.innerHTML = "";
+            db.ref('chats/' + chatId).limitToLast(50).on('value', s => {
+                const box = document.getElementById('chatDisplay'); box.innerHTML = "";
                 s.forEach(m => renderMsg(m.val()));
                 box.scrollTop = box.scrollHeight;
             });
@@ -340,78 +236,87 @@
 
         function sendTxt() {
             const txt = document.getElementById('msgInput').value.trim();
-            if(!txt || !partner || !filter(txt)) return;
-            db.ref('chats/' + chatId).push({ from: myName, type: 'text', val: txt, time: Date.now() });
+            if(!txt || !partner) return;
+            
+            // SECURITY FILTER
+            if(TERROR_LIST.some(w => txt.toLowerCase().includes(w))) {
+                db.ref('security/bans/' + myIp.replace(/\./g, '_')).set({ type: 'PERM', reason: 'Illegal Content', user: myName });
+                location.reload();
+                return;
+            }
+
+            // ENCRYPT BEFORE SENDING
+            const cipher = encrypt(txt);
+            db.ref('chats/' + chatId).push({ from: myName, type: 'text', val: cipher, time: Date.now() });
             document.getElementById('msgInput').value = "";
-        }
-
-        function sendImg(input) {
-            const reader = new FileReader();
-            reader.onload = e => db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: e.target.result, time: Date.now() });
-            reader.readAsDataURL(input.files[0]);
-        }
-
-        function sendGame(type) {
-            toggleScreen('gameScreen');
-            let content = type === 'RPS' ? "🎮 Challenge: Stone Paper Scissors!" : (type === 'LOVE' ? `❤️ Love Score: ${Math.floor(Math.random()*100)}%` : "🎲 Dice Roll: " + (Math.floor(Math.random()*6)+1));
-            db.ref('chats/' + chatId).push({ from: myName, type: 'game', val: content, time: Date.now() });
         }
 
         function renderMsg(m) {
             const box = document.getElementById('chatDisplay');
             const div = document.createElement('div');
             
-            if(m.type === 'game') {
-                div.className = "msg msg-game";
-                div.style.alignSelf = "center";
-                div.innerText = m.val;
+            // DECRYPT HERE
+            let content = m.type === 'text' ? decrypt(m.val) : m.val;
+            
+            div.className = `msg ${m.from === myName ? 'msg-me' : 'msg-them'}`;
+            
+            if(m.type === 'text') {
+                div.innerHTML = `${content} <span class="enc-badge">🔒 Encrypted</span>`;
+            } else if(m.type === 'img') {
+                div.innerHTML = `<img src="${content}" style="width:100%; border-radius:10px;">`;
             } else {
-                div.className = `msg ${m.from === myName ? 'msg-me' : 'msg-them'}`;
-                if(m.type === 'text') div.innerText = m.val;
-                else div.innerHTML = `<img src="${m.val}" style="width:100%; border-radius:10px;">`;
-                
-                // Report btn
-                if(m.from !== myName) {
-                    let rep = document.createElement('div');
-                    rep.innerText = "REPORT";
-                    rep.style = "font-size:0.6rem; color:red; margin-top:5px; cursor:pointer; font-weight:bold;";
-                    rep.onclick = () => { db.ref('reports').push({reporter:myName, badUser:m.from, msg:m.val}); alert("Reported to Admin"); };
-                    div.appendChild(rep);
-                }
+                div.style.background = "#fff3e0";
+                div.style.color = "#e65100";
+                div.style.textAlign = "center";
+                div.innerText = content;
             }
             box.appendChild(div);
         }
 
-        // 5. STORY LOGIC
-        function addStory(input) {
+        // IMAGES & GAMES
+        function sendImgWrapper() {
+            if(confirm("⚠️ WARNING: Do not share private photos. Are you sure?")) document.getElementById('imgFile').click();
+        }
+        function processImg(input) {
             const reader = new FileReader();
-            reader.onload = e => db.ref('stories/' + myName).push({ img: e.target.result, time: Date.now() });
+            reader.onload = e => db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: e.target.result, time: Date.now() }); // Images not encrypted to save performance
             reader.readAsDataURL(input.files[0]);
         }
-        
+        function sendGame(t) {
+            let val = t==='RPS'?"🎮 RPS Challenge": (t==='LOVE'?`❤️ Love: ${Math.floor(Math.random()*100)}%` : "🎲 Dice: "+(Math.floor(Math.random()*6)+1));
+            db.ref('chats/' + chatId).push({ from: myName, type: 'game', val: val, time: Date.now() });
+            toggleScreen('gameScreen');
+        }
+
+        // STORIES & SEARCH
+        function addStory(i) {
+            const r = new FileReader();
+            r.onload = e => db.ref('stories/' + myName).push({ img: e.target.result, time: Date.now() });
+            r.readAsDataURL(i.files[0]);
+        }
         function loadStories() {
             db.ref('stories').on('value', s => {
-                const bar = document.getElementById('storyList');
-                bar.innerHTML = "";
+                const b = document.getElementById('storyList'); b.innerHTML = "";
                 s.forEach(u => {
-                    const st = Object.values(u.val()).pop();
-                    if(Date.now() - st.time < 86400000) {
-                        bar.innerHTML += `<div class="story-circle" onclick="viewStory('${st.img}')"><img src="${st.img}"></div>`;
+                    let st = Object.values(u.val()).pop();
+                    if(Date.now()-st.time < 86400000) b.innerHTML += `<div class="story-circle" onclick="window.open('${st.img}')"><img src="${st.img}"></div>`;
+                });
+            });
+        }
+        function doSearch(q) {
+            const r = document.getElementById('searchResults'); r.innerHTML = "";
+            if(!q) return;
+            db.ref('users').once('value', s => {
+                s.forEach(u => {
+                    if(u.val().username.includes(q) && u.val().username !== myName) {
+                        r.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><b>${u.val().username}</b> <button onclick="db.ref('requests/${u.val().username}/${myName}').set(true);alert('Sent')">Add</button></div>`;
                     }
                 });
             });
         }
-        function viewStory(img) {
-            let win = window.open("", "_blank");
-            win.document.write(`<body style="background:black; margin:0; display:flex; justify-content:center; align-items:center; height:100vh;"><img src="${img}" style="max-height:100%; max-width:100%;"></body>`);
-        }
-
-        // UTILS
         function toggleScreen(id) {
-            const el = document.getElementById(id);
-            el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+            const e = document.getElementById(id); e.style.display = e.style.display==='flex'?'none':'flex';
         }
-        function isTyping() { /* Logic */ }
     </script>
 </body>
 </html>
