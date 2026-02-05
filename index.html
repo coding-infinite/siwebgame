@@ -3,91 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Chat Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <title>Neon Pro | Global Messenger</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <style>
-        :root { --primary: #007bff; --bg: #f4f7f6; --online: #2ed573; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background: var(--bg); font-family: 'Poppins', sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        :root {
+            --primary: #007bff;
+            --neon: #00d4ff;
+            --bg: #f0f2f5;
+            --white: #ffffff;
+            --danger: #ff4757;
+            --success: #2ed573;
+            --glass: rgba(255, 255, 255, 0.8);
+        }
 
-        /* LOBBY SCREENS */
-        .overlay { position: fixed; inset: 0; background: white; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .card { background: white; width: 100%; max-width: 380px; padding: 30px; border-radius: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); text-align: center; }
-        .logo { font-family: 'Orbitron'; color: var(--primary); font-size: 2.2rem; margin-bottom: 10px; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 15px; border: 1.5px solid #eee; background: #f9f9f9; font-size: 1rem; }
-        .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; background: var(--primary); color: white; font-weight: bold; cursor: pointer; }
+        /* RESET & BASE */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+        body { 
+            background: var(--bg); 
+            font-family: 'Poppins', sans-serif; 
+            margin: 0; 
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+        }
 
-        /* MAIN APP */
-        #mainApp { display: none; flex-direction: column; height: 100vh; background: #fff; }
-        header { padding: 15px 20px; display: flex; align-items: center; gap: 15px; background: white; border-bottom: 1px solid #f0f0f0; }
-        
-        /* SEARCH SYSTEM */
-        .search-container { position: relative; flex: 1; }
-        #suggestionBox { position: absolute; top: 55px; left: 0; right: 0; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1000; display: none; max-height: 250px; overflow-y: auto; }
-        .s-item { padding: 12px 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; border-bottom: 1px solid #f9f9f9; transition: 0.2s; }
+        /* ---------------- AUTH SCREEN ---------------- */
+        #authScreen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #007bff, #00d4ff);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-card {
+            background: var(--white);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: slideUp 0.6s ease;
+        }
+        .auth-card h1 { font-family: 'Orbitron'; color: var(--primary); font-size: 2.2rem; margin: 0; }
+        .auth-card p { color: #666; margin-bottom: 30px; }
+        .auth-card input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 15px;
+            border: 1.5px solid #eee;
+            background: #f9f9f9;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        .auth-card input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,123,255,0.1); }
+        .btn-auth {
+            width: 100%;
+            padding: 16px;
+            border-radius: 15px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin-top: 10px;
+            box-shadow: 0 10px 20px rgba(0,123,255,0.3);
+        }
+
+        /* ---------------- HEADER ---------------- */
+        header {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .brand { font-family: 'Orbitron'; color: var(--primary); font-size: 1.4rem; }
+        .search-area { position: relative; flex: 1; margin: 0 15px; max-width: 400px; }
+        .search-area input {
+            width: 100%;
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 1px solid #eee;
+            background: #f1f3f5;
+            font-size: 0.9rem;
+        }
+        #suggestionBox {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 500;
+        }
+        .s-item {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f9f9f9;
+        }
         .s-item:hover { background: #f0f7ff; }
-        .s-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
 
-        /* CHAT BOX */
-        #chatBox { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: #f8f9fa; }
-        .msg { max-width: 75%; padding: 12px 18px; border-radius: 20px; font-size: 0.95rem; position: relative; animation: pop 0.3s ease; }
-        .msg-me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-        .msg-them { align-self: flex-start; background: white; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .msg-img { width: 100%; border-radius: 12px; margin-top: 5px; }
+        /* ---------------- CHAT LAYOUT ---------------- */
+        #mainApp { display: none; height: 100vh; flex-direction: column; }
+        .content-body { flex: 1; display: flex; position: relative; overflow: hidden; }
 
-        /* INPUT AREA */
-        .input-bar { padding: 15px 20px; display: flex; align-items: center; gap: 12px; background: white; border-top: 1px solid #f0f0f0; padding-bottom: 75px; }
-        .icon-btn { font-size: 1.6rem; cursor: pointer; color: #777; }
-        #msgIn { flex: 1; padding: 12px 20px; border-radius: 30px; border: 1.5px solid #eee; background: #f9f9f9; }
+        /* SIDEBAR (MULTIPLE CHATS) */
+        #sidebar {
+            width: 70px;
+            background: white;
+            border-right: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 0;
+            gap: 15px;
+            overflow-y: auto;
+        }
+        .active-user {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2.5px solid var(--primary);
+            cursor: pointer;
+            position: relative;
+            transition: 0.3s;
+        }
+        .active-user:hover { transform: scale(1.1); }
+        .notif-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 3px 6px;
+            border-radius: 10px;
+            border: 2px solid white;
+        }
 
-        @keyframes pop { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
+        /* CHAT WINDOW */
+        #chatBox {
+            flex: 1;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 15px;
+            overflow-y: auto;
+            padding-bottom: 150px; /* Space for input + ads */
+        }
+        .message {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        .msg-me {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,123,255,0.2);
+        }
+        .msg-them {
+            align-self: flex-start;
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .msg-img { width: 100%; border-radius: 12px; margin-top: 8px; }
+        .report-tag {
+            font-size: 0.65rem;
+            color: var(--danger);
+            font-weight: bold;
+            margin-top: 5px;
+            cursor: pointer;
+            opacity: 0.5;
+            text-align: right;
+        }
+        .report-tag:hover { opacity: 1; }
+
+        /* ---------------- INPUT & ADS ---------------- */
+        .bottom-controls {
+            position: fixed;
+            bottom: 60px;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-top: 1px solid #eee;
+            z-index: 200;
+        }
+        .media-btn { font-size: 1.6rem; color: #777; cursor: pointer; }
+        #msgIn {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 30px;
+            border: 1.5px solid #eee;
+            background: #f9f9f9;
+            transition: 0.3s;
+        }
+        #msgIn:focus { background: white; border-color: var(--primary); }
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+
+        #ad-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: var(--white);
+            z-index: 1000;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ANIMATIONS */
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .hidden { display: none !important; }
-        #ad-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #fff; z-index: 2000; display: flex; justify-content: center; align-items: center; border-top: 1px solid #eee; }
+
     </style>
 </head>
 <body>
 
-    <div id="authScreen" class="overlay">
-        <div class="card">
-            <div class="logo">NEON CHAT</div>
-            <p style="color:#888">Search, Connect & Chat</p>
+    <div id="authScreen">
+        <div class="auth-card">
+            <h1>NEON PRO</h1>
+            <p>Next Generation Messaging</p>
             <input type="text" id="userIn" placeholder="Choose Username">
-            <input type="password" id="passIn" placeholder="Password">
-            <button class="btn" onclick="showProfileSetup()">NEXT</button>
-        </div>
-    </div>
-
-    <div id="profileScreen" class="overlay hidden">
-        <div class="card">
-            <h2 style="font-family:'Orbitron'">SET DP</h2>
-            <div style="width:110px; height:110px; border-radius:50%; border:3px solid var(--primary); margin:0 auto 20px; overflow:hidden;" onclick="document.getElementById('dpIn').click()">
-                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=neon" id="dpPreview" style="width:100%; height:100%; object-fit:cover;">
-            </div>
-            <input type="file" id="dpIn" hidden accept="image/*" onchange="previewDP(this)">
-            <input type="text" id="bioIn" placeholder="Your Bio...">
-            <button class="btn" onclick="finishSetup()">START CHATTING</button>
+            <input type="password" id="passIn" placeholder="Set Secret Password">
+            <button class="btn-auth" onclick="handleLogin()">GET STARTED</button>
+            <div style="font-size: 0.7rem; color: #999; margin-top: 20px;">By joining, you agree to our safety guidelines.</div>
         </div>
     </div>
 
     <div id="mainApp">
         <header>
-            <div class="logo" style="font-size:1.2rem;">NEON</div>
-            <div class="search-container">
-                <input type="text" id="searchBar" placeholder="Search friends by name..." oninput="findUsers(this.value)">
+            <div class="brand">NEON</div>
+            <div class="search-area">
+                <input type="text" id="searchBar" placeholder="Search profile by name..." oninput="findUsers(this.value)">
                 <div id="suggestionBox"></div>
             </div>
-            <img id="myTopDp" src="" style="width:38px; height:38px; border-radius:50%; border:2px solid var(--primary);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="myTag" style="font-size: 0.75rem; font-weight: 600;"></span>
+                <img id="myTopDp" src="" style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--primary);">
+            </div>
         </header>
 
-        <div id="chatBox">
-            <div style="text-align:center; color:#bbb; margin-top:50px;">Search a name to start talking!</div>
+        <div class="content-body">
+            <div id="sidebar">
+                <div style="font-size: 0.6rem; color: #bbb; text-align: center;">RECENT</div>
+            </div>
+
+            <div id="chatBox">
+                <div style="text-align: center; color: #ccc; margin-top: 100px;">
+                    <h2 style="font-family: Orbitron;">WELCOME</h2>
+                    <p>Search a friend to start a private conversation</p>
+                </div>
+            </div>
         </div>
 
-        <div class="input-bar">
-            <span class="icon-btn" onclick="document.getElementById('imgIn').click()">🖼️</span>
-            <input type="file" id="imgIn" hidden accept="image/*" onchange="sendPhoto(this)">
-            <input type="text" id="msgIn" placeholder="Type message...">
-            <button class="btn" style="width:60px; padding:10px;" onclick="sendText()">➤</button>
+        <div class="bottom-controls">
+            <span class="media-btn" onclick="document.getElementById('imgIn').click()">🖼️</span>
+            <input type="file" id="imgIn" hidden accept="image/*" onchange="sendImage(this)">
+            <input type="text" id="msgIn" placeholder="Type a message...">
+            <button class="send-btn" onclick="sendText()">➤</button>
         </div>
     </div>
 
@@ -102,7 +325,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        // ✅ PURANA CONFIG
+        // ✅ SECURE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
             authDomain: "neon-game-hub.firebaseapp.com",
@@ -115,106 +338,178 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let myName, myDp, partner;
+        let myName, myIp, partner, currentChatId;
 
-        // AUTH & PROFILE
-        function showProfileSetup() {
-            myName = document.getElementById('userIn').value.trim();
-            if(!myName) return alert("Enter Name!");
+        // Get User IP for Logs
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => myIp = d.ip);
+
+        // LOGIN SYSTEM
+        function handleLogin() {
+            myName = document.getElementById('userIn').value.trim().toLowerCase();
+            let pass = document.getElementById('passIn').value.trim();
+
+            if (!myName || !pass) return alert("All fields are mandatory!");
+
+            db.ref('users/' + myName).once('value', snap => {
+                let user = snap.val();
+                if (user && user.pass !== pass) return alert("Access Denied: Incorrect Password!");
+
+                if (!user) {
+                    db.ref('users/' + myName).set({
+                        username: myName,
+                        pass: pass,
+                        ip: myIp,
+                        dp: "https://api.dicebear.com/7.x/bottts/svg?seed=" + myName,
+                        created: Date.now()
+                    });
+                }
+                
+                initApp();
+            });
+        }
+
+        function initApp() {
             document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('profileScreen').classList.remove('hidden');
-        }
-
-        function previewDP(input) {
-            const reader = new FileReader();
-            reader.onload = e => { 
-                document.getElementById('dpPreview').src = e.target.result;
-                myDp = e.target.result;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-
-        function finishSetup() {
-            document.getElementById('profileScreen').classList.add('hidden');
             document.getElementById('mainApp').style.display = 'flex';
-            const finalDp = myDp || "https://api.dicebear.com/7.x/bottts/svg?seed="+myName;
-            document.getElementById('myTopDp').src = finalDp;
+            document.getElementById('myTag').innerText = "@" + myName;
+            document.getElementById('myTopDp').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + myName;
             
-            // Register Global User
-            db.ref('users/' + myName).set({ username: myName, dp: finalDp });
+            listenForNotifs();
         }
 
-        // --- SEARCH & CONNECT LOGIC ---
-        function findUsers(query) {
+        // SEARCH LOGIC
+        function findUsers(q) {
             const box = document.getElementById('suggestionBox');
-            if(!query) { box.style.display = 'none'; return; }
+            if (!q) { box.style.display = 'none'; return; }
 
             db.ref('users').once('value', snap => {
                 box.innerHTML = "";
                 let found = false;
-                snap.forEach(child => {
-                    let user = child.val();
-                    if(user.username.toLowerCase().includes(query.toLowerCase()) && user.username !== myName) {
+                snap.forEach(c => {
+                    let u = c.val();
+                    if (u.username.includes(q.toLowerCase()) && u.username !== myName) {
                         found = true;
-                        const div = document.createElement('div');
-                        div.className = "s-item";
-                        div.innerHTML = `<img src="${user.dp}" class="s-avatar"><span>${user.username}</span>`;
-                        // Connect on Click
-                        div.onclick = () => connect(user.username);
-                        box.appendChild(div);
+                        const d = document.createElement('div');
+                        d.className = "s-item";
+                        d.innerHTML = `<img src="${u.dp}" style="width:35px; border-radius:50%;"> <strong>${u.username}</strong>`;
+                        d.onclick = () => connectChat(u.username);
+                        box.appendChild(d);
                     }
                 });
                 box.style.display = found ? 'block' : 'none';
             });
         }
 
-        function connect(name) {
-            partner = name;
-            document.getElementById('searchBar').value = name;
+        // CHAT CONNECTION
+        function connectChat(user) {
+            partner = user;
             document.getElementById('suggestionBox').style.display = 'none';
+            document.getElementById('searchBar').value = user;
             
-            // Load Private Chat
-            const chatId = [myName, partner].sort().join("_");
-            db.ref('chats/' + chatId).on('value', snap => render(snap.val()));
+            // Generate Unique Chat ID (Alphabetical order)
+            currentChatId = [myName, partner].sort().join("_");
+            
+            // Clear Notif
+            db.ref('notifications/' + myName + '/' + partner).remove();
+            
+            db.ref('chats/' + currentChatId).on('value', snap => {
+                renderMessages(snap.val());
+            });
         }
 
-        // MESSAGING
+        // SENDING LOGIC
         function sendText() {
             const val = document.getElementById('msgIn').value.trim();
-            if(!val || !partner) return;
-            push({ from: myName, type: 'text', val: val });
+            if (!val || !partner) return;
+
+            const msgData = {
+                from: myName,
+                type: 'text',
+                content: val,
+                timestamp: Date.now()
+            };
+
+            db.ref('chats/' + currentChatId).push(msgData);
+            sendNotification();
             document.getElementById('msgIn').value = "";
         }
 
-        function sendPhoto(input) {
+        function sendImage(input) {
+            if (!input.files[0] || !partner) return;
             const reader = new FileReader();
-            reader.onload = e => push({ from: myName, type: 'img', val: e.target.result });
+            reader.onload = e => {
+                const msgData = { from: myName, type: 'img', content: e.target.result, timestamp: Date.now() };
+                db.ref('chats/' + currentChatId).push(msgData);
+                sendNotification();
+            };
             reader.readAsDataURL(input.files[0]);
         }
 
-        function push(data) {
-            const chatId = [myName, partner].sort().join("_");
-            db.ref('chats/' + chatId).push(data);
+        function sendNotification() {
+            db.ref('notifications/' + partner + '/' + myName).set({
+                lastMsg: "New Message",
+                time: Date.now()
+            });
         }
 
-        function render(data) {
+        // RENDERING & NOTIFS
+        function renderMessages(data) {
             const box = document.getElementById('chatBox');
             box.innerHTML = "";
-            if(!data) {
-                box.innerHTML = `<div style="text-align:center; color:#bbb; margin-top:20px;">Say Hi to ${partner}! 👋</div>`;
-                return;
-            }
+            if (!data) return;
+
             Object.values(data).forEach(m => {
                 const div = document.createElement('div');
-                div.className = `msg ${m.from === myName ? 'msg-me' : 'msg-them'}`;
-                if(m.type === 'text') div.innerText = m.val;
-                else div.innerHTML = `<img src="${m.val}" class="msg-img">`;
+                div.className = `message ${m.from === myName ? 'msg-me' : 'msg-them'}`;
+                
+                if (m.type === 'text') div.innerText = m.content;
+                else div.innerHTML = `<img src="${m.content}" class="msg-img">`;
+
+                const report = document.createElement('div');
+                report.className = "report-tag";
+                report.innerText = "REPORT CONTENT";
+                report.onclick = () => handleReport(m.from, m.content);
+                div.appendChild(report);
+
                 box.appendChild(div);
             });
             box.scrollTop = box.scrollHeight;
         }
 
-        document.getElementById('msgIn').addEventListener("keypress", e => { if(e.key === "Enter") sendText(); });
+        function listenForNotifs() {
+            db.ref('notifications/' + myName).on('value', snap => {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.innerHTML = `<div style="font-size: 0.6rem; color: #bbb; text-align: center;">RECENT</div>`;
+                
+                snap.forEach(c => {
+                    const d = document.createElement('div');
+                    d.className = "active-user";
+                    d.innerHTML = `
+                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${c.key}" style="width:100%; border-radius:50%;">
+                        <div class="notif-badge">!</div>
+                    `;
+                    d.onclick = () => connectChat(c.key);
+                    sidebar.appendChild(d);
+                });
+            });
+        }
+
+        // SECURITY REPORT SYSTEM
+        function handleReport(badUser, context) {
+            if (confirm("Do you want to report this user for harassment?")) {
+                db.ref('admin_reports').push({
+                    reported_user: badUser,
+                    reporter: myName,
+                    reporter_ip: myIp,
+                    evidence: context,
+                    timestamp: new Date().toLocaleString()
+                });
+                alert("Report submitted. Our team will investigate the IP logs.");
+            }
+        }
+
+        document.getElementById('msgIn').addEventListener("keypress", e => { if (e.key === "Enter") sendText(); });
+
     </script>
 </body>
 </html>
