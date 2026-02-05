@@ -27,11 +27,11 @@
             padding: 0;
             height: 100vh;
             width: 100vw;
-            overflow: hidden; /* Screen ko jamane ke liye */
+            overflow: hidden;
             position: fixed;
         }
 
-        /* --- TOP SCOREBOARD --- */
+        /* SCOREBOARD */
         #scoreboard {
             position: absolute; top: 0; left: 0; width: 100%;
             height: 70px;
@@ -47,12 +47,13 @@
         .score-num { color: var(--neon-blue); font-size: 1.5rem; line-height: 1.2; }
         .score-label { font-size: 0.7rem; opacity: 0.7; letter-spacing: 1px; }
 
-        /* --- LOBBY UI --- */
+        /* LOBBY UI */
         .center-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
             z-index: 10;
             background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+            padding-bottom: 60px; /* Ad space fix */
         }
 
         .card {
@@ -88,12 +89,12 @@
         }
         input:focus { border-color: var(--neon-blue); }
 
-        /* --- GAME PLAY AREA --- */
+        /* GAME AREA */
         #gameArea {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: none; flex-direction: column; justify-content: center; align-items: center;
             z-index: 15;
-            transition: background-color 0.2s;
+            padding-bottom: 60px; /* Ad space fix */
         }
 
         .status-text { 
@@ -106,7 +107,17 @@
             opacity: 0.8; pointer-events: none; padding: 0 20px;
         }
 
-        /* --- COLORS & STATES --- */
+        /* ADVERTISEMENT BAR */
+        #ad-container {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%; height: 60px;
+            background-color: #000;
+            z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            border-top: 1px solid #333;
+        }
+
+        /* STATES */
         .bg-waiting { background: #000; }
         .bg-go { background: var(--neon-green); }
         .bg-early { background: var(--neon-red); }
@@ -116,12 +127,12 @@
         .pulse { animation: pulse 1s infinite; }
         @keyframes pulse { 50% { opacity: 0.5; } }
 
-        /* --- FINAL RESULT SCREEN --- */
         #finalScreen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 30;
             flex-direction: column; justify-content: center; align-items: center;
             padding: 20px; text-align: center;
+            padding-bottom: 80px; /* Ad space fix */
         }
         
         .hidden { display: none !important; }
@@ -178,13 +189,26 @@
         <button class="btn btn-create" style="max-width:250px;" onclick="requestRematch()">PLAY AGAIN 🔄</button>
     </div>
 
+    <div id="ad-container">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : '697d465f55b34630746380bf6791eb54',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="https://www.highperformanceformat.com/697d465f55b34630746380bf6791eb54/invoke.js"></script>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        // ======================================================
-        // ✅ AAPKA ACTUAL CONFIG CODE (MAINE INSERT KAR DIYA)
-        // ======================================================
+        // ===========================================
+        // ✅ YOUR FIREBASE CONFIG (INTEGRATED)
+        // ===========================================
         const firebaseConfig = {
             apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
             authDomain: "neon-game-hub.firebaseapp.com",
@@ -195,14 +219,15 @@
             appId: "1:636141968933:web:60c7cc21d75883ef08a9cc",
             measurementId: "G-78MZSKLPF9"
         };
-        // ======================================================
+        // ===========================================
 
         // Initialize Firebase
         try {
             firebase.initializeApp(firebaseConfig);
+            // Analytics is loaded but not used in logic to avoid errors
         } catch (e) {
-            console.error("Firebase Init Error:", e);
-            alert("Error: Firebase Init Failed! " + e.message);
+            console.error("Firebase Error:", e);
+            alert("Firebase connect nahi hua. Config check karein.");
         }
         const db = firebase.database();
 
@@ -210,14 +235,12 @@
         let myId = Math.random().toString(36).substr(2, 6);
         let isHost = false;
         let gameMode = "online"; 
-        
         let currentRound = 1;
         let myScore = 0;
         let oppScore = 0;
         let state = "lobby"; 
         let localTimers = [];
 
-        // Auto-join from URL
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('room')) {
@@ -225,29 +248,21 @@
             }
         };
 
-        // --- LOCAL GAME (VS AI) ---
+        // --- LOCAL GAME ---
         function startLocalGame() {
-            gameMode = "local";
-            setupGameUI();
-            startLocalRound();
+            gameMode = "local"; setupGameUI(); startLocalRound();
         }
-
         function startLocalRound() {
             if (currentRound > 5) return showFinalScreen();
-            
             resetRoundUI(); 
             const delay = Math.floor(Math.random() * 3000) + 2000;
-            
             localTimers.push(setTimeout(() => {
                 if (state !== "waiting") return;
                 setScreen("go");
-                
-                // AI Logic (Random speed 200ms - 500ms)
                 const reaction = Math.floor(Math.random() * 300) + 200;
                 localTimers.push(setTimeout(() => {
                     if (state === "go") handleRoundEnd("computer");
                 }, reaction));
-
             }, delay));
         }
 
@@ -260,17 +275,13 @@
             document.getElementById("qrcode").innerHTML = "";
             new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 120, height: 120 });
 
-            db.ref('reflex/' + roomId).set({ 
-                status: "waiting_for_player", 
-                round: 1,
-                winner: ""
-            });
+            db.ref('reflex/' + roomId).set({ status: "waiting_for_player", round: 1, winner: "" });
             isHost = true;
             
             document.getElementById('lobby').classList.add('hidden');
-            document.getElementById('lobby').classList.remove('hidden'); // Show container
-            document.getElementById('mainMenu').classList.add('hidden'); // Hide menu
-            document.getElementById('waitingUi').classList.remove('hidden'); // Show waiting
+            document.getElementById('lobby').classList.remove('hidden'); 
+            document.getElementById('mainMenu').classList.add('hidden'); 
+            document.getElementById('waitingUi').classList.remove('hidden'); 
             document.getElementById('roomCodeDisplay').innerText = roomId;
 
             waitForOpponent();
@@ -280,8 +291,7 @@
             gameMode = "online";
             roomId = document.getElementById('roomInput').value.toUpperCase().trim();
             if (!roomId) return alert("Please enter a Room Code!");
-
-            // Check if room exists first
+            
             db.ref('reflex/' + roomId).once('value', snap => {
                 if (snap.exists()) {
                     db.ref('reflex/' + roomId).update({ status: "ready" });
@@ -291,7 +301,7 @@
                     alert("❌ Invalid Code! Room nahi mila.");
                 }
             }).catch(err => {
-                alert("Connection Error: Internet ya Rules check karein.");
+                alert("Connection Error. Check internet/rules.");
             });
         }
 
@@ -300,8 +310,7 @@
                 const data = snap.val();
                 if (data && data.status === "ready") {
                     db.ref('reflex/' + roomId).off('value', listener);
-                    setupGameUI();
-                    listenForUpdates();
+                    setupGameUI(); listenForUpdates();
                     if (isHost) startOnlineRound();
                 }
             });
@@ -309,16 +318,11 @@
 
         function startOnlineRound() {
             if (currentRound > 5) return;
-            
             db.ref('reflex/' + roomId).update({ winner: "", status: "waiting" });
-
             const delay = Math.floor(Math.random() * 4000) + 2000;
             setTimeout(() => {
                 db.ref('reflex/' + roomId).once('value', s => {
-                    // Only start if still waiting (no early clicks)
-                    if(s.val().status === 'waiting') {
-                        db.ref('reflex/' + roomId).update({ status: "GO" });
-                    }
+                    if(s.val().status === 'waiting') db.ref('reflex/' + roomId).update({ status: "GO" });
                 });
             }, delay);
         }
@@ -327,71 +331,41 @@
             db.ref('reflex/' + roomId).on('value', snap => {
                 const data = snap.val();
                 if (!data) return;
-
-                if (data.status === "waiting" && state !== "waiting") {
-                     resetRoundUI();
-                }
-
-                if (data.status === "restart") {
-                     location.reload();
-                     return;
-                }
-
-                if (data.status === "GO" && state === "waiting") {
-                    setScreen("go");
-                }
-
-                if (data.winner && state !== "round_end") {
-                    handleRoundEnd(data.winner);
-                }
+                
+                if (data.status === "waiting" && state !== "waiting") resetRoundUI();
+                if (data.status === "restart") { location.reload(); return; }
+                if (data.status === "GO" && state === "waiting") setScreen("go");
+                if (data.winner && state !== "round_end") handleRoundEnd(data.winner);
             });
         }
 
-        // --- GAME INTERACTION ---
+        // --- GAMEPLAY ---
         function handleTap() {
             if (state === "waiting") {
-                // FALSE START
-                if (gameMode === "local") {
-                    handleRoundEnd("computer"); 
-                } else {
-                    db.ref('reflex/' + roomId).update({ winner: "OPPONENT_FORCE_WIN" });
-                }
+                if (gameMode === "local") handleRoundEnd("computer"); 
+                else db.ref('reflex/' + roomId).update({ winner: "OPPONENT_FORCE_WIN" });
             } else if (state === "go") {
-                // FAIR CLICK
-                if (gameMode === "local") {
-                    handleRoundEnd(myId);
-                } else {
-                    db.ref('reflex/' + roomId).transaction(curr => {
-                        return (curr && !curr.winner) ? { ...curr, winner: myId } : undefined;
-                    });
-                }
+                if (gameMode === "local") handleRoundEnd(myId);
+                else db.ref('reflex/' + roomId).transaction(curr => {
+                    return (curr && !curr.winner) ? { ...curr, winner: myId } : undefined;
+                });
             }
         }
 
         function handleRoundEnd(winnerId) {
             state = "round_end";
             localTimers.forEach(t => clearTimeout(t)); 
-
-            let msg = "";
-            let isWin = false;
-
-            if (winnerId === myId) {
-                myScore++; isWin = true; msg = "WON!";
-            } else if (winnerId === "OPPONENT_FORCE_WIN") {
-                oppScore++; isWin = false; msg = "LOST";
-            } else {
-                oppScore++; isWin = false; msg = "LOST";
-            }
-
-            // Update UI
+            
+            let msg = ""; let isWin = false;
+            if (winnerId === myId) { myScore++; isWin = true; msg = "WON!"; } 
+            else { oppScore++; isWin = false; msg = "LOST"; }
+            
             document.getElementById('scoreMy').innerText = myScore;
             document.getElementById('scoreOpp').innerText = oppScore;
             setScreen(isWin ? "win" : "lose", msg);
-
-            // Next Round Logic
-            if (currentRound >= 5) {
-                setTimeout(showFinalScreen, 2000);
-            } else {
+            
+            if (currentRound >= 5) { setTimeout(showFinalScreen, 2000); } 
+            else {
                 currentRound++;
                 setTimeout(() => {
                     document.getElementById('roundDisplay').innerText = currentRound;
@@ -405,33 +379,23 @@
             const area = document.getElementById('gameArea');
             const txt = document.getElementById('gameMessage');
             const sub = document.getElementById('gameSubtext');
-            
-            area.className = "";
-            area.classList.add("bg-" + type);
+            area.className = ""; area.classList.add("bg-" + type);
             
             if (type === "waiting") {
-                state = "waiting";
-                txt.innerText = "WAIT";
-                sub.innerText = "Round " + currentRound + "/5";
+                state = "waiting"; txt.innerText = "WAIT"; sub.innerText = "Round " + currentRound + "/5";
             } else if (type === "go") {
-                state = "go";
-                txt.innerText = "TAP!";
-                sub.innerText = "";
-                navigator.vibrate?.(200);
+                state = "go"; txt.innerText = "TAP!"; sub.innerText = ""; navigator.vibrate?.(200);
             } else {
-                txt.innerText = text || "";
-                sub.innerText = "Next round soon...";
+                txt.innerText = text || ""; sub.innerText = "Next round soon...";
             }
         }
 
-        function resetRoundUI() {
-            setScreen("waiting");
-        }
-
+        function resetRoundUI() { setScreen("waiting"); }
+        
         function setupGameUI() {
-            document.getElementById('lobby').classList.add('hidden'); 
-            document.getElementById('gameArea').style.display = 'flex'; 
-            document.getElementById('scoreboard').classList.remove('hidden'); 
+            document.getElementById('lobby').classList.add('hidden');
+            document.getElementById('gameArea').style.display = 'flex';
+            document.getElementById('scoreboard').classList.remove('hidden');
             resetRoundUI();
         }
 
@@ -441,25 +405,16 @@
             const screen = document.getElementById('finalScreen');
             screen.style.display = 'flex';
             
-            let resultText = "";
-            let color = "";
-            if (myScore > oppScore) {
-                resultText = "VICTORY 🏆"; color = "var(--neon-blue)";
-            } else {
-                resultText = "DEFEAT 💀"; color = "var(--neon-red)";
-            }
-            
-            const title = document.getElementById('finalTitle');
-            title.innerText = resultText;
-            title.style.color = color;
+            let resultText = myScore > oppScore ? "VICTORY 🏆" : "DEFEAT 💀";
+            let color = myScore > oppScore ? "var(--neon-blue)" : "var(--neon-red)";
+            document.getElementById('finalTitle').innerText = resultText;
+            document.getElementById('finalTitle').style.color = color;
             document.getElementById('finalScore').innerText = `Final Score: ${myScore} - ${oppScore}`;
         }
 
         function requestRematch() {
             if (gameMode === "local") location.reload();
-            else {
-                db.ref('reflex/' + roomId).update({ status: "restart" });
-            }
+            else db.ref('reflex/' + roomId).update({ status: "restart" });
         }
     </script>
 </body>
