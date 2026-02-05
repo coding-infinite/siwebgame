@@ -3,33 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Pro | Encrypted Chat</title>
+    <title>Neon Pro | Secure Chat</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <style>
-        :root { --primary: #007bff; --bg: #e5ddd5; --ad-h: 60px; }
+        :root { --primary: #007bff; --bg: #e5ddd5; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); font-family: 'Outfit', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
 
-        /* --- PROFESSIONAL LOGIN --- */
+        /* --- DANGER BAN SCREEN (RED) --- */
+        #banOverlay {
+            position: fixed; inset: 0; 
+            background: linear-gradient(135deg, #8b0000 0%, #1a0000 100%); /* Red to Black Gradient */
+            z-index: 99999; /* Sabse upar */
+            display: none; /* Default hidden */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+        .ban-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; animation: shake 0.5s infinite; }
+        .ban-title { font-family: 'Orbitron'; font-size: 2.5rem; color: #ff4444; margin-bottom: 10px; text-shadow: 0 0 10px #ff0000; }
+        .ban-msg { font-size: 1.1rem; opacity: 0.8; max-width: 300px; line-height: 1.5; }
+        
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        /* --- LOGIN & APP STYLES (SAME AS BEFORE) --- */
         #authLayer { position: fixed; inset: 0; background: white; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .auth-card { background: white; width: 100%; max-width: 380px; padding: 35px 25px; border-radius: 30px; box-shadow: 0 15px 45px rgba(0,0,0,0.1); text-align: center; border: 1px solid #f0f0f0; }
         .auth-card h1 { font-family: 'Orbitron'; color: var(--primary); font-size: 2rem; margin: 0; letter-spacing: 2px; }
-        
         .enc-badge { display: inline-flex; align-items: center; gap: 8px; background: #e3f2fd; color: #1976d2; padding: 8px 18px; border-radius: 50px; font-size: 0.7rem; font-weight: bold; margin: 15px 0; border: 1px solid #bbdefb; }
-
         .auth-card input { width: 100%; padding: 14px; margin-top: 10px; border-radius: 12px; border: 1.5px solid #eee; font-size: 1rem; }
         .btn-login { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 20px; cursor: pointer; }
 
-        /* --- APP HEADER --- */
         #appLayer { display: none; flex-direction: column; height: 100vh; }
         header { padding: 10px 15px; background: white; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; z-index: 1001; }
         .secure-tag { font-size: 0.65rem; color: #28a745; font-weight: bold; display: flex; align-items: center; gap: 4px; background: #f0fff4; padding: 4px 8px; border-radius: 20px; border: 1px solid #c6f6d5; }
 
-        /* --- CHAT AREA --- */
         #chatDisplay { 
             flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; 
             padding-bottom: 180px !important; 
@@ -38,32 +65,36 @@
             background-blend-mode: multiply;
         }
 
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
         .msg-me { align-self: flex-end; background: #dcf8c6; color: #303030; border-top-right-radius: 4px; }
         .msg-them { align-self: flex-start; background: white; color: #303030; border-top-left-radius: 4px; }
-        
         .report-link { font-size: 0.6rem; color: #ff5252; cursor: pointer; margin-top: 5px; display: block; text-align: right; text-decoration: underline; }
 
-        /* --- BOTTOM AREA --- */
         .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000; background: white; border-top: 1px solid #eee; }
         .input-bar { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: white; }
         #msgInput { flex: 1; padding: 12px 18px; border-radius: 30px; border: 1.5px solid #eee; background: #f1f3f4; font-size: 1rem; }
         .btn-send { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-
         #ad-box { height: 60px; width: 100%; display: flex; justify-content: center; align-items: center; }
         .overlay { position: fixed; inset: 0; background: white; z-index: 4000; display: none; flex-direction: column; padding: 25px; }
     </style>
 </head>
 <body>
 
+    <div id="banOverlay">
+        <i class="fas fa-ban ban-icon"></i>
+        <div class="ban-title">BLOCKED</div>
+        <p class="ban-msg">Your device has been permanently banned from this network due to policy violations.</p>
+        <div style="margin-top:30px; font-family:monospace; background:rgba(0,0,0,0.5); padding:10px; border-radius:5px;">ID: ACCESS_TERMINATED</div>
+    </div>
+
     <div id="authLayer">
         <div class="auth-card">
             <h1>NEON PRO</h1>
-            <div class="enc-badge"><i class="fas fa-lock"></i> END-TO-END ENCRYPTED</div>
+            <div class="enc-badge"><i class="fas fa-lock"></i> 100% E2EE ENCRYPTED</div>
             <input type="text" id="uName" placeholder="Username">
             <input type="password" id="uPass" placeholder="Password">
             <div style="font-size: 0.75rem; text-align: left; margin: 15px 0; color: #777;">
-                <label style="display:flex; gap:8px;"><input type="checkbox" id="legalCheck"> I accept all Terms & Conditions. My IP is logged for security purposes.</label>
+                <label style="display:flex; gap:8px;"><input type="checkbox" id="legalCheck"> I accept Terms. IP logged for security.</label>
             </div>
             <button class="btn-login" onclick="startLogin()">LOG IN</button>
         </div>
@@ -110,7 +141,6 @@
         <input type="text" style="width:100%; padding:15px; border-radius:12px; border:1px solid #eee; margin-top:10px;" placeholder="Search username..." oninput="doSearch(this.value)">
         <div id="searchResults" style="margin-top:20px;"></div>
     </div>
-
     <div id="gameScreen" class="overlay">
         <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Games</h2><i class="fas fa-times" onclick="toggleScreen('gameScreen')"></i></div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:20px;">
@@ -118,9 +148,8 @@
             <button onclick="playGame('RPS')" style="padding:25px; border-radius:15px; border:none; background:#f1f3f4; font-weight:bold;">✂️ PLAY RPS</button>
         </div>
     </div>
-
     <div id="requestScreen" class="overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Pending Requests</h2><i class="fas fa-times" onclick="toggleScreen('requestScreen')"></i></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Requests</h2><i class="fas fa-times" onclick="toggleScreen('requestScreen')"></i></div>
         <div id="requestList" style="margin-top:15px;"></div>
     </div>
 
@@ -142,19 +171,24 @@
 
         let myName, partner, chatId, myIp;
 
-        // IP CHECK FOR DEVICE BAN
+        // --- NEW BAN LOGIC WITH RED SCREEN ---
         fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { 
             myIp = d.ip; 
             db.ref('security/bans/' + myIp.replace(/\./g, '_')).once('value', s => {
-                if(s.exists()) { alert("DEVICE BLOCKED"); window.location.href = "about:blank"; }
+                if(s.exists()) { 
+                    // Agar Ban hai, to Red Screen dikhao
+                    document.getElementById('banOverlay').style.display = 'flex';
+                    // Login screen uda do
+                    document.getElementById('authLayer').remove();
+                }
             });
         });
 
         function getK() { return document.getElementById('topKey').value || "NEON_SAFE"; }
         function encrypt(t) { return CryptoJS.AES.encrypt(t, getK()).toString(); }
         function decrypt(c) { 
-            try { return CryptoJS.AES.decrypt(c, getK()).toString(CryptoJS.enc.Utf8) || "🔒 Encrypted Content"; } 
-            catch(e) { return "🔒 Locked Message"; }
+            try { return CryptoJS.AES.decrypt(c, getK()).toString(CryptoJS.enc.Utf8); } 
+            catch(e) { return ""; }
         }
 
         function startLogin() {
@@ -165,7 +199,7 @@
             
             db.ref('users/' + myName).once('value', s => {
                 if(s.exists() && s.val().pass !== p) return alert("Wrong pass");
-                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: p, ip: myIp });
+                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: p, ip: myIp, joinedAt: Date.now() });
                 document.getElementById('authLayer').style.display='none';
                 document.getElementById('appLayer').style.display='flex';
                 loadFriends();
@@ -173,6 +207,7 @@
             });
         }
 
+        // ... Load Friends, Open Chat logic same as before ... 
         function loadFriends() {
             db.ref('friends/' + myName).on('value', s => {
                 const bar = document.getElementById('friendSidebar'); bar.innerHTML = "";
@@ -200,17 +235,22 @@
                     let dat = m.val();
                     d.className = `msg ${dat.from === myName ? 'msg-me' : 'msg-them'}`;
                     
-                    if(dat.type === 'img') d.innerHTML = `<img src="${dat.val}" style="width:100%; border-radius:10px;">`;
-                    else d.innerText = decrypt(dat.val);
+                    if(dat.type === 'img') {
+                        let decryptedImg = decrypt(dat.val);
+                        if(decryptedImg) d.innerHTML = `<img src="${decryptedImg}" style="width:100%; border-radius:10px;">`;
+                        else d.innerHTML = `<div style="padding:10px; color:red; font-size:0.8rem;">🔒 Locked Image</div>`;
+                    } else {
+                        d.innerText = decrypt(dat.val) || "🔒 Encrypted Message";
+                    }
 
                     if(dat.from !== myName) {
                         let rep = document.createElement('span');
                         rep.className = "report-link";
-                        rep.innerHTML = "Report Message";
+                        rep.innerText = "Report";
                         rep.onclick = () => {
-                            if(confirm("Report this content?")) {
+                            if(confirm("Report to Admin?")) {
                                 db.ref('reports').push({ reporter: myName, user: dat.from, msg: dat.val, time: Date.now() });
-                                alert("Reported to Admin.");
+                                alert("Report Sent!");
                             }
                         };
                         d.appendChild(rep);
@@ -234,8 +274,17 @@
             toggleScreen('gameScreen');
         }
 
-        function toggleScreen(id) { let e = document.getElementById(id); e.style.display = e.style.display==='flex'?'none':'flex'; }
+        function processImg(i) {
+            const r = new FileReader();
+            r.onload = e => {
+                let secureImg = encrypt(e.target.result);
+                db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: secureImg, time: Date.now() });
+            };
+            r.readAsDataURL(i.files[0]);
+        }
         
+        // ... Toggle, Search, Requests logic same as before ...
+        function toggleScreen(id) { let e = document.getElementById(id); e.style.display = e.style.display==='flex'?'none':'flex'; }
         function doSearch(q) {
             const res = document.getElementById('searchResults'); res.innerHTML = "";
             db.ref('users').once('value', s => {
@@ -246,7 +295,6 @@
                 });
             });
         }
-
         function monitorRequests() {
             db.ref('requests/'+myName).on('value', s => {
                 let c = s.numChildren();
@@ -254,7 +302,6 @@
                 document.getElementById('reqBadge').style.display = c>0?'flex':'none';
             });
         }
-
         function openRequests() {
             toggleScreen('requestScreen');
             const list = document.getElementById('requestList');
@@ -265,18 +312,11 @@
                 });
             });
         }
-
         function accept(user) {
             db.ref('friends/'+myName+'/'+user).set(true);
             db.ref('friends/'+user+'/'+myName).set(true);
             db.ref('requests/'+myName+'/'+user).remove();
             openRequests();
-        }
-
-        function processImg(i) {
-            const r = new FileReader();
-            r.onload = e => db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: e.target.result, time: Date.now() });
-            r.readAsDataURL(i.files[0]);
         }
     </script>
 </body>
