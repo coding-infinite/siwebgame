@@ -3,49 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Pro | Secure Chat</title>
+    <title>Neon Pro | Professional Login</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <style>
-        :root { --primary: #007bff; --bg: #e5ddd5; }
+        :root { --primary: #007bff; --bg: #dcdcd5; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); font-family: 'Outfit', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
 
-        /* --- DANGER BAN SCREEN (RED) --- */
-        #banOverlay {
-            position: fixed; inset: 0; 
-            background: linear-gradient(135deg, #8b0000 0%, #1a0000 100%); /* Red to Black Gradient */
-            z-index: 99999; /* Sabse upar */
-            display: none; /* Default hidden */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
-            padding: 30px;
+        /* --- STYLISH TERMS POPUP (NEW) --- */
+        #termsModal {
+            position: fixed; inset: 0; z-index: 6000;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px); /* Glass Effect */
+            display: none; /* Hidden by default */
+            align-items: center; justify-content: center; padding: 20px;
+            animation: fadeIn 0.3s ease;
         }
-        .ban-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; animation: shake 0.5s infinite; }
-        .ban-title { font-family: 'Orbitron'; font-size: 2.5rem; color: #ff4444; margin-bottom: 10px; text-shadow: 0 0 10px #ff0000; }
-        .ban-msg { font-size: 1.1rem; opacity: 0.8; max-width: 300px; line-height: 1.5; }
         
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        .terms-card {
+            background: white; width: 100%; max-width: 350px;
+            border-radius: 25px; padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; gap: 15px;
+            transform: scale(0.9); animation: popUp 0.3s forwards;
         }
 
-        /* --- LOGIN & APP STYLES (SAME AS BEFORE) --- */
+        .terms-header { font-family: 'Orbitron'; color: var(--primary); font-size: 1.2rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 5px; }
+        .terms-body { max-height: 300px; overflow-y: auto; font-size: 0.85rem; color: #555; line-height: 1.6; text-align: left; }
+        .terms-body h4 { margin: 10px 0 5px 0; color: #333; }
+        .terms-body ul { padding-left: 20px; margin: 0; }
+        
+        .btn-agree { background: var(--primary); color: white; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-close { background: #eee; color: #333; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popUp { to { transform: scale(1); } }
+
+        /* --- LOGIN & APP STYLES --- */
         #authLayer { position: fixed; inset: 0; background: white; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .auth-card { background: white; width: 100%; max-width: 380px; padding: 35px 25px; border-radius: 30px; box-shadow: 0 15px 45px rgba(0,0,0,0.1); text-align: center; border: 1px solid #f0f0f0; }
         .auth-card h1 { font-family: 'Orbitron'; color: var(--primary); font-size: 2rem; margin: 0; letter-spacing: 2px; }
@@ -53,19 +51,24 @@
         .auth-card input { width: 100%; padding: 14px; margin-top: 10px; border-radius: 12px; border: 1.5px solid #eee; font-size: 1rem; }
         .btn-login { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 20px; cursor: pointer; }
 
+        /* --- DANGER BAN SCREEN --- */
+        #banOverlay {
+            position: fixed; inset: 0; 
+            background: linear-gradient(135deg, #8b0000 0%, #1a0000 100%);
+            z-index: 99999; display: none; flex-direction: column;
+            align-items: center; justify-content: center; color: white; text-align: center; padding: 30px;
+        }
+        .ban-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; animation: shake 0.5s infinite; }
+        .ban-title { font-family: 'Orbitron'; font-size: 2.5rem; color: #ff4444; margin-bottom: 10px; }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -2px); } }
+
+        /* --- APP UI --- */
         #appLayer { display: none; flex-direction: column; height: 100vh; }
         header { padding: 10px 15px; background: white; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; z-index: 1001; }
         .secure-tag { font-size: 0.65rem; color: #28a745; font-weight: bold; display: flex; align-items: center; gap: 4px; background: #f0fff4; padding: 4px 8px; border-radius: 20px; border: 1px solid #c6f6d5; }
 
-        #chatDisplay { 
-            flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; 
-            padding-bottom: 180px !important; 
-            background-color: var(--bg);
-            background-image: url("https://www.transparenttextures.com/patterns/cubes.png");
-            background-blend-mode: multiply;
-        }
-
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+        #chatDisplay { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 250px !important; background-color: #d8d4d0; background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); background-blend-mode: multiply; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; overflow: hidden; flex-shrink: 0; }
         .msg-me { align-self: flex-end; background: #dcf8c6; color: #303030; border-top-right-radius: 4px; }
         .msg-them { align-self: flex-start; background: white; color: #303030; border-top-left-radius: 4px; }
         .report-link { font-size: 0.6rem; color: #ff5252; cursor: pointer; margin-top: 5px; display: block; text-align: right; text-decoration: underline; }
@@ -80,11 +83,31 @@
 </head>
 <body>
 
+    <div id="termsModal">
+        <div class="terms-card">
+            <div class="terms-header"><i class="fas fa-file-contract"></i> TERMS OF SERVICE</div>
+            <div class="terms-body">
+                <h4>1. Privacy & Encryption</h4>
+                <p>Neon Pro uses End-to-End Encryption. We cannot see your messages. You are responsible for keeping your 'Key' safe.</p>
+                
+                <h4>2. Security Logging</h4>
+                <p>We log your <b>IP Address</b> and <b>Device ID</b> solely for security purposes to prevent abuse and spam.</p>
+                
+                <h4>3. User Conduct</h4>
+                <p>Zero tolerance for harassment, hate speech, or illegal content. Violation leads to an instant <b>Permanent Device Ban</b>.</p>
+                
+                <h4>4. Liability</h4>
+                <p>By using this app, you agree that the developers are not liable for any data loss or user interactions.</p>
+            </div>
+            <button class="btn-agree" onclick="agreeTerms()">I AGREE & CONTINUE</button>
+            <button class="btn-close" onclick="closeTerms()">CANCEL</button>
+        </div>
+    </div>
+
     <div id="banOverlay">
         <i class="fas fa-ban ban-icon"></i>
         <div class="ban-title">BLOCKED</div>
-        <p class="ban-msg">Your device has been permanently banned from this network due to policy violations.</p>
-        <div style="margin-top:30px; font-family:monospace; background:rgba(0,0,0,0.5); padding:10px; border-radius:5px;">ID: ACCESS_TERMINATED</div>
+        <p style="font-size:1.1rem; opacity:0.8;">Your device is permanently banned.</p>
     </div>
 
     <div id="authLayer">
@@ -93,9 +116,12 @@
             <div class="enc-badge"><i class="fas fa-lock"></i> 100% E2EE ENCRYPTED</div>
             <input type="text" id="uName" placeholder="Username">
             <input type="password" id="uPass" placeholder="Password">
-            <div style="font-size: 0.75rem; text-align: left; margin: 15px 0; color: #777;">
-                <label style="display:flex; gap:8px;"><input type="checkbox" id="legalCheck"> I accept Terms. IP logged for security.</label>
+            
+            <div style="font-size: 0.8rem; text-align: left; margin: 20px 0; color: #666; display: flex; gap: 8px; align-items: center;">
+                <input type="checkbox" id="legalCheck"> 
+                <span>I accept the <b style="color:var(--primary); text-decoration:underline; cursor:pointer;" onclick="showTerms()">Terms & Conditions</b></span>
             </div>
+            
             <button class="btn-login" onclick="startLogin()">LOG IN</button>
         </div>
     </div>
@@ -171,14 +197,21 @@
 
         let myName, partner, chatId, myIp;
 
-        // --- NEW BAN LOGIC WITH RED SCREEN ---
+        // --- TERMS POPUP LOGIC ---
+        function showTerms() { document.getElementById('termsModal').style.display = 'flex'; }
+        function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
+        
+        function agreeTerms() {
+            document.getElementById('legalCheck').checked = true; // Auto-check
+            closeTerms();
+        }
+
+        // BAN CHECK
         fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { 
             myIp = d.ip; 
             db.ref('security/bans/' + myIp.replace(/\./g, '_')).once('value', s => {
                 if(s.exists()) { 
-                    // Agar Ban hai, to Red Screen dikhao
                     document.getElementById('banOverlay').style.display = 'flex';
-                    // Login screen uda do
                     document.getElementById('authLayer').remove();
                 }
             });
@@ -186,13 +219,10 @@
 
         function getK() { return document.getElementById('topKey').value || "NEON_SAFE"; }
         function encrypt(t) { return CryptoJS.AES.encrypt(t, getK()).toString(); }
-        function decrypt(c) { 
-            try { return CryptoJS.AES.decrypt(c, getK()).toString(CryptoJS.enc.Utf8); } 
-            catch(e) { return ""; }
-        }
+        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, getK()).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } }
 
         function startLogin() {
-            if(!document.getElementById('legalCheck').checked) return alert("Accept terms!");
+            if(!document.getElementById('legalCheck').checked) return alert("Please accept Terms & Conditions!");
             myName = document.getElementById('uName').value.trim().toLowerCase();
             let p = document.getElementById('uPass').value.trim();
             if(!myName || p.length < 4) return alert("Invalid credentials");
@@ -206,118 +236,20 @@
                 monitorRequests();
             });
         }
-
-        // ... Load Friends, Open Chat logic same as before ... 
-        function loadFriends() {
-            db.ref('friends/' + myName).on('value', s => {
-                const bar = document.getElementById('friendSidebar'); bar.innerHTML = "";
-                s.forEach(f => {
-                    let d = document.createElement('div');
-                    d.style = "width:50px; height:50px; cursor:pointer;";
-                    d.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}" style="width:100%; border-radius:50%; border:2px solid transparent;" id="av-${f.key}">`;
-                    d.onclick = () => { 
-                        partner = f.key; 
-                        document.querySelectorAll('#friendSidebar img').forEach(i=>i.style.borderColor='transparent');
-                        document.getElementById('av-'+f.key).style.borderColor='#007bff';
-                        openChat(); 
-                    };
-                    bar.appendChild(d);
-                });
-            });
-        }
-
-        function openChat() {
-            chatId = [myName, partner].sort().join("_");
-            db.ref('chats/' + chatId).limitToLast(25).on('value', s => {
-                const box = document.getElementById('chatDisplay'); box.innerHTML = "";
-                s.forEach(m => {
-                    let d = document.createElement('div');
-                    let dat = m.val();
-                    d.className = `msg ${dat.from === myName ? 'msg-me' : 'msg-them'}`;
-                    
-                    if(dat.type === 'img') {
-                        let decryptedImg = decrypt(dat.val);
-                        if(decryptedImg) d.innerHTML = `<img src="${decryptedImg}" style="width:100%; border-radius:10px;">`;
-                        else d.innerHTML = `<div style="padding:10px; color:red; font-size:0.8rem;">🔒 Locked Image</div>`;
-                    } else {
-                        d.innerText = decrypt(dat.val) || "🔒 Encrypted Message";
-                    }
-
-                    if(dat.from !== myName) {
-                        let rep = document.createElement('span');
-                        rep.className = "report-link";
-                        rep.innerText = "Report";
-                        rep.onclick = () => {
-                            if(confirm("Report to Admin?")) {
-                                db.ref('reports').push({ reporter: myName, user: dat.from, msg: dat.val, time: Date.now() });
-                                alert("Report Sent!");
-                            }
-                        };
-                        d.appendChild(rep);
-                    }
-                    box.appendChild(d);
-                });
-                box.scrollTop = box.scrollHeight;
-            });
-        }
-
-        function sendTxt() {
-            let t = document.getElementById('msgInput').value.trim();
-            if(!t || !partner) return;
-            db.ref('chats/' + chatId).push({ from: myName, val: encrypt(t), time: Date.now() });
-            document.getElementById('msgInput').value = "";
-        }
-
-        function playGame(type) {
-            let res = (type === 'DICE') ? "🎲 Rolled: " + (Math.floor(Math.random()*6)+1) : "✂️ Chose Rock";
-            db.ref('chats/' + chatId).push({ from: myName, val: encrypt(res), time: Date.now() });
-            toggleScreen('gameScreen');
-        }
-
-        function processImg(i) {
-            const r = new FileReader();
-            r.onload = e => {
-                let secureImg = encrypt(e.target.result);
-                db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: secureImg, time: Date.now() });
-            };
-            r.readAsDataURL(i.files[0]);
-        }
         
-        // ... Toggle, Search, Requests logic same as before ...
+        // ... REST OF THE FUNCTIONS (SAME AS BEFORE) ...
+        function loadFriends() { db.ref('friends/' + myName).on('value', s => { const bar = document.getElementById('friendSidebar'); bar.innerHTML = ""; s.forEach(f => { let d = document.createElement('div'); d.style = "width:50px; height:50px; cursor:pointer;"; d.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}" style="width:100%; border-radius:50%; border:2px solid transparent;" id="av-${f.key}">`; d.onclick = () => { partner = f.key; document.querySelectorAll('#friendSidebar img').forEach(i=>i.style.borderColor='transparent'); document.getElementById('av-'+f.key).style.borderColor='#007bff'; openChat(); }; bar.appendChild(d); }); }); }
+        
+        function openChat() { chatId = [myName, partner].sort().join("_"); db.ref('chats/' + chatId).limitToLast(25).on('value', s => { const box = document.getElementById('chatDisplay'); box.innerHTML = ""; s.forEach(m => { let d = document.createElement('div'); let dat = m.val(); d.className = `msg ${dat.from === myName ? 'msg-me' : 'msg-them'}`; if(dat.type === 'img') { let decryptedImg = decrypt(dat.val); if(decryptedImg) d.innerHTML = `<img src="${decryptedImg}" style="width:100%; border-radius:10px;">`; else d.innerHTML = `<div style="padding:10px; color:red; font-size:0.8rem;">🔒 Locked Image</div>`; } else { d.innerText = decrypt(dat.val) || "🔒 Encrypted Message"; } if(dat.from !== myName) { let rep = document.createElement('span'); rep.className = "report-link"; rep.innerText = "Report"; rep.onclick = () => { if(confirm("Report to Admin?")) { db.ref('reports').push({ reporter: myName, user: dat.from, msg: dat.val, time: Date.now() }); alert("Report Sent!"); } }; d.appendChild(rep); } box.appendChild(d); }); box.scrollTop = box.scrollHeight; }); }
+        
+        function sendTxt() { let t = document.getElementById('msgInput').value.trim(); if(!t || !partner) return; db.ref('chats/' + chatId).push({ from: myName, val: encrypt(t), time: Date.now() }); document.getElementById('msgInput').value = ""; }
+        function playGame(type) { let res = (type === 'DICE') ? "🎲 Rolled: " + (Math.floor(Math.random()*6)+1) : "✂️ Chose Rock"; db.ref('chats/' + chatId).push({ from: myName, val: encrypt(res), time: Date.now() }); toggleScreen('gameScreen'); }
+        function processImg(i) { const r = new FileReader(); r.onload = e => { let secureImg = encrypt(e.target.result); db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: secureImg, time: Date.now() }); }; r.readAsDataURL(i.files[0]); }
         function toggleScreen(id) { let e = document.getElementById(id); e.style.display = e.style.display==='flex'?'none':'flex'; }
-        function doSearch(q) {
-            const res = document.getElementById('searchResults'); res.innerHTML = "";
-            db.ref('users').once('value', s => {
-                s.forEach(u => {
-                    if(u.key.includes(q.toLowerCase()) && u.key !== myName) {
-                        res.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${u.key}</b> <button onclick="db.ref('requests/${u.key}/${myName}').set(true);alert('Request Sent')" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button></div>`;
-                    }
-                });
-            });
-        }
-        function monitorRequests() {
-            db.ref('requests/'+myName).on('value', s => {
-                let c = s.numChildren();
-                document.getElementById('reqBadge').innerText = c;
-                document.getElementById('reqBadge').style.display = c>0?'flex':'none';
-            });
-        }
-        function openRequests() {
-            toggleScreen('requestScreen');
-            const list = document.getElementById('requestList');
-            db.ref('requests/'+myName).once('value', s => {
-                list.innerHTML = "";
-                s.forEach(r => {
-                    list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${r.key}</b> <button onclick="accept('${r.key}')" style="background:#4caf50; color:white; border:none; padding:8px 15px; border-radius:8px;">Accept</button></div>`;
-                });
-            });
-        }
-        function accept(user) {
-            db.ref('friends/'+myName+'/'+user).set(true);
-            db.ref('friends/'+user+'/'+myName).set(true);
-            db.ref('requests/'+myName+'/'+user).remove();
-            openRequests();
-        }
+        function doSearch(q) { const res = document.getElementById('searchResults'); res.innerHTML = ""; db.ref('users').once('value', s => { s.forEach(u => { if(u.key.includes(q.toLowerCase()) && u.key !== myName) { res.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${u.key}</b> <button onclick="db.ref('requests/${u.key}/${myName}').set(true);alert('Request Sent')" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button></div>`; } }); }); }
+        function monitorRequests() { db.ref('requests/'+myName).on('value', s => { let c = s.numChildren(); document.getElementById('reqBadge').innerText = c; document.getElementById('reqBadge').style.display = c>0?'flex':'none'; }); }
+        function openRequests() { toggleScreen('requestScreen'); const list = document.getElementById('requestList'); db.ref('requests/'+myName).once('value', s => { list.innerHTML = ""; s.forEach(r => { list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${r.key}</b> <button onclick="accept('${r.key}')" style="background:#4caf50; color:white; border:none; padding:8px 15px; border-radius:8px;">Accept</button></div>`; }); }); }
+        function accept(user) { db.ref('friends/'+myName+'/'+user).set(true); db.ref('friends/'+user+'/'+myName).set(true); db.ref('requests/'+myName+'/'+user).remove(); openRequests(); }
     </script>
 </body>
 </html>
