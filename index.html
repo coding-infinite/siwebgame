@@ -27,11 +27,11 @@
             padding: 0;
             height: 100vh;
             width: 100vw;
-            overflow: hidden;
+            overflow: hidden; /* Screen ko jamane ke liye */
             position: fixed;
         }
 
-        /* SCOREBOARD */
+        /* --- TOP SCOREBOARD --- */
         #scoreboard {
             position: absolute; top: 0; left: 0; width: 100%;
             height: 70px;
@@ -47,7 +47,7 @@
         .score-num { color: var(--neon-blue); font-size: 1.5rem; line-height: 1.2; }
         .score-label { font-size: 0.7rem; opacity: 0.7; letter-spacing: 1px; }
 
-        /* LOBBY */
+        /* --- LOBBY UI --- */
         .center-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
@@ -88,7 +88,7 @@
         }
         input:focus { border-color: var(--neon-blue); }
 
-        /* GAME AREA */
+        /* --- GAME PLAY AREA --- */
         #gameArea {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: none; flex-direction: column; justify-content: center; align-items: center;
@@ -106,7 +106,7 @@
             opacity: 0.8; pointer-events: none; padding: 0 20px;
         }
 
-        /* STATES */
+        /* --- COLORS & STATES --- */
         .bg-waiting { background: #000; }
         .bg-go { background: var(--neon-green); }
         .bg-early { background: var(--neon-red); }
@@ -116,6 +116,7 @@
         .pulse { animation: pulse 1s infinite; }
         @keyframes pulse { 50% { opacity: 0.5; } }
 
+        /* --- FINAL RESULT SCREEN --- */
         #finalScreen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 30;
@@ -147,7 +148,7 @@
     <div id="lobby" class="center-container">
         <div class="card">
             <h1>Reflex League</h1>
-            <p>First to 3 Wins or Best of 5</p>
+            <p>Best of 5 Wins</p>
             
             <div id="mainMenu">
                 <button class="btn btn-ai" onclick="startLocalGame()">⚡ Play vs AI</button>
@@ -181,19 +182,28 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        // --- 🔴 APNA FIREBASE CONFIG YAHA PASTE KARO ---
+        // ======================================================
+        // ✅ AAPKA ACTUAL CONFIG CODE (MAINE INSERT KAR DIYA)
+        // ======================================================
         const firebaseConfig = {
-            apiKey: "AIzaSy...",
-            authDomain: "PROJECT.firebaseapp.com",
-            databaseURL: "https://PROJECT-default-rtdb.firebaseio.com",
-            projectId: "PROJECT",
-            storageBucket: "PROJECT.appspot.com",
-            messagingSenderId: "123...",
-            appId: "1:123..."
+            apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
+            authDomain: "neon-game-hub.firebaseapp.com",
+            databaseURL: "https://neon-game-hub-default-rtdb.firebaseio.com",
+            projectId: "neon-game-hub",
+            storageBucket: "neon-game-hub.firebasestorage.app",
+            messagingSenderId: "636141968933",
+            appId: "1:636141968933:web:60c7cc21d75883ef08a9cc",
+            measurementId: "G-78MZSKLPF9"
         };
-        // ------------------------------------------------
+        // ======================================================
 
-        firebase.initializeApp(firebaseConfig);
+        // Initialize Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+        } catch (e) {
+            console.error("Firebase Init Error:", e);
+            alert("Error: Firebase Init Failed! " + e.message);
+        }
         const db = firebase.database();
 
         let roomId = null;
@@ -207,15 +217,15 @@
         let state = "lobby"; 
         let localTimers = [];
 
+        // Auto-join from URL
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('room')) {
                 document.getElementById('roomInput').value = urlParams.get('room');
-                joinRoom();
             }
         };
 
-        // --- LOCAL GAME ---
+        // --- LOCAL GAME (VS AI) ---
         function startLocalGame() {
             gameMode = "local";
             setupGameUI();
@@ -225,14 +235,14 @@
         function startLocalRound() {
             if (currentRound > 5) return showFinalScreen();
             
-            resetRoundUI(); // Black screen forced
+            resetRoundUI(); 
             const delay = Math.floor(Math.random() * 3000) + 2000;
             
             localTimers.push(setTimeout(() => {
                 if (state !== "waiting") return;
                 setScreen("go");
                 
-                // AI Logic
+                // AI Logic (Random speed 200ms - 500ms)
                 const reaction = Math.floor(Math.random() * 300) + 200;
                 localTimers.push(setTimeout(() => {
                     if (state === "go") handleRoundEnd("computer");
@@ -258,10 +268,9 @@
             isHost = true;
             
             document.getElementById('lobby').classList.add('hidden');
-            const lobbyContainer = document.getElementById('lobby');
-            lobbyContainer.classList.remove('hidden');
-            document.getElementById('mainMenu').classList.add('hidden');
-            document.getElementById('waitingUi').classList.remove('hidden');
+            document.getElementById('lobby').classList.remove('hidden'); // Show container
+            document.getElementById('mainMenu').classList.add('hidden'); // Hide menu
+            document.getElementById('waitingUi').classList.remove('hidden'); // Show waiting
             document.getElementById('roomCodeDisplay').innerText = roomId;
 
             waitForOpponent();
@@ -269,17 +278,20 @@
 
         function joinRoom() {
             gameMode = "online";
-            roomId = document.getElementById('roomInput').value.toUpperCase();
-            if (!roomId) return alert("Code required");
+            roomId = document.getElementById('roomInput').value.toUpperCase().trim();
+            if (!roomId) return alert("Please enter a Room Code!");
 
+            // Check if room exists first
             db.ref('reflex/' + roomId).once('value', snap => {
                 if (snap.exists()) {
                     db.ref('reflex/' + roomId).update({ status: "ready" });
                     setupGameUI();
                     listenForUpdates();
                 } else {
-                    alert("Invalid Code");
+                    alert("❌ Invalid Code! Room nahi mila.");
                 }
+            }).catch(err => {
+                alert("Connection Error: Internet ya Rules check karein.");
             });
         }
 
@@ -298,14 +310,12 @@
         function startOnlineRound() {
             if (currentRound > 5) return;
             
-            // Step 1: Tell everyone to WAIT (Black screen)
             db.ref('reflex/' + roomId).update({ winner: "", status: "waiting" });
 
-            // Step 2: Random Delay before GO
             const delay = Math.floor(Math.random() * 4000) + 2000;
             setTimeout(() => {
                 db.ref('reflex/' + roomId).once('value', s => {
-                    // Only go if still waiting (nobody clicked early)
+                    // Only start if still waiting (no early clicks)
                     if(s.val().status === 'waiting') {
                         db.ref('reflex/' + roomId).update({ status: "GO" });
                     }
@@ -313,13 +323,11 @@
             }, delay);
         }
 
-        // --- 🔥 FIXED LISTENER LOGIC ---
         function listenForUpdates() {
             db.ref('reflex/' + roomId).on('value', snap => {
                 const data = snap.val();
                 if (!data) return;
 
-                // FIX 1: Jab status wapas 'waiting' ho, screen black karo
                 if (data.status === "waiting" && state !== "waiting") {
                      resetRoundUI();
                 }
@@ -333,26 +341,26 @@
                     setScreen("go");
                 }
 
-                // Winner detection
                 if (data.winner && state !== "round_end") {
-                    // Avoid double counting
                     handleRoundEnd(data.winner);
                 }
             });
         }
 
-        // --- GAMEPLAY ---
+        // --- GAME INTERACTION ---
         function handleTap() {
             if (state === "waiting") {
-                // False Start
-                if (gameMode === "local") handleRoundEnd("computer"); 
-                else {
-                    // Online penalty
+                // FALSE START
+                if (gameMode === "local") {
+                    handleRoundEnd("computer"); 
+                } else {
                     db.ref('reflex/' + roomId).update({ winner: "OPPONENT_FORCE_WIN" });
                 }
             } else if (state === "go") {
-                if (gameMode === "local") handleRoundEnd(myId);
-                else {
+                // FAIR CLICK
+                if (gameMode === "local") {
+                    handleRoundEnd(myId);
+                } else {
                     db.ref('reflex/' + roomId).transaction(curr => {
                         return (curr && !curr.winner) ? { ...curr, winner: myId } : undefined;
                     });
@@ -367,46 +375,28 @@
             let msg = "";
             let isWin = false;
 
-            // Check Winner
-            if (winnerId === "OPPONENT_FORCE_WIN") {
-                // Special case: Someone clicked early
-                // If *I* clicked early, winnerId would be set by me as OPPONENT_FORCE_WIN? 
-                // Wait, simpler logic: 
-                // In my code, if I click early, I send "OPPONENT_FORCE_WIN".
-                // So if I receive "OPPONENT_FORCE_WIN", did I win or lose?
-                // This logic is tricky. Let's simplify:
-                // If I clicked early, my local `handleTap` handles it? No, listener handles it.
-                // Let's assume standard ID check.
-            }
-
             if (winnerId === myId) {
-                myScore++; msg = "WON!"; isWin = true;
+                myScore++; isWin = true; msg = "WON!";
             } else if (winnerId === "OPPONENT_FORCE_WIN") {
-                // Determine context locally? 
-                // Safe hack: If I didn't click, I won. If I clicked, I lost.
-                // But keeping it simple for now:
-                oppScore++; msg = "LOST"; isWin = false;
+                oppScore++; isWin = false; msg = "LOST";
             } else {
-                oppScore++; msg = "LOST"; isWin = false;
+                oppScore++; isWin = false; msg = "LOST";
             }
 
+            // Update UI
             document.getElementById('scoreMy').innerText = myScore;
             document.getElementById('scoreOpp').innerText = oppScore;
-            
             setScreen(isWin ? "win" : "lose", msg);
 
+            // Next Round Logic
             if (currentRound >= 5) {
                 setTimeout(showFinalScreen, 2000);
             } else {
                 currentRound++;
                 setTimeout(() => {
                     document.getElementById('roundDisplay').innerText = currentRound;
-                    
-                    // Host initiates next round logic
                     if (gameMode === "local") startLocalRound();
                     if (gameMode === "online" && isHost) startOnlineRound();
-                    
-                    // Clients do NOTHING here. They wait for listener to see "status: waiting"
                 }, 2500); 
             }
         }
@@ -439,9 +429,9 @@
         }
 
         function setupGameUI() {
-            document.getElementById('lobby').classList.add('hidden');
-            document.getElementById('gameArea').style.display = 'flex';
-            document.getElementById('scoreboard').classList.remove('hidden');
+            document.getElementById('lobby').classList.add('hidden'); 
+            document.getElementById('gameArea').style.display = 'flex'; 
+            document.getElementById('scoreboard').classList.remove('hidden'); 
             resetRoundUI();
         }
 
