@@ -5,132 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Reflex Duel</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         :root {
-            --bg-color: #f1f5f9;
-            --text-dark: #1e293b;
-            --card-bg: #ffffff;
-            --accent: #3b82f6; /* Soft Blue */
-            --success: #22c55e; /* Soft Green */
-            --danger: #ef4444; /* Soft Red */
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --soft-blue: #e0f2fe;
+            --deep-navy: #0f172a;
+            --pastel-pink: #fdf2f8;
+            --accent-peach: #fb923c;
+            --success-mint: #4ade80;
+            --glass: rgba(255, 255, 255, 0.7);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
 
         body {
             margin: 0; padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-dark);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--deep-navy);
             font-family: 'Plus Jakarta Sans', sans-serif;
             height: 100vh; width: 100vw;
             overflow: hidden;
             display: flex; flex-direction: column;
         }
 
-        /* --- 1. CLEAN SCOREBOARD --- */
+        /* --- BEAUTIFUL HUD --- */
         #scoreboard {
             position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 400px; height: 60px;
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px);
-            border-radius: 16px; padding: 0 25px;
-            box-shadow: var(--shadow); z-index: 100;
+            width: 90%; max-width: 450px; height: 65px;
+            display: flex; justify-content: space-around; align-items: center;
+            background: var(--glass); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.4); border-radius: 20px;
+            z-index: 100; box-shadow: var(--shadow);
         }
-        .score-box { text-align: center; }
-        .score-label { font-size: 0.7rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
-        .score-num { font-size: 1.2rem; font-weight: 800; color: var(--text-dark); }
+        .score-box { display: flex; flex-direction: column; align-items: center; }
+        .score-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        .score-num { font-size: 1.4rem; font-weight: 800; color: var(--deep-navy); }
 
-        /* --- 2. LOBBY CARD --- */
+        /* --- LOBBY CARD --- */
         .wrapper {
             flex: 1; display: flex; justify-content: center; align-items: center;
             padding-bottom: 70px;
         }
         .card {
-            background: var(--card-bg);
-            border-radius: 24px; padding: 40px 30px;
+            background: white; border-radius: 32px; padding: 40px 30px;
             width: 90%; max-width: 380px; text-align: center;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
-        h1 { font-weight: 800; font-size: 2rem; margin: 0; color: var(--text-dark); letter-spacing: -0.5px; }
-        p { color: #64748b; margin-top: 5px; margin-bottom: 30px; }
+        h1 { font-weight: 800; font-size: 2.2rem; margin: 0; color: var(--deep-navy); letter-spacing: -1px; }
+        p { color: #64748b; font-size: 0.95rem; margin-top: 8px; margin-bottom: 30px; font-family: 'Quicksand'; }
 
-        .input-clean {
-            width: 100%; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0;
-            border-radius: 12px; font-size: 1.1rem; text-align: center; font-weight: 600;
-            margin-bottom: 15px; font-family: 'Plus Jakarta Sans'; color: var(--text-dark);
+        /* Beautiful Inputs & Buttons */
+        .input-field {
+            width: 100%; padding: 16px; background: #f1f5f9; border: 2px solid transparent;
+            border-radius: 16px; font-size: 1.1rem; text-align: center;
+            margin-bottom: 15px; transition: 0.3s; font-family: 'Plus Jakarta Sans';
         }
+        .input-field:focus { border-color: #cbd5e1; background: white; outline: none; }
+
         .btn {
-            width: 100%; padding: 16px; margin: 6px 0; border-radius: 12px;
-            font-weight: 700; cursor: pointer; border: none; font-family: 'Plus Jakarta Sans';
-            transition: transform 0.1s;
+            width: 100%; padding: 16px; margin: 8px 0; border-radius: 16px;
+            font-weight: 700; font-size: 1rem; cursor: pointer; border: none;
+            transition: transform 0.1s, opacity 0.2s; font-family: 'Plus Jakarta Sans';
         }
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--text-dark); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        .btn-outline { background: white; border: 2px solid #e2e8f0; color: var(--text-dark); }
+        .btn:active { transform: scale(0.97); }
+        .btn-ai { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+        .btn-create { background: var(--deep-navy); color: white; }
+        .btn-join { background: white; border: 2px solid var(--deep-navy); color: var(--deep-navy); }
 
-        /* --- 3. GAME AREA --- */
+        /* --- GAME ARENA --- */
         #gameArea {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: none; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 50; transition: background 0.3s ease;
+            z-index: 50; transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .status-text { font-size: clamp(3rem, 15vw, 6rem); font-weight: 800; pointer-events: none; }
-        .sub-text { margin-top: 10px; font-size: 1.1rem; color: rgba(0,0,0,0.6); }
+        .status-text { font-size: clamp(3.5rem, 18vw, 7rem); font-weight: 800; pointer-events: none; letter-spacing: -2px; }
+        .sub-text { margin-top: 10px; font-size: 1.1rem; font-weight: 500; opacity: 0.6; }
 
-        /* Colors */
-        .bg-waiting { background: #f1f5f9; color: #94a3b8; }
-        .bg-go { background: var(--success); color: white; }
-        .bg-win { background: var(--accent); color: white; }
-        .bg-lose { background: #fee2e2; color: var(--danger); }
+        /* GAME STATES COLORS */
+        .state-waiting { background: #f1f5f9; color: #94a3b8; }
+        .state-go { background: var(--success-mint); color: #064e3b; }
+        .state-win { background: #dcfce7; color: #166534; }
+        .state-lose { background: #fee2e2; color: #991b1b; }
 
-        /* --- 4. BEAUTIFUL CHAT & EMOJI --- */
-        #chatSection {
-            position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
-            width: 95%; max-width: 400px; z-index: 120;
-            display: none; /* Visible only in Online Mode */
-            flex-direction: column; gap: 10px;
+        /* --- CHAT HUD (AESTHETIC STYLE) --- */
+        #chatWrapper {
+            position: fixed; bottom: 85px; width: 90%; max-width: 400px;
+            left: 50%; transform: translateX(-50%); z-index: 110; display: none;
+            flex-direction: column; gap: 8px;
         }
+        
+        #emojiBar { display: flex; justify-content: center; gap: 12px; margin-bottom: 5px; }
+        .emoji-pill {
+            background: white; border: 1px solid #e2e8f0; padding: 10px 18px;
+            border-radius: 50px; font-size: 1.4rem; cursor: pointer; 
+            box-shadow: var(--shadow); transition: transform 0.2s;
+        }
+        .emoji-pill:active { transform: scale(1.2); }
 
-        /* Floating Emojis */
-        .emoji-row { display: flex; justify-content: center; gap: 10px; }
-        .emoji-btn {
-            background: white; border-radius: 50px; padding: 8px 16px;
-            font-size: 1.5rem; cursor: pointer; box-shadow: var(--shadow);
-            border: 1px solid #e2e8f0; transition: transform 0.2s;
-        }
-        .emoji-btn:active { transform: scale(1.2); }
-
-        /* Chat Input */
-        .chat-bar {
-            display: flex; gap: 8px; background: white; padding: 8px;
-            border-radius: 16px; box-shadow: var(--shadow); border: 1px solid #e2e8f0;
-        }
-        .chat-input {
-            flex: 1; border: none; font-size: 0.95rem; padding-left: 10px;
-            font-family: 'Plus Jakarta Sans'; outline: none;
-        }
-        .send-btn {
-            background: var(--accent); color: white; border: none;
-            border-radius: 10px; padding: 8px 15px; font-weight: 700; cursor: pointer;
-        }
-
-        /* Message Toast */
         #lastMessage {
-            text-align: center; background: rgba(255,255,255,0.9);
-            padding: 8px 16px; border-radius: 20px; font-size: 0.9rem;
-            color: #64748b; margin: 0 auto; width: fit-content;
-            box-shadow: var(--shadow); opacity: 0; transition: opacity 0.3s;
+            background: rgba(255,255,255,0.95); padding: 10px 20px; border-radius: 20px;
+            box-shadow: var(--shadow); font-size: 0.95rem; color: #475569;
+            text-align: center; align-self: center;
+            opacity: 0; transition: opacity 0.3s; border: 1px solid white;
         }
 
-        /* --- 5. AD BANNER --- */
+        /* --- AD BANNER --- */
         #ad-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; border-top: 1px solid #e2e8f0; }
 
         .hidden { display: none !important; }
-        #finalScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 200; flex-direction: column; justify-content: center; align-items: center; }
+        #finalScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 150; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
@@ -144,50 +130,42 @@
     <div id="lobby" class="wrapper">
         <div class="card">
             <h1>Reflex Duel</h1>
-            <p>Minimalist Reaction Game</p>
-            
+            <p>Simple. Fast. Beautiful.</p>
             <div id="mainMenu">
-                <button class="btn btn-outline" onclick="startLocalGame()">Practice Mode</button>
-                <div style="height: 15px;"></div>
-                <button class="btn btn-primary" onclick="createRoom()">Create Room</button>
-                <input type="text" id="roomInput" class="input-clean" placeholder="Enter Code" maxlength="4">
-                <button class="btn btn-outline" onclick="joinRoom()">Join Room</button>
+                <button class="btn btn-ai" onclick="startLocalGame()">Practice vs Computer</button>
+                <div style="height: 20px;"></div>
+                <button class="btn btn-create" onclick="createRoom()">Create Private Room</button>
+                <input type="text" id="roomInput" class="input-field" placeholder="Enter Code" maxlength="4">
+                <button class="btn btn-join" onclick="joinRoom()">Join Match</button>
             </div>
-
             <div id="waitingUi" class="hidden">
-                <div id="qrcode" style="margin-bottom:15px;"></div>
-                <h2 id="roomCodeDisplay" style="font-size:2.5rem; margin:10px 0; color:var(--accent);"></h2>
-                <div style="color:#64748b;">Waiting for player...</div>
-                <button class="btn btn-outline" style="margin-top:20px;" onclick="location.reload()">Cancel</button>
+                <div id="qrcode" style="margin-bottom: 15px;"></div>
+                <h2 id="roomCodeDisplay" style="font-size: 2.8rem; margin: 10px 0; font-weight: 800;"></h2>
+                <div style="color: #64748b; font-weight: 500;">Waiting for someone to join...</div>
+                <button class="btn btn-ai" style="margin-top: 25px;" onclick="location.reload()">Cancel</button>
             </div>
         </div>
     </div>
 
-    <div id="gameArea" class="bg-waiting" onclick="handleTap()">
+    <div id="gameArea" class="state-waiting" onclick="handleTap()">
         <div class="status-text" id="gameMessage">READY</div>
-        <div class="sub-text" id="gameSubtext">Wait for Green...</div>
+        <div class="sub-text" id="gameSubtext">Tap as soon as it turns Green</div>
     </div>
 
-    <div id="chatSection">
+    <div id="chatWrapper">
         <div id="lastMessage"></div>
-        
-        <div class="emoji-row">
-            <div class="emoji-btn" onclick="sendChat('😂')">😂</div>
-            <div class="emoji-btn" onclick="sendChat('🔥')">🔥</div>
-            <div class="emoji-btn" onclick="sendChat('👋')">👋</div>
-            <div class="emoji-btn" onclick="sendChat('💀')">💀</div>
-        </div>
-
-        <div class="chat-bar">
-            <input type="text" id="chatInput" class="chat-input" placeholder="Type message...">
-            <button class="send-btn" onclick="sendManualChat()">Send</button>
+        <div id="emojiBar">
+            <div class="emoji-pill" onclick="sendEmoji('😂')">😂</div>
+            <div class="emoji-pill" onclick="sendEmoji('🔥')">🔥</div>
+            <div class="emoji-pill" onclick="sendEmoji('🤡')">🤡</div>
+            <div class="emoji-pill" onclick="sendEmoji('👋')">👋</div>
         </div>
     </div>
 
     <div id="finalScreen">
-        <h1 id="finalTitle" style="font-size:3rem; margin-bottom:10px;">Game Over</h1>
-        <div id="finalScore" style="font-size:1.5rem; color:#64748b; margin-bottom:30px;"></div>
-        <button class="btn btn-primary" style="width:200px;" onclick="requestRematch()">Play Again</button>
+        <h1 id="finalTitle" style="font-size: 3.5rem;">Result</h1>
+        <div id="finalScore" style="font-size: 1.5rem; color: #64748b; margin: 20px 0;"></div>
+        <button class="btn btn-create" style="max-width: 250px;" onclick="requestRematch()">Play Again</button>
     </div>
 
     <div id="ad-container">
@@ -201,7 +179,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        // ✅ YOUR FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
             authDomain: "neon-game-hub.firebaseapp.com",
@@ -222,6 +199,7 @@
         db.ref(".info/serverTimeOffset").on("value", snap => serverOffset = snap.val());
         const getServerTime = () => Date.now() + serverOffset;
 
+        // Game Functions
         function startLocalGame() { gameMode = "local"; setupGameUI(); startLocalRound(); }
         function startLocalRound() {
             if (currentRound > 5) return showFinalScreen();
@@ -249,7 +227,7 @@
 
         function joinRoom() {
             gameMode = "online"; roomId = document.getElementById('roomInput').value.toUpperCase().trim();
-            if (!roomId) return alert("Code Required");
+            if (!roomId) return alert("Please enter a code");
             db.ref('reflex/' + roomId).once('value', snap => {
                 if (snap.exists()) {
                     db.ref('reflex/' + roomId).update({ status: "ready" });
@@ -293,15 +271,16 @@
                 }
                 if (data.winner && state !== "round_end") handleRoundEnd(data.winner);
             });
-
             // 💬 CHAT LISTENER
             db.ref('reflex/' + roomId + '/chats').limitToLast(1).on('child_added', snap => {
                 const msg = snap.val();
-                const bubble = document.getElementById('lastMessage');
-                bubble.innerText = (msg.sender === myId ? "You" : "Opponent") + ": " + msg.text;
-                bubble.style.opacity = "1";
-                // Hide after 3 seconds
-                setTimeout(() => { bubble.style.opacity = "0"; }, 3000);
+                // Check if message is recent (within last 3 seconds)
+                if (getServerTime() - msg.timestamp < 5000) {
+                    const bubble = document.getElementById('lastMessage');
+                    bubble.innerText = (msg.sender === myId ? "You" : "Opponent") + ": " + msg.text;
+                    bubble.style.opacity = "1";
+                    setTimeout(() => { bubble.style.opacity = "0"; }, 3000);
+                }
             });
         }
 
@@ -322,7 +301,7 @@
             if (isWin) myScore++; else oppScore++;
             document.getElementById('scoreMy').innerText = myScore;
             document.getElementById('scoreOpp').innerText = oppScore;
-            setScreen(isWin ? "win" : "lose", isWin ? "Victory!" : "Defeat");
+            setScreen(isWin ? "win" : "lose", isWin ? "WINNER" : "TOO SLOW");
             if (currentRound >= 5) setTimeout(showFinalScreen, 2000);
             else { currentRound++; setTimeout(() => { 
                 document.getElementById('roundDisplay').innerText = currentRound + "/5";
@@ -331,46 +310,41 @@
             }, 2500); }
         }
 
-        // 💬 CHAT FUNCTIONS
-        function sendChat(text) {
+        // 💬 CHAT SENDER
+        function sendEmoji(emoji) {
             if (!roomId || gameMode === "local") return;
-            db.ref('reflex/' + roomId + '/chats').push({ sender: myId, text: text });
-        }
-        function sendManualChat() {
-            const input = document.getElementById('chatInput');
-            if (input.value.trim()) {
-                sendChat(input.value);
-                input.value = "";
-            }
+            db.ref('reflex/' + roomId + '/chats').push({ 
+                sender: myId, 
+                text: emoji,
+                timestamp: getServerTime()
+            });
+            navigator.vibrate?.(40);
         }
 
         function setScreen(type, text) {
             const area = document.getElementById('gameArea');
-            area.className = "bg-" + type;
+            area.className = "state-" + type;
             document.getElementById('gameMessage').innerText = (type === "waiting") ? "READY" : (type === "go" ? "TAP!" : text);
             document.getElementById('gameSubtext').innerText = (type === "waiting") ? "Wait for Green..." : (type === "go" ? "NOW!" : "Next Round...");
             if (type === "go") navigator.vibrate?.(200);
             state = type;
         }
+
         function resetRoundUI() { setScreen("waiting"); }
         function setupGameUI() {
             document.getElementById('lobby').classList.add('hidden');
             document.getElementById('gameArea').style.display = 'flex';
             document.getElementById('scoreboard').classList.remove('hidden');
-            // Only show Chat in Online Mode
-            if(gameMode === "online") {
-                document.getElementById('chatSection').style.display = 'flex';
-            }
+            if(gameMode === "online") document.getElementById('chatWrapper').style.display = 'flex';
             resetRoundUI();
         }
         function showFinalScreen() {
             document.getElementById('gameArea').style.display = 'none';
             document.getElementById('scoreboard').classList.add('hidden');
-            document.getElementById('chatSection').style.display = 'none';
+            document.getElementById('chatWrapper').style.display = 'none';
             const screen = document.getElementById('finalScreen');
             screen.style.display = 'flex';
             document.getElementById('finalTitle').innerText = myScore > oppScore ? "Match Won!" : "You Lost";
-            document.getElementById('finalTitle').style.color = myScore > oppScore ? "var(--success)" : "var(--danger)";
             document.getElementById('finalScore').innerText = `${myScore} - ${oppScore}`;
         }
         function requestRematch() {
