@@ -3,144 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Reflex: Classic White</title>
+    <title>Neon Reflex: Ultimate</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Orbitron:wght@900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
-        :root {
-            --primary: #007bff;
-            --secondary: #6c757d;
-            --success: #28a745;
-            --danger: #dc3545;
-            --bg: #f8f9fa;
-        }
-
+        :root { --primary: #007bff; --bg: #f8f9fa; --success: #28a745; --danger: #dc3545; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: #333; font-family: 'Poppins', sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        body {
-            background-color: var(--bg);
-            color: #333;
-            font-family: 'Poppins', sans-serif;
-            margin: 0; padding: 0;
-            height: 100vh; width: 100vw;
-            overflow: hidden;
-            position: fixed;
-            display: flex; flex-direction: column;
-        }
+        /* SCOREBOARD */
+        #scoreboard { width: 100%; height: 80px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 100; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); background: #eee; margin-bottom: 5px; }
+        .player-info { display: flex; flex-direction: column; align-items: center; }
 
-        /* --- SCOREBOARD --- */
-        #scoreboard {
-            width: 100%; height: 60px;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; background: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            z-index: 100;
-        }
-        .score-num { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
-        .score-label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
-
-        /* --- LOBBY CARD --- */
-        .center-container {
-            flex: 1; display: flex; justify-content: center; align-items: center;
-            padding-bottom: 70px;
-        }
-        .card {
-            background: white; border-radius: 20px; padding: 30px;
-            width: 90%; max-width: 380px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        h1 { font-family: 'Orbitron'; font-size: 1.8rem; margin: 0; color: #222; letter-spacing: 1px; }
-        p { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
-
-        /* QR CENTERED */
-        #qrcode { 
-            background: white; padding: 10px; border: 1px solid #eee;
-            border-radius: 10px; margin: 20px auto; 
-            display: flex; justify-content: center; width: fit-content;
-        }
-
-        .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        .btn-create { background: var(--primary); color: white; }
-        .btn-join { background: white; border: 2px solid var(--primary); color: var(--primary); }
-        .btn:active { transform: scale(0.97); }
-
+        /* LOBBY CARD */
+        .center-container { flex: 1; display: flex; justify-content: center; align-items: center; padding-bottom: 70px; }
+        .card { background: white; border-radius: 25px; padding: 30px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        h1 { font-family: 'Orbitron'; color: #222; margin: 0; }
+        #qrcode { margin: 15px auto; display: flex; justify-content: center; }
+        .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-whatsapp { background: #25D366; color: white; margin-top: 15px; }
         input { width: 100%; padding: 12px; background: #f1f3f5; border: 1px solid #ddd; color: #333; border-radius: 8px; text-align: center; font-size: 1.2rem; margin-bottom: 10px; font-family: 'Orbitron'; }
 
-        /* --- GAME AREA --- */
+        /* GAME AREA */
         #gameArea { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
-        .status-text { font-family: 'Orbitron'; font-size: clamp(3rem, 15vw, 6rem); font-weight: 900; }
+        .status-text { font-family: 'Orbitron'; font-size: 4rem; text-align: center; }
+        .bg-waiting { background: #fff; } .bg-go { background: var(--success); }
+
+        /* CHAT & EMOJI */
+        #chatWrapper { position: fixed; bottom: 70px; width: 95%; max-width: 400px; left: 50%; transform: translateX(-50%); z-index: 210; display: none; }
+        .emoji-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .emoji-btn { font-size: 1.5rem; cursor: pointer; transition: transform 0.1s; user-select: none; }
+        .emoji-btn:active { transform: scale(1.3); }
         
-        /* THEME COLORS */
-        .bg-waiting { background: #ffffff; } .bg-waiting .status-text { color: #eee; }
-        .bg-go { background: var(--success); } .bg-go .status-text { color: white; }
-        .bg-win { background: var(--primary); } .bg-win .status-text { color: white; }
-        .bg-lose { background: #f1f1f1; } .bg-lose .status-text { color: #ccc; }
+        #chatDisplay { height: 80px; overflow-y: auto; background: rgba(255,255,255,0.8); border-radius: 10px; padding: 8px; margin-bottom: 5px; font-size: 0.8rem; pointer-events: none; display: flex; flex-direction: column; justify-content: flex-end; }
+        .msg { padding: 4px 8px; border-radius: 5px; margin: 2px 0; width: fit-content; max-width: 80%; animation: popIn 0.2s ease; }
+        .msg-me { background: var(--primary); color: white; align-self: flex-end; }
+        .msg-opp { background: #eee; color: #333; align-self: flex-start; }
+        @keyframes popIn { from{transform:scale(0); opacity:0;} to{transform:scale(1); opacity:1;} }
 
-        /* --- CHAT SECTION --- */
-        #chatWrapper { position: fixed; bottom: 80px; width: 95%; max-width: 400px; left: 50%; transform: translateX(-50%); z-index: 210; display: none; background: white; border-radius: 15px; padding: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border: 1px solid #eee; }
-        #chatDisplay { height: 60px; overflow-y: auto; background: #f8f9fa; border-radius: 8px; padding: 5px; margin-bottom: 8px; font-size: 0.8rem; text-align: left; border: 1px solid #eee; }
-        .emoji-row { display: flex; justify-content: center; gap: 15px; margin-bottom: 8px; font-size: 1.5rem; }
-        .emoji-row span { cursor: pointer; transition: 0.2s; }
-        .emoji-row span:hover { transform: scale(1.2); }
+        .chat-input-row { display: flex; gap: 5px; pointer-events: auto; }
+        #chatInput { margin: 0; padding: 10px; font-size: 0.9rem; font-family: sans-serif; text-align: left; }
 
-        /* --- AD --- */
-        #ad-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; border-top: 1px solid #eee; }
-
+        /* FINAL SCREEN */
+        #finalScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 300; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
+        .stat-card { background: #f1f3f5; padding: 15px; border-radius: 15px; margin: 10px 0; width: 80%; }
         .hidden { display: none !important; }
-        #finalScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 300; flex-direction: column; justify-content: center; align-items: center; }
+
+        /* AD BAR */
+        #ad-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; border-top: 1px solid #eee; }
     </style>
 </head>
 <body>
 
     <div id="scoreboard" class="hidden">
-        <div class="score-box"><div class="score-num" id="scoreMy">0</div><div class="score-label">YOU</div></div>
-        <div class="score-box"><div class="score-num" id="roundDisplay">1/5</div><div class="score-label">ROUND</div></div>
-        <div class="score-box"><div class="score-num" id="scoreOpp">0</div><div class="score-label">OPP</div></div>
+        <div class="player-info">
+            <img id="myAvatar" class="avatar" src="">
+            <div id="scoreMy" style="font-weight:bold">0</div>
+        </div>
+        <div style="text-align:center">
+            <div id="roundDisplay" style="font-family:Orbitron; font-size:1.2rem">1/5</div>
+            <div style="font-size:0.6rem; color:#999">ROUND</div>
+        </div>
+        <div class="player-info">
+            <img id="oppAvatar" class="avatar" src="">
+            <div id="scoreOpp" style="font-weight:bold">0</div>
+        </div>
     </div>
 
     <div id="lobby" class="center-container">
         <div class="card">
             <h1>NEON REFLEX</h1>
-            <p>Classic White Edition</p>
+            <p>Ultimate Challenge</p>
             <div id="mainMenu">
-                <button class="btn btn-create" onclick="createRoom()">CREATE ROOM</button>
-                <input type="text" id="roomInput" placeholder="CODE" maxlength="4">
-                <button class="btn btn-join" onclick="joinRoom()">JOIN ROOM</button>
-                <button class="btn" style="background:#f1f3f5; color:#999; font-size:0.7rem; margin-top:10px;" onclick="startLocalGame()">PRACTICE VS AI</button>
+                <button class="btn btn-primary" onclick="createRoom()">CREATE LOBBY</button>
+                <input type="text" id="roomInput" placeholder="ENTER CODE">
+                <button class="btn" style="border:2px solid var(--primary); color:var(--primary); background:white;" onclick="joinRoom()">JOIN LOBBY</button>
             </div>
             <div id="waitingUi" class="hidden">
                 <div id="qrcode"></div>
-                <h2 id="roomCodeDisplay" style="color:var(--primary); font-family:Orbitron; font-size: 2.5rem; margin: 10px 0;"></h2>
-                <div style="color:var(--success); font-weight:bold;">WAITING FOR PLAYER...</div>
-                <button class="btn" style="background:#eee; color:#666; margin-top:20px;" onclick="location.reload()">CANCEL</button>
+                <h2 id="roomCodeDisplay" style="color:var(--primary); font-size:2rem"></h2>
+                <div style="color:#888; margin-bottom:10px">Share code with friend</div>
+                <button class="btn" style="background:#eee" onclick="location.reload()">CANCEL</button>
             </div>
         </div>
     </div>
 
     <div id="gameArea" class="bg-waiting" onclick="handleTap()">
-        <div class="status-text" id="gameMessage">WAIT</div>
+        <div id="gameMessage" class="status-text">WAIT</div>
     </div>
 
     <div id="chatWrapper">
-        <div class="emoji-row">
-            <span onclick="sendEmoji('😂')">😂</span>
-            <span onclick="sendEmoji('🔥')">🔥</span>
-            <span onclick="sendEmoji('🤡')">🤡</span>
-            <span onclick="sendEmoji('👍')">👍</span>
-        </div>
         <div id="chatDisplay"></div>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="chatInput" style="flex:1; margin:0; font-size:0.8rem; padding:8px; background:white;" placeholder="Chat...">
-            <button onclick="sendMessage()" style="background:var(--primary); color:white; border:none; padding:0 15px; border-radius:5px; font-weight:bold;">></button>
+        <div class="emoji-bar">
+            <div class="emoji-btn" onclick="sendEmoji('😂')">😂</div>
+            <div class="emoji-btn" onclick="sendEmoji('🔥')">🔥</div>
+            <div class="emoji-btn" onclick="sendEmoji('🤡')">🤡</div>
+            <div class="emoji-btn" onclick="sendEmoji('⚡')">⚡</div>
+            <div class="emoji-btn" onclick="sendEmoji('😭')">😭</div>
+            <div class="emoji-btn" onclick="sendEmoji('💩')">💩</div>
+        </div>
+        <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Type..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()" style="background:var(--primary); color:white; border:none; padding:0 15px; border-radius:8px; font-weight:bold;">></button>
         </div>
     </div>
 
     <div id="finalScreen">
-        <h1 id="finalTitle">MATCH OVER</h1>
-        <div id="finalScore" style="font-size:3rem; font-weight:bold; margin-bottom:30px; font-family:Orbitron"></div>
-        <button class="btn btn-create" style="max-width:200px;" onclick="requestRematch()">REMATCH</button>
+        <img id="resultAvatar" class="avatar" style="width:100px; height:100px; border-width:4px;">
+        <h1 id="finalTitle"></h1>
+        <p id="funnyMessage" style="font-size:1.1rem; color:#666; margin:10px 0;"></p>
+        
+        <div class="stat-card">
+            <div style="font-size:0.8rem; color:#888">AVG REACTION TIME</div>
+            <div id="avgTime" style="font-size:1.5rem; font-weight:bold; color:var(--primary)">0ms</div>
+        </div>
+
+        <button class="btn btn-primary" style="max-width:250px" onclick="location.reload()">PLAY AGAIN</button>
+        <button id="shareBtn" class="btn btn-whatsapp" style="max-width:250px">SHARE SCORE 📲</button>
     </div>
 
     <div id="ad-container">
@@ -154,7 +137,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        // ✅ YOUR FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
             authDomain: "neon-game-hub.firebaseapp.com",
@@ -162,153 +144,164 @@
             projectId: "neon-game-hub",
             storageBucket: "neon-game-hub.firebasestorage.app",
             messagingSenderId: "636141968933",
-            appId: "1:636141968933:web:60c7cc21d75883ef08a9cc",
-            measurementId: "G-78MZSKLPF9"
+            appId: "1:636141968933:web:60c7cc21d75883ef08a9cc"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let roomId = null, myId = Math.random().toString(36).substr(2, 6), isHost = false, gameMode = "online"; 
-        let currentRound = 1, myScore = 0, oppScore = 0, state = "lobby", localTimers = [], serverOffset = 0;
+        let myId = Math.random().toString(36).substr(2, 6);
+        let myAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${myId}`;
+        let myReactionTimes = [];
+        let roomId, isHost = false, state = "lobby", currentRound = 1, myScore = 0, oppScore = 0, goTime = 0;
 
-        db.ref(".info/serverTimeOffset").on("value", snap => serverOffset = snap.val());
-        const getServerTime = () => Date.now() + serverOffset;
+        document.getElementById('myAvatar').src = myAvatar;
 
-        // AUTO-FILL CODE FROM URL
+        // Auto Code
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('room');
-            if (code) {
-                document.getElementById('roomInput').value = code.toUpperCase();
-            }
+            if(urlParams.get('room')) document.getElementById('roomInput').value = urlParams.get('room');
         };
 
         function createRoom() {
-            gameMode = "online"; roomId = Math.random().toString(36).substr(2, 4).toUpperCase();
+            roomId = Math.random().toString(36).substr(2, 4).toUpperCase();
             const joinUrl = window.location.origin + window.location.pathname + "?room=" + roomId;
-            document.getElementById("qrcode").innerHTML = "";
             new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 140, height: 140 });
-            db.ref('reflex/' + roomId).set({ status: "waiting_for_player", round: 1, winner: "" });
+            db.ref('reflex/' + roomId).set({ status: "waiting", hostAvatar: myAvatar });
             isHost = true;
             document.getElementById('mainMenu').classList.add('hidden');
             document.getElementById('waitingUi').classList.remove('hidden');
             document.getElementById('roomCodeDisplay').innerText = roomId;
-            waitForOpponent();
+            listenForOpponent();
         }
 
         function joinRoom() {
-            gameMode = "online"; roomId = document.getElementById('roomInput').value.toUpperCase().trim();
-            if (!roomId) return alert("ENTER CODE");
+            roomId = document.getElementById('roomInput').value.toUpperCase().trim();
             db.ref('reflex/' + roomId).once('value', snap => {
                 if (snap.exists()) {
-                    db.ref('reflex/' + roomId).update({ status: "ready" });
-                    setupGameUI(); listenForUpdates();
-                } else alert("INVALID CODE");
+                    db.ref('reflex/' + roomId).update({ status: "ready", guestAvatar: myAvatar });
+                    startGame();
+                } else alert("Invalid Code!");
             });
         }
 
-        function waitForOpponent() {
-            const listener = db.ref('reflex/' + roomId).on('value', snap => {
+        function listenForOpponent() {
+            db.ref('reflex/' + roomId).on('value', snap => {
                 const data = snap.val();
-                if (data && data.status === "ready") {
-                    db.ref('reflex/' + roomId).off('value', listener);
-                    setupGameUI(); listenForUpdates();
-                    if (isHost) scheduleNextRound();
+                if (data.status === "ready") {
+                    document.getElementById('oppAvatar').src = data.guestAvatar;
+                    startGame();
                 }
             });
         }
 
-        function scheduleNextRound() {
-            if (currentRound > 5) return;
-            db.ref('reflex/' + roomId).update({ winner: "", status: "waiting", triggerTime: 0 });
-            const futureTime = getServerTime() + Math.floor(Math.random() * 3000) + 2000;
-            setTimeout(() => {
-                db.ref('reflex/' + roomId).once('value', s => {
-                    if(s.val().status === 'waiting') db.ref('reflex/' + roomId).update({ status: "SCHEDULED", triggerTime: futureTime });
-                });
-            }, 500);
+        function startGame() {
+            document.getElementById('lobby').classList.add('hidden');
+            document.getElementById('gameArea').style.display = 'flex';
+            document.getElementById('scoreboard').classList.remove('hidden');
+            document.getElementById('chatWrapper').style.display = 'block';
+            if (isHost) startRound();
+            listenForRounds();
         }
 
-        function listenForUpdates() {
+        function startRound() {
+            db.ref('reflex/' + roomId).update({ winner: "", status: "wait", round: currentRound });
+            setTimeout(() => {
+                db.ref('reflex/' + roomId).update({ status: "go", goTime: Date.now() });
+            }, Math.random() * 3000 + 2000);
+        }
+
+        function listenForRounds() {
             db.ref('reflex/' + roomId).on('value', snap => {
                 const data = snap.val();
                 if (!data) return;
-                if (data.status === "waiting" && state !== "waiting") resetRoundUI();
-                if (data.status === "restart") location.reload();
-                if (data.status === "SCHEDULED" && data.triggerTime && state === "waiting") {
-                    const timeLeft = data.triggerTime - getServerTime();
-                    if (timeLeft > 0) localTimers.push(setTimeout(() => { if(state === "waiting") setScreen("go"); }, timeLeft));
-                    else setScreen("go");
+                if (data.status === "go") {
+                    document.getElementById('gameArea').className = "bg-go";
+                    document.getElementById('gameMessage').innerText = "TAP!";
+                    goTime = data.goTime;
+                    state = "go";
+                } else if (data.status === "wait") {
+                    document.getElementById('gameArea').className = "bg-waiting";
+                    document.getElementById('gameMessage').innerText = "WAIT";
+                    state = "wait";
                 }
-                if (data.winner && state !== "round_end") handleRoundEnd(data.winner);
+                if (data.winner && state !== "end") handleRoundEnd(data.winner);
             });
-            db.ref('reflex/' + roomId + '/chats').limitToLast(1).on('child_added', snap => {
+            // Chat Listener
+            db.ref('reflex/' + roomId + '/chats').limitToLast(3).on('child_added', snap => {
                 const msg = snap.val();
-                const chatDisp = document.getElementById('chatDisplay');
+                const display = document.getElementById('chatDisplay');
                 const div = document.createElement('div');
-                div.style.color = msg.sender === myId ? "#007bff" : "#dc3545";
-                div.innerText = (msg.sender === myId ? "> You: " : "> Opp: ") + msg.text;
-                chatDisp.appendChild(div);
-                chatDisp.scrollTop = chatDisp.scrollHeight;
+                div.className = "msg " + (msg.sender === myId ? "msg-me" : "msg-opp");
+                div.innerText = msg.text;
+                display.appendChild(div);
+                display.scrollTop = display.scrollHeight;
             });
         }
 
         function handleTap() {
-            if (state === "waiting") {
-                if (gameMode === "local") handleRoundEnd("computer"); 
-                else db.ref('reflex/' + roomId).update({ winner: "OPPONENT_FORCE_WIN" });
-            } else if (state === "go") {
-                if (gameMode === "local") handleRoundEnd(myId);
-                else db.ref('reflex/' + roomId).transaction(curr => (curr && !curr.winner) ? { ...curr, winner: myId } : undefined);
+            if (state === "go") {
+                const reaction = Date.now() - goTime;
+                myReactionTimes.push(reaction);
+                db.ref('reflex/' + roomId).update({ winner: myId });
+            } else if (state === "wait") {
+                db.ref('reflex/' + roomId).update({ winner: "early" });
             }
         }
 
-        function handleRoundEnd(winnerId) {
-            state = "round_end";
-            localTimers.forEach(t => clearTimeout(t)); 
-            let isWin = winnerId === myId;
-            if (isWin) myScore++; else oppScore++;
+        function handleRoundEnd(winner) {
+            state = "end";
+            if (winner === myId) myScore++; else if (winner !== "early") oppScore++;
             document.getElementById('scoreMy').innerText = myScore;
             document.getElementById('scoreOpp').innerText = oppScore;
-            setScreen(isWin ? "win" : "lose", isWin ? "WIN" : "LOSS");
-            if (currentRound >= 5) setTimeout(showFinalScreen, 2000);
-            else { currentRound++; setTimeout(() => { 
+            
+            if (currentRound < 5) {
+                currentRound++;
                 document.getElementById('roundDisplay').innerText = currentRound + "/5";
-                if (gameMode === "local") startLocalRound();
-                if (gameMode === "online" && isHost) scheduleNextRound();
-            }, 2500); }
+                if (isHost) setTimeout(startRound, 2000);
+            } else {
+                setTimeout(showFinalScreen, 1000);
+            }
         }
 
-        function startLocalGame() { gameMode = "local"; setupGameUI(); startLocalRound(); }
-        function sendEmoji(emoji) { if (roomId && gameMode !== "local") db.ref('reflex/' + roomId + '/chats').push({ sender: myId, text: emoji }); }
+        // CHAT LOGIC
+        function sendEmoji(emoji) {
+            if (roomId) db.ref('reflex/' + roomId + '/chats').push({ sender: myId, text: emoji });
+        }
         function sendMessage() {
             const input = document.getElementById('chatInput');
-            if (input.value.trim() && roomId) { db.ref('reflex/' + roomId + '/chats').push({ sender: myId, text: input.value }); input.value = ""; }
+            if (input.value.trim() && roomId) {
+                db.ref('reflex/' + roomId + '/chats').push({ sender: myId, text: input.value });
+                input.value = "";
+            }
         }
 
-        function setScreen(type, text) {
-            const area = document.getElementById('gameArea');
-            area.className = "bg-" + type;
-            document.getElementById('gameMessage').innerText = (type === "waiting") ? "WAIT" : (type === "go" ? "TAP!" : text);
-            if (type === "go") navigator.vibrate?.(200);
-            state = type;
-        }
-        function resetRoundUI() { setScreen("waiting"); }
-        function setupGameUI() {
-            document.getElementById('lobby').classList.add('hidden');
-            document.getElementById('gameArea').style.display = 'flex';
-            document.getElementById('scoreboard').classList.remove('hidden');
-            if(gameMode === "online") document.getElementById('chatWrapper').style.display = 'block';
-            resetRoundUI();
-        }
         function showFinalScreen() {
             document.getElementById('gameArea').style.display = 'none';
-            document.getElementById('scoreboard').classList.add('hidden');
             document.getElementById('chatWrapper').style.display = 'none';
             document.getElementById('finalScreen').style.display = 'flex';
-            document.getElementById('finalScore').innerText = `${myScore} - ${oppScore}`;
+            
+            const avg = Math.round(myReactionTimes.reduce((a,b) => a+b, 0) / (myReactionTimes.length || 1));
+            document.getElementById('avgTime').innerText = avg + "ms";
+            document.getElementById('resultAvatar').src = myAvatar;
+
+            const winMsgs = ["Cheetah Reflexes! 🐆", "You're a God! ⚡", "Pro Gamer Move! 🔥"];
+            const lossMsgs = ["Internet slow tha? 😴", "Bot level play... 🤖", "Coffee pi lo! ☕"];
+
+            if (myScore > oppScore) {
+                document.getElementById('finalTitle').innerText = "CONGRATS! YOU WON 🏆";
+                document.getElementById('finalTitle').style.color = "var(--success)";
+                document.getElementById('funnyMessage').innerText = winMsgs[Math.floor(Math.random()*winMsgs.length)];
+            } else {
+                document.getElementById('finalTitle').innerText = "YOU LOST 💀";
+                document.getElementById('finalTitle').style.color = "var(--danger)";
+                document.getElementById('funnyMessage').innerText = lossMsgs[Math.floor(Math.random()*lossMsgs.length)];
+            }
+
+            document.getElementById('shareBtn').onclick = () => {
+                const text = `Neon Reflex ⚡\nScore: ${myScore}-${oppScore}\nAvg Speed: ${avg}ms\nBeat me here: ${window.location.href}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+            };
         }
-        function requestRematch() { if (gameMode === "local") location.reload(); else db.ref('reflex/' + roomId).update({ status: "restart" }); }
     </script>
 </body>
 </html>
