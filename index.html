@@ -3,113 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Reflex: Cyber Arena</title>
+    <title>Neon Reflex: Classic White</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;900&family=Rajdhani:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Orbitron:wght@900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         :root {
-            --neon-blue: #00f3ff;
-            --neon-pink: #bc13fe;
-            --neon-green: #0fff50;
-            --neon-red: #ff3131;
-            --bg-dark: #0a0a0a;
-            --glass: rgba(255, 255, 255, 0.08);
+            --primary: #007bff;
+            --secondary: #6c757d;
+            --success: #28a745;
+            --danger: #dc3545;
+            --bg: #f8f9fa;
         }
 
-        * { box-sizing: border-box; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: var(--bg-dark);
-            color: white;
-            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            font-family: 'Poppins', sans-serif;
             margin: 0; padding: 0;
             height: 100vh; width: 100vw;
             overflow: hidden;
             position: fixed;
-            background-image: radial-gradient(circle at center, #111 0%, #000 100%);
+            display: flex; flex-direction: column;
         }
 
         /* --- SCOREBOARD --- */
         #scoreboard {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            width: 95%; max-width: 500px; height: 60px;
+            width: 100%; height: 60px;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; background: var(--glass); backdrop-filter: blur(15px);
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; z-index: 100;
+            padding: 0 20px; background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            z-index: 100;
         }
-        .score-num { font-size: 1.5rem; font-weight: bold; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+        .score-num { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+        .score-label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
 
-        /* --- LOBBY & CARD --- */
-        .card-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center; z-index: 50;
+        /* --- LOBBY CARD --- */
+        .center-container {
+            flex: 1; display: flex; justify-content: center; align-items: center;
             padding-bottom: 70px;
         }
         .card {
-            background: rgba(15, 15, 15, 0.95); border: 1px solid #333;
-            padding: 30px; border-radius: 20px; width: 90%; max-width: 380px;
-            text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            background: white; border-radius: 20px; padding: 30px;
+            width: 90%; max-width: 380px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-        h1 { font-family: 'Orbitron'; font-size: 1.8rem; margin: 0; background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        /* QR CENTER STYLE */
+        h1 { font-family: 'Orbitron'; font-size: 1.8rem; margin: 0; color: #222; letter-spacing: 1px; }
+        p { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+
+        /* QR CENTERED */
         #qrcode { 
-            background: white; 
-            padding: 10px; 
-            border-radius: 10px; 
-            margin: 20px auto; /* Centers the QR */
-            display: flex;
-            justify-content: center;
-            width: fit-content;
+            background: white; padding: 10px; border: 1px solid #eee;
+            border-radius: 10px; margin: 20px auto; 
+            display: flex; justify-content: center; width: fit-content;
         }
 
-        .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .btn-create { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
-        .btn-join { background: transparent; border: 1px solid var(--neon-pink); color: var(--neon-pink); }
-        input { width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: white; border-radius: 8px; text-align: center; font-size: 1.2rem; margin-bottom: 10px; font-family: 'Orbitron'; }
+        .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-create { background: var(--primary); color: white; }
+        .btn-join { background: white; border: 2px solid var(--primary); color: var(--primary); }
+        .btn:active { transform: scale(0.97); }
+
+        input { width: 100%; padding: 12px; background: #f1f3f5; border: 1px solid #ddd; color: #333; border-radius: 8px; text-align: center; font-size: 1.2rem; margin-bottom: 10px; font-family: 'Orbitron'; }
 
         /* --- GAME AREA --- */
-        #gameArea { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 20; padding-bottom: 70px; }
-        .status-text { font-family: 'Orbitron'; font-size: clamp(3rem, 15vw, 6rem); font-weight: 900; pointer-events: none; }
-        .bg-waiting { background: #000; } .bg-go { background: var(--neon-green); }
-        .bg-win { background: var(--neon-blue); } .bg-lose { background: #1a1a1a; }
+        #gameArea { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
+        .status-text { font-family: 'Orbitron'; font-size: clamp(3rem, 15vw, 6rem); font-weight: 900; }
+        
+        /* THEME COLORS */
+        .bg-waiting { background: #ffffff; } .bg-waiting .status-text { color: #eee; }
+        .bg-go { background: var(--success); } .bg-go .status-text { color: white; }
+        .bg-win { background: var(--primary); } .bg-win .status-text { color: white; }
+        .bg-lose { background: #f1f1f1; } .bg-lose .status-text { color: #ccc; }
 
-        /* --- CHAT --- */
-        #chatWrapper { position: fixed; bottom: 80px; width: 95%; max-width: 400px; left: 50%; transform: translateX(-50%); z-index: 110; display: none; }
-        #chatDisplay { height: 60px; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 10px; padding: 5px; margin-bottom: 5px; font-size: 0.8rem; text-align: left; }
+        /* --- CHAT SECTION --- */
+        #chatWrapper { position: fixed; bottom: 80px; width: 95%; max-width: 400px; left: 50%; transform: translateX(-50%); z-index: 210; display: none; background: white; border-radius: 15px; padding: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border: 1px solid #eee; }
+        #chatDisplay { height: 60px; overflow-y: auto; background: #f8f9fa; border-radius: 8px; padding: 5px; margin-bottom: 8px; font-size: 0.8rem; text-align: left; border: 1px solid #eee; }
+        .emoji-row { display: flex; justify-content: center; gap: 15px; margin-bottom: 8px; font-size: 1.5rem; }
+        .emoji-row span { cursor: pointer; transition: 0.2s; }
+        .emoji-row span:hover { transform: scale(1.2); }
 
         /* --- AD --- */
-        #ad-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; border-top: 1px solid #222; }
+        #ad-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; border-top: 1px solid #eee; }
 
         .hidden { display: none !important; }
-        #finalScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 150; flex-direction: column; justify-content: center; align-items: center; }
+        #finalScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 300; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
     <div id="scoreboard" class="hidden">
-        <div class="score-box"><div class="score-num" id="scoreMy">0</div><div style="font-size:0.6rem">YOU</div></div>
-        <div class="score-box"><div class="score-num" id="roundDisplay">1/5</div><div style="font-size:0.6rem">ROUND</div></div>
-        <div class="score-box"><div class="score-num" id="scoreOpp">0</div><div style="font-size:0.6rem">OPP</div></div>
+        <div class="score-box"><div class="score-num" id="scoreMy">0</div><div class="score-label">YOU</div></div>
+        <div class="score-box"><div class="score-num" id="roundDisplay">1/5</div><div class="score-label">ROUND</div></div>
+        <div class="score-box"><div class="score-num" id="scoreOpp">0</div><div class="score-label">OPP</div></div>
     </div>
 
-    <div id="lobby" class="card-container">
+    <div id="lobby" class="center-container">
         <div class="card">
             <h1>NEON REFLEX</h1>
-            <p>SYNCED MULTIPLAYER DUEL</p>
+            <p>Classic White Edition</p>
             <div id="mainMenu">
                 <button class="btn btn-create" onclick="createRoom()">CREATE ROOM</button>
                 <input type="text" id="roomInput" placeholder="CODE" maxlength="4">
                 <button class="btn btn-join" onclick="joinRoom()">JOIN ROOM</button>
-                <button class="btn" style="background:#222; color:#777; font-size:0.7rem;" onclick="startLocalGame()">PRACTICE VS AI</button>
+                <button class="btn" style="background:#f1f3f5; color:#999; font-size:0.7rem; margin-top:10px;" onclick="startLocalGame()">PRACTICE VS AI</button>
             </div>
             <div id="waitingUi" class="hidden">
                 <div id="qrcode"></div>
-                <h2 id="roomCodeDisplay" style="color:var(--neon-blue); font-family:Orbitron; font-size: 2.5rem; margin: 10px 0;"></h2>
-                <div style="color:var(--neon-green); font-weight:bold; letter-spacing:2px;">WAITING...</div>
-                <button class="btn" style="background:#222; color:white; margin-top:20px;" onclick="location.reload()">CANCEL</button>
+                <h2 id="roomCodeDisplay" style="color:var(--primary); font-family:Orbitron; font-size: 2.5rem; margin: 10px 0;"></h2>
+                <div style="color:var(--success); font-weight:bold;">WAITING FOR PLAYER...</div>
+                <button class="btn" style="background:#eee; color:#666; margin-top:20px;" onclick="location.reload()">CANCEL</button>
             </div>
         </div>
     </div>
@@ -119,22 +124,22 @@
     </div>
 
     <div id="chatWrapper">
-        <div id="emojiBar" style="display:flex; justify-content:center; gap:10px; margin-bottom:5px;">
-            <span onclick="sendEmoji('😂')" style="cursor:pointer; font-size:1.5rem;">😂</span>
-            <span onclick="sendEmoji('🔥')" style="cursor:pointer; font-size:1.5rem;">🔥</span>
-            <span onclick="sendEmoji('🤡')" style="cursor:pointer; font-size:1.5rem;">🤡</span>
-            <span onclick="sendEmoji('👍')" style="cursor:pointer; font-size:1.5rem;">👍</span>
+        <div class="emoji-row">
+            <span onclick="sendEmoji('😂')">😂</span>
+            <span onclick="sendEmoji('🔥')">🔥</span>
+            <span onclick="sendEmoji('🤡')">🤡</span>
+            <span onclick="sendEmoji('👍')">👍</span>
         </div>
         <div id="chatDisplay"></div>
         <div style="display:flex; gap:5px;">
-            <input type="text" id="chatInput" style="flex:1; margin:0; font-size:0.8rem; padding:8px;" placeholder="Message...">
-            <button onclick="sendMessage()" style="background:var(--neon-blue); border:none; padding:0 10px; border-radius:5px; font-weight:bold;">></button>
+            <input type="text" id="chatInput" style="flex:1; margin:0; font-size:0.8rem; padding:8px; background:white;" placeholder="Chat...">
+            <button onclick="sendMessage()" style="background:var(--primary); color:white; border:none; padding:0 15px; border-radius:5px; font-weight:bold;">></button>
         </div>
     </div>
 
     <div id="finalScreen">
-        <h1 id="finalTitle">GAME OVER</h1>
-        <div id="finalScore" style="font-size:2rem; color:white; margin-bottom:30px; font-family:Orbitron"></div>
+        <h1 id="finalTitle">MATCH OVER</h1>
+        <div id="finalScore" style="font-size:3rem; font-weight:bold; margin-bottom:30px; font-family:Orbitron"></div>
         <button class="btn btn-create" style="max-width:200px;" onclick="requestRematch()">REMATCH</button>
     </div>
 
@@ -149,6 +154,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
+        // ✅ YOUR FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
             authDomain: "neon-game-hub.firebaseapp.com",
@@ -174,8 +180,6 @@
             const code = urlParams.get('room');
             if (code) {
                 document.getElementById('roomInput').value = code.toUpperCase();
-                // Optional: Automatically join if code exists
-                // joinRoom(); 
             }
         };
 
@@ -242,7 +246,7 @@
                 const msg = snap.val();
                 const chatDisp = document.getElementById('chatDisplay');
                 const div = document.createElement('div');
-                div.style.color = msg.sender === myId ? "var(--neon-blue)" : "var(--neon-pink)";
+                div.style.color = msg.sender === myId ? "#007bff" : "#dc3545";
                 div.innerText = (msg.sender === myId ? "> You: " : "> Opp: ") + msg.text;
                 chatDisp.appendChild(div);
                 chatDisp.scrollTop = chatDisp.scrollHeight;
