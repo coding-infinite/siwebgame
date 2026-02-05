@@ -3,186 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Reflex: Cyberpunk Arena</title>
+    <title>Neon Reflex: Ultra</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;900&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
+        /* --- 1. GLOBAL SETTINGS --- */
         :root {
-            --neon-blue: #00f3ff;
-            --neon-pink: #bc13fe;
-            --neon-green: #0fff50;
-            --neon-red: #ff3131;
-            --bg-dark: #050505;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border-glow: 0 0 10px rgba(0, 243, 255, 0.5);
+            --primary: #00f3ff;
+            --secondary: #ff00ff;
+            --accent: #f0db4f;
+            --bg: #0a0a0a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        * { box-sizing: border-box; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
 
         body {
-            background-color: var(--bg-dark);
-            color: white;
-            font-family: 'Rajdhani', sans-serif;
             margin: 0; padding: 0;
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Poppins', sans-serif;
             height: 100vh; width: 100vw;
             overflow: hidden;
-            position: fixed;
-            /* Cyberpunk Grid Background */
+            display: flex; flex-direction: column;
+            /* Cool Grid Background */
             background-image: 
-                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
-            background-position: center;
+                radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000 80%);
         }
 
-        /* --- HUD SCOREBOARD --- */
+        /* --- 2. SCOREBOARD (Fixed Top) --- */
         #scoreboard {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            width: 95%; max-width: 500px;
-            height: 70px;
+            position: fixed; top: 0; left: 0; width: 100%; height: 70px;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 25px;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 243, 255, 0.2);
-            border-radius: 15px;
+            padding: 0 5%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+            border-bottom: var(--border);
             z-index: 100;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
         }
 
         .score-box { text-align: center; }
-        .score-label { font-size: 0.75rem; color: #888; letter-spacing: 2px; font-family: 'Orbitron', sans-serif; }
-        .score-num { 
-            font-size: 1.8rem; font-weight: 700; color: white;
-            text-shadow: 0 0 10px var(--neon-blue);
-        }
+        .score-label { font-size: 0.7rem; color: #888; font-family: 'Orbitron'; letter-spacing: 1px; }
+        .score-num { font-size: 1.5rem; font-weight: bold; color: white; text-shadow: 0 0 10px var(--primary); }
 
-        /* --- MAIN CARD --- */
-        .center-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 50;
+        /* --- 3. CENTER CARD (Lobby) --- */
+        .center-wrapper {
+            flex: 1; display: flex; justify-content: center; align-items: center;
             padding-bottom: 60px; /* Space for Ad */
         }
 
         .card {
-            background: rgba(10, 10, 10, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%; max-width: 380px;
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: var(--border);
+            border-radius: 24px;
+            padding: 30px 20px;
+            width: 90%; max-width: 400px;
             text-align: center;
-            box-shadow: 0 0 40px rgba(0, 243, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             position: relative;
             overflow: hidden;
         }
 
-        /* Scanline Effect on Card */
-        .card::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
-            background: rgba(0, 243, 255, 0.3);
-            animation: scan 3s linear infinite;
-            pointer-events: none;
-        }
-        @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
-
+        /* Gradient Text */
         h1 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 2.2rem; margin: 0 0 5px;
-            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+            font-size: clamp(1.8rem, 5vw, 2.5rem); /* Responsive Font */
+            margin: 0 0 5px 0;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
         }
-        p { color: #aaa; margin-bottom: 25px; font-size: 1rem; letter-spacing: 1px; }
+        p { color: #aaa; font-size: 0.9rem; margin-bottom: 25px; }
 
-        /* --- BUTTONS --- */
-        .btn {
-            width: 100%; padding: 16px; margin: 10px 0;
-            border-radius: 8px; border: none;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700; font-size: 1rem; letter-spacing: 1.5px;
-            cursor: pointer; position: relative; overflow: hidden;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
-
-        .btn-ai {
-            background: transparent; border: 2px solid #ffee00; color: #ffee00;
-            box-shadow: 0 0 10px rgba(255, 238, 0, 0.2);
-        }
-        .btn-create {
-            background: var(--neon-blue); color: black;
-            box-shadow: 0 0 20px var(--neon-blue);
-        }
-        .btn-join {
-            background: transparent; border: 2px solid var(--neon-pink); color: var(--neon-pink);
-            box-shadow: 0 0 10px rgba(188, 19, 254, 0.2);
-        }
-        .btn:active { transform: scale(0.96); }
-
+        /* Inputs & Buttons */
         input {
-            width: 100%; padding: 15px; background: rgba(0,0,0,0.5);
-            border: 1px solid #333; color: var(--neon-blue);
-            text-align: center; border-radius: 8px; font-size: 1.4rem;
-            outline: none; font-family: 'Orbitron', sans-serif; letter-spacing: 3px;
-            margin-bottom: 10px; transition: 0.3s;
+            width: 100%; padding: 14px;
+            background: rgba(0,0,0,0.3); border: 1px solid #333;
+            border-radius: 12px; color: var(--primary);
+            font-family: 'Orbitron'; font-size: 1.2rem; text-align: center;
+            margin-bottom: 12px; transition: 0.3s;
         }
-        input:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 243, 255, 0.2); }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 243, 255, 0.2); }
 
-        /* --- GAME AREA --- */
+        .btn {
+            width: 100%; padding: 14px; margin: 6px 0;
+            border-radius: 12px; border: none; font-weight: 700;
+            font-family: 'Orbitron'; text-transform: uppercase;
+            cursor: pointer; transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.97); }
+
+        .btn-ai { background: rgba(255, 238, 0, 0.1); border: 1px solid var(--accent); color: var(--accent); }
+        .btn-create { background: var(--primary); color: #000; box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); }
+        .btn-join { background: transparent; border: 1px solid var(--secondary); color: var(--secondary); }
+
+        /* --- 4. GAME SCREEN (Fullscreen) --- */
         #gameArea {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: none; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 20; padding-bottom: 60px;
-            transition: background 0.1s ease;
+            z-index: 50; padding-bottom: 60px;
         }
 
+        /* Smart Text Sizing (No Overflow) */
         .status-text {
-            font-family: 'Orbitron', sans-serif;
-            font-size: clamp(3rem, 15vw, 6rem);
-            font-weight: 900; pointer-events: none;
-            text-shadow: 0 0 30px currentColor;
-            z-index: 2;
+            font-family: 'Orbitron';
+            font-size: clamp(3rem, 15vw, 6rem); /* Fits any screen */
+            font-weight: 900; line-height: 1;
+            pointer-events: none;
+            text-align: center;
+            padding: 0 10px;
         }
         .sub-text {
-            margin-top: 10px; font-size: 1.2rem; opacity: 0.8;
-            letter-spacing: 2px; text-transform: uppercase;
-            z-index: 2;
+            margin-top: 15px; font-size: 1rem; letter-spacing: 2px;
+            opacity: 0.7; pointer-events: none; text-align: center;
         }
 
-        /* --- STATES COLORS --- */
+        /* --- 5. COLORS --- */
         .bg-waiting { background: #000; }
-        .bg-waiting .status-text { color: #333; animation: pulse 1.5s infinite; }
-        
-        .bg-go { background: var(--neon-green); }
-        .bg-go .status-text { color: black; text-shadow: none; animation: shake 0.2s; }
+        .bg-waiting .status-text { color: #333; animation: pulse 2s infinite; }
+        .bg-go { background: var(--primary); }
+        .bg-go .status-text { color: #000; }
+        .bg-early { background: #ff0044; }
+        .bg-win { background: var(--secondary); }
+        .bg-lose { background: #111; } .bg-lose .status-text { color: #444; }
 
-        .bg-early { background: var(--neon-red); }
-        .bg-early .status-text { color: white; }
+        @keyframes pulse { 50% { opacity: 0.5; } }
 
-        .bg-win { background: var(--neon-blue); }
-        .bg-win .status-text { color: black; text-shadow: none; }
-
-        .bg-lose { background: #1a1a1a; }
-        .bg-lose .status-text { color: var(--neon-red); }
-
-        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 0.8; text-shadow: 0 0 20px white; } 100% { opacity: 0.3; } }
-        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-1deg); } 75% { transform: translate(3px, 1px) rotate(1deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
-
-        /* --- AD & UTILS --- */
+        /* --- 6. AD BANNER (Fixed Bottom) --- */
         #ad-container {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
-            z-index: 9999; display: flex; justify-content: center; align-items: center;
-            border-top: 1px solid #222;
+            background: #000; border-top: 1px solid #333;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
         }
-        #finalScreen { display: none; background: rgba(0,0,0,0.95); z-index: 150; position:fixed; top:0; left:0; width:100%; height:100%; flex-direction:column; justify-content:center; align-items:center; }
+
+        /* --- 7. FINAL SCREEN --- */
+        #finalScreen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 200;
+            flex-direction: column; justify-content: center; align-items: center;
+            padding-bottom: 60px;
+        }
+        
         .hidden { display: none !important; }
-        #qrcode { background: white; padding: 10px; border-radius: 10px; margin: 10px auto; display: inline-block; }
+        #qrcode { background: white; padding: 8px; border-radius: 8px; margin: 15px auto; display: inline-block; }
     </style>
 </head>
 <body>
@@ -190,49 +158,49 @@
     <div id="scoreboard" class="hidden">
         <div class="score-box">
             <div class="score-label">YOU</div>
-            <div class="score-num" id="scoreMy" style="color:var(--neon-blue)">0</div>
+            <div class="score-num" id="scoreMy" style="color:var(--primary)">0</div>
         </div>
         <div class="score-box">
-            <div class="score-label">RND</div>
-            <div class="score-num"><span id="roundDisplay">1</span><span style="font-size:1rem;color:#555">/5</span></div>
+            <div class="score-label">ROUND</div>
+            <div class="score-num"><span id="roundDisplay">1</span>/5</div>
         </div>
         <div class="score-box">
             <div class="score-label">OPP</div>
-            <div class="score-num" id="scoreOpp" style="color:var(--neon-pink)">0</div>
+            <div class="score-num" id="scoreOpp" style="color:var(--secondary)">0</div>
         </div>
     </div>
 
-    <div id="lobby" class="center-container">
+    <div id="lobby" class="center-wrapper">
         <div class="card">
             <h1>NEON REFLEX</h1>
-            <p>CYBERPUNK DUEL ARENA</p>
+            <p>Competitive Reaction Game</p>
             
             <div id="mainMenu">
-                <button class="btn btn-ai" onclick="startLocalGame()">⚡ VS AI SYSTEM</button>
-                <div style="margin: 15px 0; font-size: 0.8rem; opacity: 0.4; letter-spacing: 2px;">— OR MULTIPLAYER —</div>
-                <button class="btn btn-create" onclick="createRoom()">CREATE LOBBY</button>
-                <input type="text" id="roomInput" placeholder="CODE" maxlength="4">
-                <button class="btn btn-join" onclick="joinRoom()">JOIN LOBBY</button>
+                <button class="btn btn-ai" onclick="startLocalGame()">⚡ VS COMPUTER</button>
+                <div style="margin: 15px 0; font-size: 0.7rem; opacity: 0.3;">MULTIPLAYER</div>
+                <button class="btn btn-create" onclick="createRoom()">CREATE ROOM</button>
+                <input type="text" id="roomInput" placeholder="ENTER CODE" maxlength="4">
+                <button class="btn btn-join" onclick="joinRoom()">JOIN ROOM</button>
             </div>
 
             <div id="waitingUi" class="hidden">
                 <div id="qrcode"></div>
-                <h2 id="roomCodeDisplay" style="color:var(--neon-blue); font-family:'Orbitron'; font-size: 2.5rem; margin: 15px 0; letter-spacing: 5px;"></h2>
-                <div style="color:var(--neon-green); margin-bottom: 20px; font-weight:bold; letter-spacing:1px;" class="status-text" style="font-size:1rem!important;">WAITING FOR PLAYER...</div>
-                <button class="btn" style="background: rgba(255,255,255,0.1); color: white; border:1px solid #333;" onclick="location.reload()">ABORT</button>
+                <h2 id="roomCodeDisplay" style="color:var(--primary); font-family:'Orbitron'; font-size: 2.5rem; margin: 10px 0;"></h2>
+                <div style="color:var(--secondary); font-size: 0.9rem; margin-bottom: 20px; font-weight:bold;">WAITING FOR PLAYER...</div>
+                <button class="btn" style="background: #222; color: #fff;" onclick="location.reload()">CANCEL</button>
             </div>
         </div>
     </div>
 
     <div id="gameArea" class="bg-waiting" onclick="handleTap()">
         <div class="status-text" id="gameMessage">WAIT</div>
-        <div class="sub-text" id="gameSubtext">SYNCING NEURAL LINK...</div>
+        <div class="sub-text" id="gameSubtext">SYNCING SERVERS...</div>
     </div>
 
     <div id="finalScreen">
-        <h1 id="finalTitle" style="font-size: 3rem; margin-bottom: 10px;">GAME OVER</h1>
-        <div id="finalScore" style="font-size:1.5rem; color:#aaa; margin-bottom:30px; font-family:'Orbitron'"></div>
-        <button class="btn btn-create" style="max-width:250px;" onclick="requestRematch()">REMATCH 🔄</button>
+        <h1 id="finalTitle" style="font-size: 3rem; margin-bottom: 5px;">GAME OVER</h1>
+        <div id="finalScore" style="font-size:1.5rem; color:#888; margin-bottom:30px; font-family:'Orbitron'"></div>
+        <button class="btn btn-create" style="max-width:200px;" onclick="requestRematch()">PLAY AGAIN</button>
     </div>
 
     <div id="ad-container">
@@ -247,7 +215,7 @@
 
     <script>
         // ===========================================
-        // ✅ APKA CONFIGURATON ADD HO GAYA HAI
+        // ✅ YOUR EXACT CONFIG
         // ===========================================
         const firebaseConfig = {
             apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
@@ -265,7 +233,7 @@
             firebase.initializeApp(firebaseConfig); 
         } catch (e) { 
             console.error(e); 
-            alert("Firebase Connection Failed"); 
+            alert("Firebase Connect Failed! Check Internet."); 
         }
         const db = firebase.database();
 
@@ -279,7 +247,7 @@
         let localTimers = [];
         let serverOffset = 0;
 
-        // SYNC LOGIC
+        // Sync Clock
         db.ref(".info/serverTimeOffset").on("value", function(snap) { serverOffset = snap.val(); });
         function getServerTime() { return Date.now() + serverOffset; }
 
@@ -312,7 +280,7 @@
             isHost = true;
             
             document.getElementById('lobby').classList.add('hidden');
-            document.getElementById('lobby').classList.remove('hidden'); 
+            document.getElementById('lobby').classList.remove('hidden'); // Show container
             document.getElementById('mainMenu').classList.add('hidden'); 
             document.getElementById('waitingUi').classList.remove('hidden'); 
             document.getElementById('roomCodeDisplay').innerText = roomId;
@@ -322,7 +290,7 @@
         function joinRoom() {
             gameMode = "online";
             roomId = document.getElementById('roomInput').value.toUpperCase().trim();
-            if (!roomId) return alert("ENTER ROOM CODE");
+            if (!roomId) return alert("ENTER CODE");
             
             db.ref('reflex/' + roomId).once('value', snap => {
                 if (snap.exists()) {
@@ -423,8 +391,8 @@
             } else if (type === "go") {
                 state = "go"; txt.innerText = "TAP!"; sub.innerText = "NOW!"; navigator.vibrate?.(200);
             } else {
-                txt.innerText = text; sub.innerText = "NEXT ROUND INITIATING...";
-                if(type === "early") { txt.innerText = "FALSE START"; sub.innerText = "PENALTY APPLIED"; navigator.vibrate?.([50,50,50]); }
+                txt.innerText = text; sub.innerText = "NEXT ROUND...";
+                if(type === "early") { txt.innerText = "FALSE START"; sub.innerText = "PENALTY"; navigator.vibrate?.([50,50]); }
             }
         }
         function resetRoundUI() { setScreen("waiting"); }
@@ -440,8 +408,8 @@
             const screen = document.getElementById('finalScreen');
             screen.style.display = 'flex';
             
-            let resultText = myScore > oppScore ? "CHAMPION 🏆" : "ELIMINATED 💀";
-            let color = myScore > oppScore ? "var(--neon-blue)" : "var(--neon-red)";
+            let resultText = myScore > oppScore ? "CHAMPION" : "DEFEAT";
+            let color = myScore > oppScore ? "var(--primary)" : "#ff0044";
             document.getElementById('finalTitle').innerText = resultText;
             document.getElementById('finalTitle').style.color = color;
             document.getElementById('finalScore').innerText = `${myScore} - ${oppScore}`;
