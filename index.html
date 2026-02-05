@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Reflex: Championship</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-red: #ff3131;
+            --neon-green: #0fff50;
+            --bg-dark: #050505;
+        }
+
+        * { box-sizing: border-box; touch-action: manipulation; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Exo 2', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+        }
+
+        /* --- SCOREBOARD --- */
+        #scoreboard {
+            position: absolute; top: 0; left: 0; width: 100%;
+            height: 60px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 15px;
+            background: rgba(0,0,0,0.6); 
+            z-index: 20;
+            font-weight: bold; font-size: 1rem;
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .score-box { display: flex; flex-direction: column; align-items: center; }
+        .score-num { color: var(--neon-blue); font-size: 1.4rem; line-height: 1; }
+        .score-label { font-size: 0.7rem; opacity: 0.7; }
+
+        /* --- LOBBY CARD --- */
+        .center-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 10;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px; 
+            border-radius: 20px;
+            width: 90%; 
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h1 { margin: 0 0 10px; color: var(--neon-blue); text-transform: uppercase; font-size: 1.8rem; }
+        p { color: #aaa; margin-bottom: 20px; font-size: 0.9rem; }
+
+        .btn { 
+            width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; 
+            font-weight: bold; cursor: pointer; border: none; font-size: 1rem;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn:active { transform: scale(0.96); opacity: 0.8; }
+        
+        .btn-ai { background: #ffee00; color: #000; box-shadow: 0 0 10px rgba(255, 238, 0, 0.2); }
+        .btn-create { background: var(--neon-blue); color: #000; box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); }
+        .btn-join { background: transparent; border: 2px solid var(--neon-pink); color: var(--neon-pink); }
+        
+        input { 
+            width: 100%; padding: 12px; background: #222; border: 1px solid #444; 
+            color: white; text-align: center; margin-bottom: 10px; border-radius: 8px; 
+            font-size: 1.1rem; outline: none;
+        }
+        input:focus { border-color: var(--neon-blue); }
+
+        /* --- GAME AREA --- */
+        #gameArea {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 15;
+            transition: background-color 0.1s;
+        }
+
+        .status-text { 
+            font-size: clamp(3rem, 15vw, 6rem);
+            font-weight: 900; 
+            pointer-events: none; 
+            line-height: 1;
+        }
+        .sub-text { 
+            margin-top: 15px; 
+            font-size: clamp(1rem, 4vw, 1.5rem); 
+            opacity: 0.8; 
+            pointer-events: none; 
+            padding: 0 20px;
+        }
+
+        .bg-waiting { background: #000; }
+        .bg-go { background: var(--neon-green); }
+        .bg-early { background: var(--neon-red); }
+        .bg-win { background: var(--neon-blue); }
+        .bg-lose { background: #1a1a1a; }
+
+        .pulse { animation: pulse 1s infinite; }
+        @keyframes pulse { 50% { opacity: 0.5; } }
+
+        /* --- FINAL SCREEN --- */
+        #finalScreen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 30;
+            flex-direction: column; justify-content: center; align-items: center;
+            padding: 20px; text-align: center;
+        }
+        
+        .hidden { display: none !important; }
+        #qrcode img { margin: 0 auto; }
+    </style>
+</head>
+<body>
+
+    <div id="scoreboard" class="hidden">
+        <div class="score-box">
+            <span class="score-label">YOU</span>
+            <span class="score-num" id="scoreMy">0</span>
+        </div>
+        <div class="score-box">
+            <span class="score-label">ROUND</span>
+            <span class="score-num"><span id="roundDisplay">1</span>/5</span>
+        </div>
+        <div class="score-box">
+            <span class="score-label">OPP</span>
+            <span class="score-num" id="scoreOpp">0</span>
+        </div>
+    </div>
+
+    <div id="lobby" class="center-container">
+        <div class="card">
+            <h1>Reflex League</h1>
+            <p>Best of 5 Wins</p>
+            
+            <div id="mainMenu">
+                <button class="btn btn-ai" onclick="startLocalGame()">⚡ Play vs AI</button>
+                <div style="margin: 10px 0; font-size: 0.8rem; opacity: 0.5;">— OR —</div>
+                <button class="btn btn-create" onclick="createRoom()">Create Room</button>
+                <input type="text" id="roomInput" placeholder="Enter Code" maxlength="4">
+                <button class="btn btn-join" onclick="joinRoom()">Join Room</button>
+            </div>
+
+            <div id="waitingUi" class="hidden">
+                <div style="background: white; padding: 10px; border-radius: 10px; display: inline-block;">
+                    <div id="qrcode"></div>
+                </div>
+                <h2 id="roomCodeDisplay" style="color:var(--neon-blue); font-size: 2rem; margin: 10px 0;"></h2>
+                <div class="pulse" style="color:var(--neon-green); margin-bottom: 20px;">Waiting for player...</div>
+                <button class="btn" style="background: #333; color: white; padding: 10px;" onclick="location.reload()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameArea" class="bg-waiting" onclick="handleTap()">
+        <div class="status-text" id="gameMessage">WAIT</div>
+        <div class="sub-text" id="gameSubtext">Round 1 starts...</div>
+    </div>
+
+    <div id="finalScreen">
+        <h1 id="finalTitle" style="font-size: 2.5rem; margin-bottom: 10px;">GAME OVER</h1>
+        <div id="finalScore" style="font-size:1.2rem; color:#aaa; margin-bottom:30px;"></div>
+        <button class="btn btn-create" style="max-width:250px;" onclick="requestRematch()">PLAY AGAIN 🔄</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        // --- YOUR CONFIG (Added Successfully) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
+            authDomain: "neon-game-hub.firebaseapp.com",
+            databaseURL: "https://neon-game-hub-default-rtdb.firebaseio.com",
+            projectId: "neon-game-hub",
+            storageBucket: "neon-game-hub.firebasestorage.app",
+            messagingSenderId: "636141968933",
+            appId: "1:636141968933:web:60c7cc21d75883ef08a9cc",
+            measurementId: "G-78MZSKLPF9"
+        };
+        // ----------------------------------------
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let roomId = null;
+        let myId = Math.random().toString(36).substr(2, 6);
+        let isHost = false;
+        let gameMode = "online"; 
+        
+        let currentRound = 1;
+        let myScore = 0;
+        let oppScore = 0;
+        let state = "lobby"; 
+        let localTimers = [];
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('room')) {
+                document.getElementById('roomInput').value = urlParams.get('room');
+                joinRoom();
+            }
+        };
+
+        // --- LOCAL GAME ---
+        function startLocalGame() {
+            gameMode = "local";
+            setupGameUI();
+            startLocalRound();
+        }
+
+        function startLocalRound() {
+            if (currentRound > 5) return showFinalScreen();
+            resetRoundUI();
+            const delay = Math.floor(Math.random() * 3000) + 2000;
+            
+            localTimers.push(setTimeout(() => {
+                if (state !== "waiting") return;
+                setScreen("go");
+                
+                // AI Response
+                const reaction = Math.floor(Math.random() * 300) + 200;
+                localTimers.push(setTimeout(() => {
+                    if (state === "go") handleRoundEnd("computer");
+                }, reaction));
+            }, delay));
+        }
+
+        // --- ONLINE GAME ---
+        function createRoom() {
+            gameMode = "online";
+            roomId = Math.random().toString(36).substr(2, 4).toUpperCase();
+            
+            const joinUrl = window.location.href.split('?')[0] + "?room=" + roomId;
+            document.getElementById("qrcode").innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 120, height: 120 });
+
+            db.ref('reflex/' + roomId).set({ status: "waiting_for_player", round: 1, winner: "" });
+            isHost = true;
+            
+            document.getElementById('lobby').classList.add('hidden');
+            const lobbyContainer = document.getElementById('lobby');
+            lobbyContainer.classList.remove('hidden');
+            
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('waitingUi').classList.remove('hidden');
+            document.getElementById('roomCodeDisplay').innerText = roomId;
+
+            waitForOpponent();
+        }
+
+        function joinRoom() {
+            gameMode = "online";
+            roomId = document.getElementById('roomInput').value.toUpperCase();
+            if (!roomId) return alert("Code required");
+
+            db.ref('reflex/' + roomId).once('value', snap => {
+                if (snap.exists()) {
+                    db.ref('reflex/' + roomId).update({ status: "ready" });
+                    setupGameUI();
+                    listenForUpdates();
+                } else {
+                    alert("Invalid Code");
+                }
+            });
+        }
+
+        function waitForOpponent() {
+            const listener = db.ref('reflex/' + roomId).on('value', snap => {
+                const data = snap.val();
+                if (data && data.status === "ready") {
+                    db.ref('reflex/' + roomId).off('value', listener);
+                    setupGameUI();
+                    listenForUpdates();
+                    if (isHost) startOnlineRound();
+                }
+            });
+        }
+
+        function startOnlineRound() {
+            if (currentRound > 5) return;
+            db.ref('reflex/' + roomId).update({ winner: "", status: "waiting" });
+            const delay = Math.floor(Math.random() * 4000) + 2000;
+            setTimeout(() => {
+                db.ref('reflex/' + roomId).once('value', s => {
+                    if(s.val().status === 'waiting') {
+                        db.ref('reflex/' + roomId).update({ status: "GO" });
+                    }
+                });
+            }, delay);
+        }
+
+        function listenForUpdates() {
+            db.ref('reflex/' + roomId).on('value', snap => {
+                const data = snap.val();
+                if (!data) return;
+
+                if (data.status === "restart") { location.reload(); return; }
+                if (data.status === "GO" && state === "waiting") setScreen("go");
+                if (data.winner && state !== "round_end") handleRoundEnd(data.winner);
+            });
+        }
+
+        // --- CORE LOGIC ---
+        function handleTap() {
+            if (state === "waiting") {
+                if (gameMode === "local") handleRoundEnd("computer"); 
+                else db.ref('reflex/' + roomId).update({ winner: "OPPONENT_FORCE_WIN" });
+            } else if (state === "go") {
+                if (gameMode === "local") handleRoundEnd(myId);
+                else db.ref('reflex/' + roomId).transaction(curr => (curr && !curr.winner) ? { ...curr, winner: myId } : undefined);
+            }
+        }
+
+        function handleRoundEnd(winnerId) {
+            state = "round_end";
+            localTimers.forEach(t => clearTimeout(t)); 
+
+            let msg = "", isWin = false;
+            if (winnerId === myId) { myScore++; msg = "WON!"; isWin = true; }
+            else { oppScore++; msg = "LOST"; isWin = false; }
+
+            document.getElementById('scoreMy').innerText = myScore;
+            document.getElementById('scoreOpp').innerText = oppScore;
+            setScreen(isWin ? "win" : "lose", msg);
+
+            if (currentRound >= 5) setTimeout(showFinalScreen, 2000);
+            else {
+                currentRound++;
+                setTimeout(() => {
+                    document.getElementById('roundDisplay').innerText = currentRound;
+                    if (gameMode === "local") startLocalRound();
+                    if (gameMode === "online" && isHost) startOnlineRound();
+                    if (gameMode === "online" && !isHost) resetRoundUI();
+                }, 2500); 
+            }
+        }
+
+        function setScreen(type, text) {
+            const area = document.getElementById('gameArea');
+            const txt = document.getElementById('gameMessage');
+            const sub = document.getElementById('gameSubtext');
+            area.className = "bg-" + type;
+            
+            if (type === "waiting") {
+                state = "waiting"; txt.innerText = "WAIT"; sub.innerText = "Round " + currentRound + "/5";
+            } else if (type === "go") {
+                state = "go"; txt.innerText = "TAP!"; sub.innerText = ""; navigator.vibrate?.(200);
+            } else {
+                txt.innerText = text || ""; sub.innerText = "Next round soon...";
+            }
+        }
+
+        function resetRoundUI() { setScreen("waiting"); }
+        function setupGameUI() {
+            document.getElementById('lobby').classList.add('hidden');
+            document.getElementById('gameArea').style.display = 'flex';
+            document.getElementById('scoreboard').classList.remove('hidden');
+            resetRoundUI();
+        }
+
+        function showFinalScreen() {
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('scoreboard').classList.add('hidden');
+            const screen = document.getElementById('finalScreen');
+            screen.style.display = 'flex';
+            
+            let resultText = myScore > oppScore ? "VICTORY 🏆" : "DEFEAT 💀";
+            let color = myScore > oppScore ? "var(--neon-blue)" : "var(--neon-red)";
+            
+            document.getElementById('finalTitle').innerText = resultText;
+            document.getElementById('finalTitle').style.color = color;
+            document.getElementById('finalScore').innerText = `Final Score: ${myScore} - ${oppScore}`;
+        }
+
+        function requestRematch() {
+            if (gameMode === "local") location.reload();
+            else db.ref('reflex/' + roomId).update({ status: "restart" });
+        }
+    </script>
+</body>
+</html>
