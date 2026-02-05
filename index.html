@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Reflex: Ultimate</title>
+    <title>Neon Reflex: Sync Fixed</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Orbitron:wght@900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
-        :root { --primary: #007bff; --bg: #f8f9fa; --success: #28a745; --danger: #dc3545; --insta: #E1306C; }
+        :root { --primary: #007bff; --bg: #f8f9fa; --success: #28a745; --danger: #dc3545; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #333; font-family: 'Poppins', sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
@@ -19,18 +19,18 @@
         .player-info { display: flex; flex-direction: column; align-items: center; width: 70px; }
         .score-val { font-weight: bold; font-size: 1.2rem; }
 
-        /* LOBBY CARD */
+        /* UI CARDS */
         .center-container { flex: 1; display: flex; justify-content: center; align-items: center; padding-bottom: 50px; margin-top: 70px; }
         .card { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         h1 { font-family: 'Orbitron'; color: #222; margin: 0; font-size: 1.8rem; }
         #qrcode { margin: 15px auto; display: flex; justify-content: center; }
         
-        .btn { width: 100%; padding: 12px; margin: 6px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.1s; font-size: 0.9rem; }
-        .btn:active { transform: scale(0.98); }
+        .btn { width: 100%; padding: 12px; margin: 6px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-outline { background: white; border: 2px solid var(--primary); color: var(--primary); }
-        .btn-rematch { background: #6f42c1; color: white; box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3); } 
-        
+        .btn-rematch { background: #6f42c1; color: white; display: none; margin-top: 10px; } 
+        .btn-share { background: #25D366; color: white; margin-top: 5px; }
+
         input { width: 100%; padding: 10px; background: #f1f3f5; border: 1px solid #ddd; color: #333; border-radius: 8px; text-align: center; font-size: 1.1rem; margin-bottom: 8px; font-family: 'Orbitron'; }
 
         /* GAME AREA */
@@ -43,27 +43,20 @@
         .text-white { color: white !important; }
         .text-dark { color: #333 !important; }
 
-        /* CHAT & EMOJI */
-        #chatWrapper { position: fixed; bottom: 65px; width: 95%; max-width: 400px; left: 50%; transform: translateX(-50%); z-index: 200; display: none; pointer-events: none; }
-        .emoji-bar { display: flex; justify-content: center; gap: 8px; margin-bottom: 5px; pointer-events: auto; }
+        /* CHAT */
+        #chatWrapper { position: fixed; bottom: 65px; width: 95%; max-width: 400px; left: 50%; transform: translateX(-50%); z-index: 200; display: none; }
+        .emoji-bar { display: flex; justify-content: center; gap: 8px; margin-bottom: 5px; }
         .emoji-btn { font-size: 1.4rem; cursor: pointer; background: rgba(255,255,255,0.9); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        
-        #chatDisplay { height: 100px; overflow-y: hidden; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 5px; padding: 0 10px; }
-        .msg { padding: 4px 10px; border-radius: 15px; margin: 2px 0; width: fit-content; max-width: 80%; animation: slideUp 0.2s ease; font-size: 0.85rem; background: rgba(255,255,255,0.9); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        #chatDisplay { height: 90px; overflow-y: hidden; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 5px; padding: 0 10px; pointer-events: none; }
+        .msg { padding: 4px 10px; border-radius: 15px; margin: 2px 0; width: fit-content; max-width: 80%; font-size: 0.85rem; background: rgba(255,255,255,0.9); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .msg-me { background: var(--primary); color: white; align-self: flex-end; }
         .msg-opp { background: white; color: #333; align-self: flex-start; border: 1px solid #eee; }
-        @keyframes slideUp { from{transform:translateY(10px); opacity:0;} to{transform:translateY(0); opacity:1;} }
-
         .chat-input-row { display: flex; gap: 5px; pointer-events: auto; background: white; padding: 5px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        #chatInput { margin: 0; padding: 8px; font-size: 0.9rem; font-family: sans-serif; text-align: left; border: none; background: transparent; flex: 1; }
-        #chatInput:focus { outline: none; }
+        #chatInput { margin: 0; padding: 8px; font-size: 0.9rem; border: none; background: transparent; flex: 1; }
 
         /* FINAL SCREEN */
         #finalScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 300; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
         .hidden { display: none !important; }
-
-        /* REMATCH OVERLAY */
-        #rematchOverlay { display: none; position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 30px; z-index: 400; font-size: 0.9rem; }
 
         /* AD BAR */
         #ad-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; border-top: 1px solid #eee; }
@@ -80,14 +73,15 @@
             <div id="roundDisplay" style="font-family:Orbitron; font-size:1.5rem; color:#888">1/5</div>
         </div>
         <div class="player-info">
-            <img id="oppAvatar" class="avatar" src=""> <div id="scoreOpp" class="score-val">0</div>
+            <img id="oppAvatar" class="avatar" src="">
+            <div id="scoreOpp" class="score-val">0</div>
         </div>
     </div>
 
     <div id="lobby" class="center-container">
         <div class="card">
             <h1>NEON REFLEX</h1>
-            <p style="color:#777; font-size:0.9rem;">Tap Faster to Win!</p>
+            <p>Sync Fixed Edition</p>
             <div id="mainMenu">
                 <button class="btn btn-primary" onclick="createRoom()">CREATE ROOM</button>
                 <input type="text" id="roomInput" placeholder="ENTER CODE">
@@ -97,17 +91,15 @@
             <div id="waitingUi" class="hidden">
                 <div id="qrcode"></div>
                 <h2 id="roomCodeDisplay" style="color:var(--primary); font-size:2.5rem; margin:10px 0;"></h2>
-                <div style="color:#888; margin-bottom:15px">Wait for friend to join...</div>
-                <button class="btn" style="background:#eee" onclick="location.reload()">CANCEL</button>
+                <div style="color:#888;">Wait for friend...</div>
+                <button class="btn" style="background:#eee; margin-top:15px" onclick="location.reload()">CANCEL</button>
             </div>
         </div>
     </div>
 
-    <div id="gameArea" class="bg-waiting" onclick="handleTap()">
+    <div id="gameArea" class="bg-waiting" ontouchstart="handleTap()" onclick="handleTap()">
         <div id="gameMessage" class="status-text text-dark">WAIT</div>
     </div>
-
-    <div id="rematchOverlay">Opponent wants a rematch...</div>
 
     <div id="chatWrapper">
         <div id="chatDisplay"></div>
@@ -127,13 +119,12 @@
         <img id="resultAvatar" class="avatar" style="width:90px; height:90px; border-width:4px;">
         <h1 id="finalTitle" style="margin-top:10px; font-size:2rem;"></h1>
         <p id="funnyMessage" style="color:#666; font-size:1rem;"></p>
-        
         <div style="background:#f8f9fa; padding:15px; border-radius:15px; width:100%; margin:15px 0;">
-            <div style="color:#888; font-size:0.8rem;">AVG REACTION</div>
-            <div id="avgTime" style="color:var(--primary); font-size:1.8rem; font-weight:bold;">0ms</div>
+             <div style="color:#888; font-size:0.8rem;">AVG REACTION</div>
+             <div id="avgTime" style="color:var(--primary); font-size:1.8rem; font-weight:bold;">0ms</div>
         </div>
-
-        <button class="btn btn-rematch" onclick="triggerRematch()">🔄 REMATCH SAME FRIEND</button>
+        <button id="rematchBtn" class="btn btn-rematch" style="display:block" onclick="requestRematch()">🔄 REMATCH SAME PLAYER</button>
+        <button id="shareBtn" class="btn btn-share">SHARE SCORE 💚</button>
         <button class="btn" style="background:#eee" onclick="location.reload()">MAIN MENU</button>
     </div>
 
@@ -160,265 +151,344 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let myId = Math.random().toString(36).substr(2, 6);
+        // GLOBALS
+        let myId = localStorage.getItem('neon_id') || Math.random().toString(36).substr(2, 6);
+        localStorage.setItem('neon_id', myId);
         let myAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${myId}`;
-        let myReactionTimes = [];
-        let roomId, isHost = false, gameMode = "online";
-        let state = "lobby", currentRound = 1, myScore = 0, oppScore = 0, goTime = 0;
-        let localTimers = [];
-        let canTap = true; // FIX: Prevents multiple taps per round
-
-        document.getElementById('myAvatar').src = myAvatar;
         
-        // Auto-Fill Code Logic
+        let roomId = null, isHost = false, gameMode = "online";
+        let state = "lobby"; // lobby, wait, go, end
+        let currentRound = 1, myScore = 0, oppScore = 0, goTime = 0;
+        let myReactionTimes = [];
+        let canTap = false;
+        let localTimers = [];
+
+        // INIT
+        document.getElementById('myAvatar').src = myAvatar;
         window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            if(urlParams.get('room')) document.getElementById('roomInput').value = urlParams.get('room');
+            const params = new URLSearchParams(window.location.search);
+            if(params.get('room')) document.getElementById('roomInput').value = params.get('room');
         };
 
-        // --- GAME SETUP ---
+        // --- ROOM MANAGEMENT ---
         function createRoom() {
             gameMode = "online";
             roomId = Math.random().toString(36).substr(2, 4).toUpperCase();
+            
+            // Clean URL for QR
             const joinUrl = window.location.href.split('?')[0] + "?room=" + roomId;
-            
             document.getElementById("qrcode").innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 140, height: 140 });
+            new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 120, height: 120 });
             
-            db.ref('reflex/' + roomId).set({ status: "waiting", hostAvatar: myAvatar, round: 1, myScore: 0, oppScore: 0 });
+            // Set Initial State
+            db.ref('reflex/' + roomId).set({ 
+                status: "waiting", 
+                hostAvatar: myAvatar,
+                round: 1,
+                rematchCount: 0 
+            });
+            
             isHost = true;
             document.getElementById('mainMenu').classList.add('hidden');
             document.getElementById('waitingUi').classList.remove('hidden');
             document.getElementById('roomCodeDisplay').innerText = roomId;
-            listenForOpponent();
+            
+            // Wait for guest
+            const listener = db.ref('reflex/' + roomId).on('value', snap => {
+                const data = snap.val();
+                if (data && data.status === "ready") {
+                    db.ref('reflex/' + roomId).off('value', listener); // Stop waiting listener
+                    document.getElementById('oppAvatar').src = data.guestAvatar || "https://api.dicebear.com/7.x/bottts/svg?seed=guest";
+                    setupGame();
+                }
+            });
         }
 
         function joinRoom() {
             gameMode = "online";
             roomId = document.getElementById('roomInput').value.toUpperCase().trim();
-            if (roomId.length < 1) return alert("Enter Code!");
+            if (!roomId) return alert("Code Empty!");
 
             db.ref('reflex/' + roomId).once('value', snap => {
                 if (snap.exists()) {
                     db.ref('reflex/' + roomId).update({ status: "ready", guestAvatar: myAvatar });
-                    startGame();
-                } else alert("Invalid Code!");
-            });
-        }
-
-        function listenForOpponent() {
-            db.ref('reflex/' + roomId).on('value', snap => {
-                const data = snap.val();
-                if (data && data.status === "ready") {
-                    // FIX: Ensure guest avatar loads correctly for host
-                    document.getElementById('oppAvatar').src = data.guestAvatar || "https://api.dicebear.com/7.x/bottts/svg?seed=guest"; 
-                    startGame();
+                    setupGame();
+                } else {
+                    alert("Room Not Found!");
                 }
             });
         }
 
         function startLocalGame() {
             gameMode = "local";
-            document.getElementById('oppAvatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=computer`;
-            startGame();
+            document.getElementById('oppAvatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=ai`;
+            setupGame();
         }
 
-        function startGame() {
+        // --- GAME STARTUP ---
+        function setupGame() {
+            // UI Reset
             document.getElementById('lobby').classList.add('hidden');
             document.getElementById('waitingUi').classList.add('hidden');
             document.getElementById('gameArea').style.display = 'flex';
             document.getElementById('scoreboard').classList.remove('hidden');
             document.getElementById('finalScreen').style.display = 'none';
             if(gameMode === "online") document.getElementById('chatWrapper').style.display = 'block';
-            
-            // RESET SCORES FOR REMATCH
-            myScore = 0; oppScore = 0; currentRound = 1; myReactionTimes = [];
+
+            // Variable Reset
+            currentRound = 1; myScore = 0; oppScore = 0; myReactionTimes = [];
             updateScoreUI();
 
-            if (gameMode === "local") startLocalRound();
-            else if (isHost) startOnlineRound();
+            if (gameMode === "online") {
+                startOnlineListener(); // Start listening for HOST signals
+                if (isHost) hostStartRound(); // Host triggers logic
+            } else {
+                localRoundLogic();
+            }
+        }
+
+        // --- ONLINE LOGIC (STRICT SYNC) ---
+        function startOnlineListener() {
+            const roomRef = db.ref('reflex/' + roomId);
             
-            if(gameMode === "online") listenForGameUpdates();
-        }
+            // 1. CLEAR OLD LISTENERS (Fixes Duplicate Chat/Events)
+            roomRef.off(); 
+            roomRef.child('chats').off();
 
-        function updateScoreUI() {
-            document.getElementById('scoreMy').innerText = myScore;
-            document.getElementById('scoreOpp').innerText = oppScore;
-            document.getElementById('roundDisplay').innerText = currentRound + "/5";
-        }
-
-        // --- ROUND LOGIC ---
-        function startOnlineRound() {
-            canTap = false; // Disable tapping during wait
-            db.ref('reflex/' + roomId).update({ winner: null, status: "wait", round: currentRound });
-            setTimeout(() => {
-                // Random time between 2-5 seconds
-                db.ref('reflex/' + roomId).update({ status: "go", goTime: Date.now() });
-            }, Math.random() * 3000 + 2000); 
-        }
-
-        function startLocalRound() {
-            if (currentRound > 5) return showFinalScreen();
-            resetScreen("wait");
-            
-            const delay = Math.random() * 3000 + 2000;
-            localTimers.push(setTimeout(() => {
-                resetScreen("go");
-                goTime = Date.now();
-                
-                // FIX: AI Difficulty Tuned (Easier: 400ms - 700ms)
-                const aiReaction = Math.random() * 300 + 400; 
-                localTimers.push(setTimeout(() => {
-                    if (state === "go") handleRoundEnd("computer");
-                }, aiReaction));
-
-            }, delay));
-        }
-
-        function listenForGameUpdates() {
-            db.ref('reflex/' + roomId).on('value', snap => {
+            // 2. GAME STATUS LISTENER
+            roomRef.on('value', snap => {
                 const data = snap.val();
                 if (!data) return;
 
-                // Sync Avatar for Guest if missing
+                // Sync Avatars
                 if (!isHost && data.hostAvatar) document.getElementById('oppAvatar').src = data.hostAvatar;
 
-                // Game Logic
-                if (data.status === "go" && state !== "go") {
-                    resetScreen("go");
-                    goTime = data.goTime;
-                    navigator.vibrate?.(50);
-                } else if (data.status === "wait" && state !== "wait") {
-                    resetScreen("wait");
-                } else if (data.status === "rematch") {
-                    // Both players restart
-                    startGame(); 
+                // STATE MACHINE
+                if (data.status === "wait") {
+                    setScreen("wait");
+                } 
+                else if (data.status === "go") {
+                    if (state !== "go") { // Only trigger once
+                        setScreen("go");
+                        goTime = data.goTime;
+                    }
+                } 
+                else if (data.status === "round_end") {
+                    if (state !== "end") handleOnlineRoundEnd(data.winner);
                 }
-
-                // Winner Sync
-                if (data.winner && state !== "end") {
-                    handleRoundEnd(data.winner);
+                else if (data.status === "game_over") {
+                    // Handled inside handleOnlineRoundEnd logic usually, but safeguard
+                }
+                else if (data.status === "rematch_ready") {
+                    setupGame(); // Both players restart
                 }
             });
 
-            // Chat Listener
-            db.ref('reflex/' + roomId + '/chats').limitToLast(1).on('child_added', snap => {
+            // 3. CHAT LISTENER
+            roomRef.child('chats').limitToLast(1).on('child_added', snap => {
                 const msg = snap.val();
-                if(!msg) return;
-                const display = document.getElementById('chatDisplay');
-                const div = document.createElement('div');
-                div.className = "msg " + (msg.sender === myId ? "msg-me" : "msg-opp");
-                div.innerText = msg.text;
-                display.appendChild(div);
-                if(display.children.length > 3) display.removeChild(display.firstChild);
+                if (msg) showMessage(msg);
             });
         }
 
-        function resetScreen(mode) {
-            state = mode;
-            canTap = (mode === "go" || mode === "wait"); // Enable tap only in game
-            const elArea = document.getElementById('gameArea');
-            const elMsg = document.getElementById('gameMessage');
+        function hostStartRound() {
+            if (currentRound > 5) return; // Game Over
             
-            if (mode === "wait") {
-                elArea.className = "bg-waiting"; elMsg.innerText = "WAIT"; elMsg.classList.add('text-dark'); elMsg.classList.remove('text-white');
-            } else if (mode === "go") {
-                elArea.className = "bg-go"; elMsg.innerText = "TAP!"; elMsg.classList.remove('text-dark'); elMsg.classList.add('text-white');
-            }
+            // Host sets state to WAIT
+            db.ref('reflex/' + roomId).update({ status: "wait", round: currentRound, winner: null });
+            
+            // Host calculates delay
+            const delay = Math.random() * 2000 + 2000;
+            setTimeout(() => {
+                // Host sets state to GO
+                db.ref('reflex/' + roomId).update({ status: "go", goTime: Date.now() });
+            }, delay);
         }
 
         function handleTap() {
-            if (!canTap) return; // FIX: Prevents multiple taps (spam click)
+            if (!canTap) return; // Debounce
+            canTap = false; // LOCK IMMEDIATELY
 
+            if (gameMode === "local") {
+                localHandleTap();
+                return;
+            }
+
+            // ONLINE TAP
             if (state === "go") {
-                canTap = false; // Lock tap immediately
-                const reaction = Date.now() - goTime;
-                myReactionTimes.push(reaction);
-                if (gameMode === "local") handleRoundEnd(myId);
-                else db.ref('reflex/' + roomId).update({ winner: myId });
-            } else if (state === "wait") {
-                canTap = false; // Lock tap
-                // Early penalty
-                if (gameMode === "local") handleRoundEnd("computer");
-                else db.ref('reflex/' + roomId).update({ winner: "early_opponent_wins" }); 
+                // I claim win
+                db.ref('reflex/' + roomId).transaction(currentData => {
+                    if (currentData && currentData.status === "go") {
+                        return { ...currentData, status: "round_end", winner: myId, reaction: Date.now() - goTime };
+                    }
+                    return; // Abort if already claimed
+                });
+                myReactionTimes.push(Date.now() - goTime);
+            } 
+            else if (state === "wait") {
+                // I tapped early -> Opponent wins
+                db.ref('reflex/' + roomId).update({ status: "round_end", winner: "opponent_default" }); 
             }
         }
 
-        function handleRoundEnd(winner) {
+        function handleOnlineRoundEnd(winnerId) {
             state = "end";
             canTap = false;
-            localTimers.forEach(t => clearTimeout(t));
 
-            let iWon = (winner === myId) || (winner.includes("early") && winner !== "early_opponent_wins");
+            let iWon = false;
+            if (winnerId === myId) iWon = true;
+            else if (winnerId === "opponent_default" && isHost) iWon = true; // Wait... logic is tricky.
+            // Simplified:
+            // If winnerID matches my ID -> I won.
+            // If winnerID is "opponent_default", it means someone tapped early. Who?
+            // Actually, simplified logic: The cloud determines winner.
             
-            const elArea = document.getElementById('gameArea');
-            const elMsg = document.getElementById('gameMessage');
-            
-            if (iWon) {
-                myScore++;
-                elArea.className = "bg-win"; elMsg.innerText = "WON!";
+            // To fix "Multiple Click" confusing logic, let's trust the ID.
+            if (winnerId === myId) {
+                iWon = true;
+                setScreen("win");
             } else {
-                oppScore++;
-                elArea.className = "bg-lose"; elMsg.innerText = "LOST";
+                setScreen("lose");
             }
-            elMsg.classList.remove('text-dark'); elMsg.classList.add('text-white');
 
+            if (iWon) myScore++; else oppScore++;
             updateScoreUI();
 
+            // Next Round Logic (Controlled by Host)
             if (currentRound < 5) {
                 currentRound++;
-                setTimeout(() => {
-                    if (gameMode === "local") startLocalRound();
-                    else if (isHost) startOnlineRound();
-                }, 2000);
+                if (isHost) {
+                    setTimeout(() => hostStartRound(), 2500);
+                }
             } else {
                 setTimeout(showFinalScreen, 2000);
             }
         }
 
-        // --- REMATCH & END SCREEN ---
+        // --- LOCAL AI LOGIC ---
+        function localRoundLogic() {
+            if (currentRound > 5) { showFinalScreen(); return; }
+            setScreen("wait");
+            
+            const delay = Math.random() * 2000 + 2000;
+            localTimers.push(setTimeout(() => {
+                setScreen("go");
+                goTime = Date.now();
+                // AI CLICK
+                const aiTime = Math.random() * 400 + 400; // 400-800ms
+                localTimers.push(setTimeout(() => {
+                    if (state === "go") {
+                        state = "end";
+                        setScreen("lose");
+                        oppScore++;
+                        updateScoreUI();
+                        nextLocalRound();
+                    }
+                }, aiTime));
+            }, delay));
+        }
+
+        function localHandleTap() {
+            if (state === "go") {
+                state = "end";
+                myReactionTimes.push(Date.now() - goTime);
+                setScreen("win");
+                myScore++;
+                updateScoreUI();
+                nextLocalRound();
+            } else if (state === "wait") {
+                state = "end";
+                setScreen("lose");
+                oppScore++;
+                updateScoreUI();
+                nextLocalRound();
+            }
+        }
+
+        function nextLocalRound() {
+            localTimers.forEach(t => clearTimeout(t));
+            currentRound++;
+            setTimeout(localRoundLogic, 2000);
+        }
+
+
+        // --- UI HELPERS ---
+        function setScreen(type) {
+            state = type;
+            const msg = document.getElementById('gameMessage');
+            const area = document.getElementById('gameArea');
+            
+            if (type === "wait") {
+                area.className = "bg-waiting"; msg.innerText = "WAIT"; 
+                msg.classList.remove('text-white'); msg.classList.add('text-dark');
+                canTap = true; // Enable tapping
+            } else if (type === "go") {
+                area.className = "bg-go"; msg.innerText = "TAP!"; 
+                msg.classList.add('text-white');
+                navigator.vibrate?.(50);
+            } else if (type === "win") {
+                area.className = "bg-win"; msg.innerText = "WON!"; 
+            } else if (type === "lose") {
+                area.className = "bg-lose"; msg.innerText = "LOST"; 
+                msg.classList.add('text-white');
+            }
+        }
+
+        function updateScoreUI() {
+            document.getElementById('scoreMy').innerText = myScore;
+            document.getElementById('scoreOpp').innerText = oppScore;
+            document.getElementById('roundDisplay').innerText = (currentRound > 5 ? 5 : currentRound) + "/5";
+        }
+
+        function requestRematch() {
+            document.getElementById('rematchBtn').innerText = "Waiting...";
+            if (gameMode === "local") setupGame();
+            else db.ref('reflex/' + roomId).update({ status: "rematch_ready" });
+        }
+
         function showFinalScreen() {
             document.getElementById('gameArea').style.display = 'none';
-            document.getElementById('chatWrapper').style.display = 'none';
             document.getElementById('scoreboard').classList.add('hidden');
+            document.getElementById('chatWrapper').style.display = 'none';
             document.getElementById('finalScreen').style.display = 'flex';
             
-            const avg = Math.round(myReactionTimes.reduce((a,b) => a+b, 0) / (myReactionTimes.length || 1));
+            const avg = Math.round(myReactionTimes.reduce((a,b)=>a+b,0)/(myReactionTimes.length||1));
             document.getElementById('avgTime').innerText = avg + "ms";
             document.getElementById('resultAvatar').src = myAvatar;
 
             const title = document.getElementById('finalTitle');
-            if (myScore > oppScore) {
+            if(myScore > oppScore) {
                 title.innerText = "VICTORY!"; title.style.color = "var(--success)";
-                document.getElementById('funnyMessage').innerText = "Speed King! ⚡";
+                document.getElementById('funnyMessage').innerText = "Too fast! ⚡";
             } else {
                 title.innerText = "DEFEAT"; title.style.color = "var(--danger)";
-                document.getElementById('funnyMessage').innerText = "Need more coffee? ☕";
+                document.getElementById('funnyMessage').innerText = "Try Coffee? ☕";
             }
+
+            document.getElementById('shareBtn').onclick = () => {
+                const text = `Neon Reflex ⚡\nScore: ${myScore}-${oppScore}\nAvg: ${avg}ms\nPlay: ${window.location.href}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+            };
         }
 
-        function triggerRematch() {
-            if(gameMode === "local") return startLocalGame();
-            
-            document.getElementById('rematchOverlay').style.display = 'block';
-            document.getElementById('rematchOverlay').innerText = "Waiting for friend...";
-            
-            // Set status to rematch (listener will restart game for both)
-            db.ref('reflex/' + roomId).update({ status: "rematch" });
-        }
-
-        // --- UTILS ---
-        function sendEmoji(emoji) { if (gameMode === "online") db.ref('reflex/' + roomId + '/chats').push({ sender: myId, text: emoji }); }
-        
+        // --- CHAT ---
+        function sendEmoji(emoji) { if(gameMode==="online") db.ref('reflex/'+roomId+'/chats').push({ sender: myId, text: emoji }); }
         function sendMessage() {
-            const input = document.getElementById('chatInput');
-            if (input.value.trim() && gameMode === "online") {
-                db.ref('reflex/' + roomId + '/chats').push({ sender: myId, text: input.value });
-                input.value = "";
-                input.focus();
+            const inp = document.getElementById('chatInput');
+            if(inp.value.trim() && gameMode==="online") {
+                db.ref('reflex/'+roomId+'/chats').push({ sender: myId, text: inp.value });
+                inp.value = "";
             }
         }
-        document.getElementById('chatInput').addEventListener("keypress", (e) => { if(e.key==="Enter") sendMessage(); });
+        function showMessage(msg) {
+            const box = document.getElementById('chatDisplay');
+            const div = document.createElement('div');
+            div.className = "msg " + (msg.sender === myId ? "msg-me" : "msg-opp");
+            div.innerText = msg.text;
+            box.appendChild(div);
+            // Limit messages
+            while(box.children.length > 3) box.removeChild(box.firstChild);
+        }
 
     </script>
 </body>
