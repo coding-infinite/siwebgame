@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Pro | Auto-Secure</title>
+    <title>Neon Pro | Chess & Chat</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,104 +16,96 @@
 
         /* --- UI UPDATES --- */
         .msg-name { font-size: 0.65rem; color: #555; margin-bottom: 2px; font-weight: bold; opacity: 0.8; display: block; }
-        .report-link { font-size: 0.65rem; color: #ff4444; cursor: pointer; margin-top: 5px; display: block; text-align: right; font-weight: bold; opacity: 0.7; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 4px; }
-        .report-link:hover { opacity: 1; text-decoration: underline; }
-        .chat-header-info { display: flex; align-items: center; gap: 10px; }
-        .block-btn { color: #ff4444; font-size: 1.1rem; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
-        .block-btn:hover { background: rgba(255, 68, 68, 0.1); }
-        .blocked-badge { font-size: 0.6rem; background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; display: none; }
-        .delete-btn { font-size: 0.7rem; color: #ff4444; cursor: pointer; margin-left: 8px; opacity: 0.6; }
+        .reply-context { border-left: 4px solid var(--primary); background: rgba(0,0,0,0.05); padding: 5px 8px; border-radius: 4px; font-size: 0.75rem; margin-bottom: 4px; color: #555; display: flex; flex-direction: column; }
+        .reply-bar { position: fixed; bottom: 70px; left: 0; width: 100%; background: #f0f2f5; padding: 10px; border-top: 2px solid var(--primary); display: none; justify-content: space-between; align-items: center; z-index: 1500; }
 
-        /* --- STANDARD STYLES --- */
-        .enc-notice { background: #fff9c4; color: #5d4037; font-size: 0.75rem; text-align: center; padding: 10px 15px; margin: 10px auto 20px auto; border-radius: 10px; max-width: 90%; border: 1px solid #ffe082; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .enc-notice i { font-size: 1rem; color: #ffa000; margin-bottom: 3px; }
-        
-        #termsModal { position: fixed; inset: 0; z-index: 6000; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
-        .terms-card { background: #fff; width: 100%; max-width: 400px; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; max-height: 80vh; animation: popUp 0.3s forwards; }
-        .terms-head { background: #1e272e; color: white; padding: 20px; text-align: center; font-family: 'Orbitron'; font-size: 1.2rem; border-bottom: 4px solid var(--primary); }
-        .terms-body { padding: 20px; overflow-y: auto; font-size: 0.85rem; color: #333; line-height: 1.6; background: #f8f9fa; }
-        .btn-agree { background: var(--primary); color: white; padding: 15px; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; }
+        /* GAME HUB */
+        .game-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; border: none; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 15px; color:white; }
+        .game-chess { background: linear-gradient(45deg, #2c3e50, #4ca1af); }
+        .game-love { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
+        .game-fun { background: linear-gradient(45deg, #11998e, #38ef7d); }
+        .game-classic { background: linear-gradient(45deg, #2193b0, #6dd5ed); }
 
-        #banOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, #8b0000 0%, #1a0000 100%); z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 30px; }
-        .ban-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; animation: shake 0.5s infinite; }
-        .ban-title { font-family: 'Orbitron'; font-size: 2.5rem; color: #ff4444; margin-bottom: 10px; }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -2px); } }
-        
+        /* CHESS BOARD */
+        .chess-board { width: 300px; height: 300px; display: grid; grid-template-columns: repeat(8, 1fr); border: 4px solid #5d4037; margin: 0 auto; }
+        .sq { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; user-select: none; }
+        .sq.white { background: #f0d9b5; color: black; }
+        .sq.black { background: #b58863; color: black; }
+        .sq.selected { background: #769656 !important; } /* Highlight move */
+
+        /* Auth & Layout */
         #authLayer { position: fixed; inset: 0; background: white; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .auth-card { background: white; width: 100%; max-width: 380px; padding: 35px 25px; border-radius: 30px; box-shadow: 0 15px 45px rgba(0,0,0,0.1); text-align: center; border: 1px solid #f0f0f0; }
-        .auth-card h1 { font-family: 'Orbitron'; color: var(--primary); font-size: 2rem; margin: 0; letter-spacing: 2px; }
-        .enc-badge { display: inline-flex; align-items: center; gap: 8px; background: #e3f2fd; color: #1976d2; padding: 8px 18px; border-radius: 50px; font-size: 0.7rem; font-weight: bold; margin: 15px 0; border: 1px solid #bbdefb; }
         .auth-card input { width: 100%; padding: 14px; margin-top: 10px; border-radius: 12px; border: 1.5px solid #eee; font-size: 1rem; }
         .btn-login { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 20px; cursor: pointer; }
         
         #appLayer { display: none; flex-direction: column; height: 100vh; }
         header { padding: 10px 15px; background: white; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; z-index: 1001; }
-        .secure-tag { font-size: 0.65rem; color: #28a745; font-weight: bold; display: flex; align-items: center; gap: 4px; background: #f0fff4; padding: 4px 8px; border-radius: 20px; border: 1px solid #c6f6d5; }
         
         #chatDisplay { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 250px !important; background-color: #d8d4d0; background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); background-blend-mode: multiply; }
         .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; }
         .msg-me { align-self: flex-end; background: #dcf8c6; color: #303030; border-top-right-radius: 4px; }
         .msg-them { align-self: flex-start; background: white; color: #303030; border-top-left-radius: 4px; }
         
-        #gameOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; align-items:center; justify-content:center; }
-        .cell { width: 70px; height: 70px; background: #0b0f19; border: 2px solid #334155; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-family: 'Orbitron'; cursor: pointer; color:white; }
-        .cell.X { color: #00d2ff; text-shadow: 0 0 10px #00d2ff; }
-        .cell.O { color: #ff4757; text-shadow: 0 0 10px #ff4757; }
+        /* Game Overlays */
+        #gameOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:7000; flex-direction:column; align-items:center; justify-content:center; }
+        .game-board { background:#161e2d; padding:15px; border-radius:15px; border:2px solid var(--primary); width:95%; max-width:360px; text-align:center; display:none; flex-direction:column; align-items:center; }
         
+        /* Tic Tac Toe */
+        .ttt-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:20px; }
+        .cell { width: 60px; height: 60px; background: #0b0f19; border: 2px solid #334155; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-family: 'Orbitron'; color:white; }
+
         .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000; background: white; border-top: 1px solid #eee; }
         .input-bar { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: white; }
         #msgInput { flex: 1; padding: 12px 18px; border-radius: 30px; border: 1.5px solid #eee; background: #f1f3f4; font-size: 1rem; }
         .btn-send { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        #ad-box { height: 60px; width: 100%; display: flex; justify-content: center; align-items: center; }
         .overlay { position: fixed; inset: 0; background: white; z-index: 4000; display: none; flex-direction: column; padding: 25px; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes popUp { to { transform: scale(1); } }
     </style>
 </head>
 <body>
 
     <div id="gameOverlay">
-        <div style="background:#161e2d; padding:25px; border-radius:20px; border:2px solid var(--primary); width:320px; text-align:center;">
-            <h2 style="font-family:'Orbitron'; color:var(--primary); margin:0 0 15px 0;">NEON TIC-TAC-TOE</h2>
-            <div id="gameStatus" style="color:white; margin-bottom:15px; font-size:0.9rem;">Waiting...</div>
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:20px;">
-                <div class="cell" onclick="makeMove(0)"></div><div class="cell" onclick="makeMove(1)"></div><div class="cell" onclick="makeMove(2)"></div>
-                <div class="cell" onclick="makeMove(3)"></div><div class="cell" onclick="makeMove(4)"></div><div class="cell" onclick="makeMove(5)"></div>
-                <div class="cell" onclick="makeMove(6)"></div><div class="cell" onclick="makeMove(7)"></div><div class="cell" onclick="makeMove(8)"></div>
-            </div>
-            <button onclick="closeGame()" style="background:#ff4757; color:white; border:none; padding:12px 20px; border-radius:10px; font-weight:bold; width:100%;">EXIT GAME</button>
+        <h2 style="font-family:'Orbitron'; color:white; margin-bottom:10px;">LIVE ARENA</h2>
+        
+        <div id="board-chess" class="game-board">
+            <h3 style="color:#4ca1af; margin:0 0 10px 0;">CHESS (Sandbox)</h3>
+            <div id="chess-status" style="color:white; font-size:0.8rem; margin-bottom:10px;">Click a piece to move</div>
+            <div id="chessGrid" class="chess-board"></div>
+            <div style="margin-top:10px; color:#aaa; font-size:0.7rem;">Free Move Mode: Play by rules!</div>
         </div>
-    </div>
 
-    <div id="banOverlay">
-        <i class="fas fa-ban ban-icon"></i>
-        <div class="ban-title">BLOCKED</div>
-        <p style="font-size:1.1rem; opacity:0.8;">Your device has been blacklisted.</p>
-        <div style="margin-top:20px; font-family:monospace; background:rgba(0,0,0,0.5); padding:10px; border-radius:5px; font-size:0.8rem;">ID: SUPER_BAN_ACTIVE</div>
-    </div>
-
-    <div id="termsModal">
-        <div class="terms-card">
-            <div class="terms-head"><i class="fas fa-gavel"></i> LEGAL POLICY</div>
-            <div class="terms-body">
-                <div class="policy-block"><h4>1. Data Collection</h4><p>We log your unique <b>Device ID</b> and <b>IP</b>.</p></div>
-                <div class="policy-block"><h4>2. Zero Tolerance</h4><p>Harassment triggers a <b>Hardware Ban</b>.</p></div>
-                <div class="policy-block"><h4>3. Security</h4><p>Passwords are <b>Hashed (SHA-256)</b>. Messages are <b>Auto-Encrypted</b>.</p></div>
+        <div id="board-ttt" class="game-board">
+            <h3 style="color:#00d2ff;">Tic-Tac-Toe</h3>
+            <div class="ttt-grid">
+                <div class="cell" onclick="moveTTT(0)"></div><div class="cell" onclick="moveTTT(1)"></div><div class="cell" onclick="moveTTT(2)"></div>
+                <div class="cell" onclick="moveTTT(3)"></div><div class="cell" onclick="moveTTT(4)"></div><div class="cell" onclick="moveTTT(5)"></div>
+                <div class="cell" onclick="moveTTT(6)"></div><div class="cell" onclick="moveTTT(7)"></div><div class="cell" onclick="moveTTT(8)"></div>
             </div>
-            <button class="btn-agree" onclick="agreeTerms()">I ACCEPT & CONTINUE</button>
         </div>
+
+        <div id="board-love" class="game-board">
+            <h3 style="color:#ff4757;">Love Calculator</h3>
+            <div id="love-result" style="font-size:3rem; font-weight:bold; color:white; margin:20px;">? %</div>
+            <button onclick="calcLove()" style="padding:10px; background:#ff4757; color:white; border:none; border-radius:10px;">MEASURE</button>
+        </div>
+        
+        <div id="board-td" class="game-board">
+            <h3 style="color:#38ef7d;">Truth or Dare</h3>
+            <div id="td-text" style="background:white; color:black; padding:20px; border-radius:10px; margin:20px;">Spinning...</div>
+            <button onclick="spinTD('TRUTH')" style="padding:10px; background:#38ef7d; border:none; border-radius:10px;">TRUTH</button>
+            <button onclick="spinTD('DARE')" style="padding:10px; background:#ff9f43; border:none; border-radius:10px;">DARE</button>
+        </div>
+
+        <button onclick="closeGame()" style="background:none; border:2px solid #ff4444; color:#ff4444; padding:8px 20px; border-radius:20px; font-weight:bold; margin-top:20px;">CLOSE</button>
     </div>
 
     <div id="authLayer">
         <div class="auth-card">
             <h1>NEON PRO</h1>
-            <div class="enc-badge"><i class="fas fa-shield-alt"></i> SECURE HASHING ACTIVE</div>
             <input type="text" id="uName" placeholder="Username">
             <input type="password" id="uPass" placeholder="Password">
-            <div style="font-size: 0.8rem; text-align: left; margin: 20px 0; color: #666; display: flex; gap: 8px; align-items: center;">
-                <input type="checkbox" id="legalCheck"> 
-                <span>I accept the <b style="color:var(--primary); text-decoration:underline; cursor:pointer;" onclick="showTerms()">Strict Terms & Policy</b></span>
+            <div style="font-size: 0.8rem; text-align: left; margin: 20px 0;">
+                <input type="checkbox" id="legalCheck"> <span>I accept the <b>Terms</b></span>
             </div>
             <button class="btn-login" onclick="startLogin()">LOG IN</button>
         </div>
@@ -122,20 +114,11 @@
     <div id="appLayer">
         <header>
             <div class="chat-header-info">
-                <div style="font-family:'Orbitron'; color:var(--primary); font-size:1.1rem;" id="chatTitle">NEON</div>
-                <span id="blockedBadge" class="blocked-badge">🚫 BLOCKED</span>
+                <div style="font-family:'Orbitron'; color:var(--primary); font-size:1.1rem;">NEON</div>
             </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-                <i class="fas fa-ban block-btn" id="blockBtn" style="display:none;" onclick="toggleBlockUser()"></i>
-                
-                <i class="fas fa-search" onclick="toggleScreen('searchScreen')" style="font-size:1.1rem; color:#555; cursor:pointer;"></i>
-                
-                <i class="fas fa-sign-out-alt" onclick="logout()" style="color:#ff4444; font-size:1.1rem; cursor:pointer; margin-left:10px;" title="Logout"></i>
-                
-                <div style="position:relative; margin-left:5px;" onclick="openRequests()">
-                    <i class="fas fa-bell" style="font-size:1.1rem; color:#555;"></i>
-                    <div id="reqBadge" style="position:absolute; top:-8px; right:-8px; background:red; color:white; border-radius:50%; width:15px; height:15px; font-size:0.6rem; display:none; align-items:center; justify-content:center;">0</div>
-                </div>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <i class="fas fa-search" onclick="toggleScreen('searchScreen')" style="font-size:1.2rem; color:#555;"></i>
+                <i class="fas fa-sign-out-alt" onclick="logout()" style="color:#ff4444; font-size:1.2rem;"></i>
             </div>
         </header>
 
@@ -144,294 +127,199 @@
             <div id="chatDisplay"></div>
         </div>
 
+        <div id="replyBar" class="reply-bar">
+            <div><span style="font-size:0.7rem; color:var(--primary);" id="replyToUser">Reply</span><div style="font-size:0.8rem;" id="replyText"></div></div>
+            <i class="fas fa-times" onclick="cancelReply()"></i>
+        </div>
+
         <div class="bottom-container">
             <div class="input-bar">
                 <i class="fas fa-gamepad" style="color:#ff9800; font-size:1.4rem;" onclick="toggleScreen('gameScreen')"></i>
                 <i class="fas fa-image" style="color:#4caf50; font-size:1.4rem;" onclick="document.getElementById('imgFile').click()"></i>
                 <input type="file" id="imgFile" hidden accept="image/*" onchange="processImg(this)">
-                <input type="text" id="msgInput" placeholder="Write a message...">
+                <input type="text" id="msgInput" placeholder="Message..." enterkeyhint="send">
                 <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
-            </div>
-            <div id="ad-box">
-                <script type="text/javascript">atOptions = {'key' : '697d465f55b34630746380bf6791eb54','format' : 'iframe','height' : 50,'width' : 320,'params' : {}};</script>
-                <script type="text/javascript" src="https://www.highperformanceformat.com/697d465f55b34630746380bf6791eb54/invoke.js"></script>
             </div>
         </div>
     </div>
 
     <div id="searchScreen" class="overlay">
         <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Find Friends</h2><i class="fas fa-times" onclick="toggleScreen('searchScreen')"></i></div>
-        <input type="text" style="width:100%; padding:15px; border-radius:12px; border:1px solid #eee; margin-top:10px;" placeholder="Search username..." oninput="doSearch(this.value)">
+        <input type="text" style="width:100%; padding:15px; border-radius:12px; border:1px solid #eee; margin-top:10px;" placeholder="Search..." oninput="doSearch(this.value)">
         <div id="searchResults" style="margin-top:20px;"></div>
     </div>
+    
     <div id="gameScreen" class="overlay">
         <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Games</h2><i class="fas fa-times" onclick="toggleScreen('gameScreen')"></i></div>
-        <div style="display:grid; grid-template-columns:1fr; gap:15px; margin-top:20px;">
-            <button onclick="initGame()" style="padding:25px; border-radius:15px; border:1px solid var(--primary); background:#161e2d; color:white; font-weight:bold;">🎮 START LIVE TIC-TAC-TOE</button>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                <button onclick="playGame('DICE')" style="padding:25px; border-radius:15px; border:none; background:#f1f3f4; font-weight:bold;">🎲 ROLL DICE</button>
-                <button onclick="playGame('RPS')" style="padding:25px; border-radius:15px; border:none; background:#f1f3f4; font-weight:bold;">✂️ PLAY RPS</button>
-            </div>
+        <div style="margin-top:20px;">
+            <button class="game-btn game-chess" onclick="startGame('CHESS')"><i class="fas fa-chess-knight"></i> Play Chess</button>
+            <button class="game-btn game-classic" onclick="startGame('TTT')"><i class="fas fa-border-all"></i> Tic-Tac-Toe</button>
+            <button class="game-btn game-love" onclick="startGame('LOVE')"><i class="fas fa-heart"></i> Love Calculator</button>
+            <button class="game-btn game-fun" onclick="startGame('TD')"><i class="fas fa-bottle-water"></i> Truth or Dare</button>
+            <button class="game-btn game-fun" onclick="sendDice()"><i class="fas fa-dice"></i> Ludo Dice</button>
         </div>
-    </div>
-    <div id="requestScreen" class="overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Requests</h2><i class="fas fa-times" onclick="toggleScreen('requestScreen')"></i></div>
-        <div id="requestList" style="margin-top:15px;"></div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
-            authDomain: "neon-game-hub.firebaseapp.com",
-            databaseURL: "https://neon-game-hub-default-rtdb.firebaseio.com",
-            projectId: "neon-game-hub",
-            storageBucket: "neon-game-hub.firebasestorage.app",
-            messagingSenderId: "636141968933",
-            appId: "1:636141968933:web:60c7cc21d75883ef08a9cc"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M", authDomain: "neon-game-hub.firebaseapp.com", databaseURL: "https://neon-game-hub-default-rtdb.firebaseio.com", projectId: "neon-game-hub", storageBucket: "neon-game-hub.firebasestorage.app", messagingSenderId: "636141968933", appId: "1:636141968933:web:60c7cc21d75883ef08a9cc" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const APP_SECRET = "NEON_X"; 
 
-        // --- GLOBAL & SECURITY ---
-        let myIp, myName, partner, chatId;
-        let activeGameId = null, mySymbol = null;
+        let myName, partner, chatId, replyData = null, selectedPiece = null;
         
-        // FIXED INTERNAL KEY (Replaces manual key)
-        const APP_SECRET = "NEON_AUTO_SECURE_2026_X"; 
+        // CHESS SETUP
+        const INITIAL_CHESS = [
+            '♜','♞','♝','♛','♚','♝','♞','♜',
+            '♟','♟','♟','♟','♟','♟','♟','♟',
+            '','','','','','','','',
+            '','','','','','','','',
+            '','','','','','','','',
+            '','','','','','','','',
+            '♙','♙','♙','♙','♙','♙','♙','♙',
+            '♖','♘','♗','♕','♔','♗','♘','♖'
+        ];
 
-        if(localStorage.getItem('isPermanentlyBanned') === 'true') {
-            document.addEventListener('DOMContentLoaded', showRedScreen);
-        }
+        document.getElementById('msgInput').addEventListener("keypress", function(e) { if(e.key==="Enter"){ e.preventDefault(); sendTxt(); } });
 
-        // --- 1. PERSISTENT LOGIN (AUTO-LOGIN) ---
         document.addEventListener('DOMContentLoaded', () => {
             const savedUser = localStorage.getItem('currentUser');
-            if(savedUser && savedUser !== 'null') {
-                myName = savedUser;
-                document.getElementById('authLayer').style.display='none';
-                document.getElementById('appLayer').style.display='flex';
-                fetchIpAndStart();
-                loadFriends();
-                monitorRequests();
-            } else {
-                fetchIpAndStart();
-            }
+            if(savedUser) { myName = savedUser; document.getElementById('authLayer').style.display='none'; document.getElementById('appLayer').style.display='flex'; loadFriends(); }
         });
 
-        function fetchIpAndStart() {
-            fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { 
-                myIp = d.ip; 
-                db.ref('security/bans/' + myIp.replace(/\./g, '_')).on('value', s => {
-                    if(s.exists()) permanentBanTrigger();
-                });
-                if(myName) db.ref('users/' + myName + '/ip').set(myIp);
-            });
-        }
-
-        function permanentBanTrigger() { localStorage.setItem('isPermanentlyBanned', 'true'); showRedScreen(); }
-        function showRedScreen() {
-            document.getElementById('banOverlay').style.display = 'flex';
-            document.getElementById('authLayer')?.remove();
-            document.getElementById('appLayer')?.remove();
-        }
-
-        // --- AUTH (UPDATED: PASSWORD HASHING) ---
-        function showTerms() { document.getElementById('termsModal').style.display = 'flex'; }
-        function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
-        function agreeTerms() { document.getElementById('legalCheck').checked = true; closeTerms(); }
-        
         function startLogin() {
-            if(!document.getElementById('legalCheck').checked) return alert("Accept Terms first.");
+            if(!document.getElementById('legalCheck').checked) return alert("Accept Terms");
             myName = document.getElementById('uName').value.trim().toLowerCase();
             let p = document.getElementById('uPass').value.trim();
-            if(!myName || p.length < 4) return alert("Invalid credentials");
-            
-            // HASH PASSWORD (SHA-256)
-            let hashedPass = CryptoJS.SHA256(p).toString();
-
+            if(!myName || p.length < 4) return alert("Invalid");
+            let hp = CryptoJS.SHA256(p).toString();
             db.ref('users/' + myName).once('value', s => {
-                let data = s.val();
-                if(data && data.banned === true) { permanentBanTrigger(); return; }
-                
-                // Compare HASHED password
-                if(s.exists() && data.pass !== hashedPass) return alert("Wrong pass");
-                
+                if(s.exists() && s.val().pass !== hp) return alert("Wrong pass");
                 localStorage.setItem('currentUser', myName);
-                
-                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: hashedPass, ip: myIp, joinedAt: Date.now() });
-                else if(myIp) db.ref('users/' + myName + '/ip').set(myIp);
-
+                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: hp });
                 document.getElementById('authLayer').style.display='none';
                 document.getElementById('appLayer').style.display='flex';
                 loadFriends();
-                monitorRequests();
             });
         }
-
-        function logout() {
-            if(confirm("Are you sure you want to Logout?")) {
-                localStorage.removeItem('currentUser');
-                location.reload(); 
-            }
-        }
-
-        // --- CRYPTO (AUTO INTERNAL KEY) ---
+        function logout() { localStorage.removeItem('currentUser'); location.reload(); }
+        
         function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
-        function decrypt(c) { 
-            try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } 
-        }
+        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } }
 
-        // --- APP LOGIC ---
         function loadFriends() { db.ref('friends/' + myName).on('value', s => { const bar = document.getElementById('friendSidebar'); bar.innerHTML = ""; s.forEach(f => { let d = document.createElement('div'); d.style = "width:50px; height:50px; cursor:pointer;"; d.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}" style="width:100%; border-radius:50%; border:2px solid transparent;" id="av-${f.key}">`; d.onclick = () => { partner = f.key; document.querySelectorAll('#friendSidebar img').forEach(i=>i.style.borderColor='transparent'); document.getElementById('av-'+f.key).style.borderColor='#007bff'; openChat(); }; bar.appendChild(d); }); }); }
         
         function openChat() { 
             chatId = [myName, partner].sort().join("_");
             const box = document.getElementById('chatDisplay');
-            document.getElementById('chatTitle').innerText = partner;
-            document.getElementById('blockBtn').style.display = 'block';
-            
-            checkBlockStatus();
-            renderNotice(box);
-
-            db.ref('chats/' + chatId).limitToLast(25).on('value', s => { 
-                renderNotice(box);
+            db.ref('chats/' + chatId).limitToLast(30).on('value', s => { 
+                box.innerHTML = `<div class="enc-notice"><i class="fas fa-lock"></i> Secured</div>`;
                 s.forEach(m => { 
-                    let d = document.createElement('div'); 
-                    let dat = m.val(); 
-                    let msgKey = m.key;
-                    d.className = `msg ${dat.from === myName ? 'msg-me' : 'msg-them'}`; 
+                    let d = document.createElement('div'); let dat = m.val(); 
+                    d.className = `msg ${dat.from === myName ? 'msg-me' : 'msg-them'}`;
+                    let plain = dat.val ? decrypt(dat.val) : "";
+                    d.ondblclick = () => { replyData = {text:plain, user:dat.from}; document.getElementById('replyBar').style.display='flex'; document.getElementById('replyText').innerText=plain; };
                     
-                    let nameTag = document.createElement('span');
-                    nameTag.className = "msg-name";
-                    nameTag.innerText = dat.from;
-                    d.appendChild(nameTag);
-
-                    if(dat.type === 'game_invite') {
-                        let btnDiv = document.createElement('div');
-                        btnDiv.innerHTML = `<div style="text-align:center;">🎮 LIVE GAME<br><button onclick="joinGame('${dat.gameId}')" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:5px; margin-top:5px; cursor:pointer;">PLAY NOW</button></div>`;
-                        d.appendChild(btnDiv);
-                    } else if(dat.type === 'img') { 
-                        let decryptedImg = decrypt(dat.val); 
-                        if(decryptedImg) {
-                            let img = document.createElement('img'); img.src = decryptedImg; img.style.width = "100%"; img.style.borderRadius="10px"; d.appendChild(img);
-                        }
-                    } else { 
-                        let txt = document.createElement('span'); txt.innerText = decrypt(dat.val); 
-                        d.appendChild(txt);
-                    } 
+                    let content = dat.reply ? `<div class="reply-context"><b>${dat.reply.user}</b>: ${dat.reply.text}</div>` : "";
+                    if(dat.type === 'game_invite') content += `<div style="text-align:center;">🎮 ${dat.label}<br><button onclick="joinGame('${dat.gType}')" style="background:#007bff; color:white; border:none; padding:5px 10px; border-radius:5px;">PLAY</button></div>`;
+                    else if(dat.type === 'img') content += `<img src="${decrypt(dat.val)}" style="width:100%; border-radius:10px;">`;
+                    else content += plain;
                     
-                    if(dat.from === myName) {
-                        let delBtn = document.createElement('i'); delBtn.className = "fas fa-trash delete-btn"; delBtn.onclick = () => deleteMsg(msgKey); d.appendChild(delBtn);
-                    } else {
-                        let rep = document.createElement('span'); rep.className = "report-link"; rep.innerHTML = '<i class="fas fa-flag"></i> Report'; rep.onclick = () => { if(confirm("Report to Admin?")) { db.ref('reports').push({ reporter: myName, user: dat.from, msg: dat.val, time: Date.now() }); alert("Report Sent!"); } }; d.appendChild(rep); 
-                    } 
+                    d.innerHTML = `<span class="msg-name">${dat.from}</span>` + content;
                     box.appendChild(d); 
                 }); 
                 box.scrollTop = box.scrollHeight; 
             }); 
         }
-
-        function renderNotice(box) { box.innerHTML = `<div class="enc-notice"><i class="fas fa-lock"></i><b>End-to-End Encrypted</b><span>Messages are secured.</span></div>`; }
-
-        function checkBlockStatus() { db.ref('users/' + myName + '/blocked/' + partner).on('value', s => { let btn = document.getElementById('blockBtn'); if(s.exists()) { btn.className = "fas fa-unlock block-btn"; btn.style.color = "#2ed573"; } else { btn.className = "fas fa-ban block-btn"; btn.style.color = "#ff4444"; } }); }
-        function toggleBlockUser() { db.ref('users/' + myName + '/blocked/' + partner).once('value', s => { if(s.exists()) { if(confirm("Unblock " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).remove(); } else { if(confirm("Block " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).set(true); } }); }
-        function deleteMsg(key) { if(confirm("Delete for everyone?")) db.ref('chats/' + chatId + '/' + key).remove(); }
         
         function sendTxt() { 
-            let t = document.getElementById('msgInput').value.trim(); 
-            if(!t || !partner) return; 
-            db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
-                if(s.exists()) { alert("🚫 Message Failed: User blocked you."); } else {
-                    db.ref('users/' + myName + '/blocked/' + partner).once('value', myS => {
-                        if(myS.exists()) { alert("🚫 You blocked this user."); } else {
-                             db.ref('chats/' + chatId).push({ from: myName, val: encrypt(t), time: Date.now() }); 
-                             document.getElementById('msgInput').value = ""; 
-                        }
-                    });
+            let t = document.getElementById('msgInput').value.trim(); if(!t || !partner) return;
+            let pl = { from: myName, val: encrypt(t), time: Date.now() };
+            if(replyData) { pl.reply = replyData; cancelReply(); }
+            db.ref('chats/' + chatId).push(pl); 
+            document.getElementById('msgInput').value = ""; document.getElementById('msgInput').focus();
+        }
+        function cancelReply() { replyData=null; document.getElementById('replyBar').style.display='none'; }
+
+        // --- GAMES ---
+        function startGame(type) {
+            let label = (type === 'CHESS') ? "Chess" : (type === 'TTT') ? "Tic-Tac-Toe" : "Game";
+            let gData = { type: type, turn: myName, data: {} };
+            if(type==='TTT') gData.board = [0,0,0,0,0,0,0,0,0];
+            if(type==='CHESS') gData.board = INITIAL_CHESS;
+            
+            db.ref('games/' + chatId).set(gData);
+            db.ref('chats/' + chatId).push({ from: myName, type: 'game_invite', gType: type, label: label, val: encrypt(label), time: Date.now() });
+            toggleScreen('gameScreen'); joinGame(type);
+        }
+
+        function joinGame(type) {
+            document.getElementById('gameOverlay').style.display = 'flex';
+            document.querySelectorAll('.game-board').forEach(b => b.style.display='none');
+            
+            if(type === 'CHESS') document.getElementById('board-chess').style.display='flex';
+            if(type === 'TTT') document.getElementById('board-ttt').style.display='flex';
+            if(type === 'LOVE') document.getElementById('board-love').style.display='flex';
+            if(type === 'TD') document.getElementById('board-td').style.display='flex';
+
+            db.ref('games/' + chatId).on('value', s => {
+                let g = s.val(); if(!g) return;
+                if(type === 'TTT') {
+                   document.querySelectorAll('.cell').forEach((c, i) => { c.innerText = (g.board[i]===0)?'':g.board[i]; });
+                }
+                if(type === 'CHESS') renderChess(g.board);
+                if(type === 'LOVE' && g.love) document.getElementById('love-result').innerText = g.love + " %";
+                if(type === 'TD' && g.task) document.getElementById('td-text').innerText = g.task;
+            });
+        }
+
+        // --- CHESS LOGIC ---
+        function renderChess(board) {
+            const grid = document.getElementById('chessGrid'); grid.innerHTML = "";
+            board.forEach((piece, i) => {
+                let sq = document.createElement('div');
+                let row = Math.floor(i / 8); let col = i % 8;
+                sq.className = 'sq ' + ((row + col) % 2 === 0 ? 'white' : 'black');
+                if(selectedPiece === i) sq.classList.add('selected');
+                sq.innerText = piece;
+                sq.onclick = () => handleChessClick(i, piece, board);
+                grid.appendChild(sq);
+            });
+        }
+
+        function handleChessClick(i, piece, board) {
+            if(selectedPiece === null) {
+                if(piece !== "") { selectedPiece = i; renderChess(board); }
+            } else {
+                // MOVE
+                board[i] = board[selectedPiece];
+                board[selectedPiece] = "";
+                selectedPiece = null;
+                db.ref('games/' + chatId + '/board').set(board);
+            }
+        }
+
+        function moveTTT(i) {
+            db.ref('games/' + chatId).once('value', s => {
+                let g = s.val();
+                if(g.board[i] === 0) {
+                    g.board[i] = (g.turn === myName) ? 'X' : 'O'; g.turn = partner;
+                    db.ref('games/' + chatId).update(g);
                 }
             });
         }
 
-        // --- FIXED GAME LOGIC ---
-        function initGame() { 
-            activeGameId = Date.now(); 
-            let gameData = { board: [0,0,0, 0,0,0, 0,0,0], turn: myName, xPlayer: myName, status: 'active', winner: null };
-            db.ref('games/' + chatId).set(gameData); 
-            db.ref('chats/' + chatId).push({ from: myName, type: 'game_invite', val: encrypt("🎮 Started Game"), gameId: activeGameId, time: Date.now() }); 
-            toggleScreen('gameScreen'); 
-            openGameUI(); 
-        }
-
-        function joinGame(gId) { 
-            activeGameId = gId; 
-            toggleScreen('gameScreen'); 
-            openGameUI(); 
-        }
-
-        function openGameUI() { 
-            document.getElementById('gameOverlay').style.display = 'flex'; 
-            db.ref('games/' + chatId).on('value', s => { 
-                let g = s.val(); if(!g) return; 
-                if(g.xPlayer === myName) { mySymbol = 'X'; } else { mySymbol = 'O'; }
-
-                let cells = document.querySelectorAll('.cell'); 
-                g.board.forEach((val, idx) => { 
-                    if(val === 0) { cells[idx].innerText = ''; cells[idx].className = 'cell'; } 
-                    else { cells[idx].innerText = val; cells[idx].className = 'cell ' + val; }
-                }); 
-
-                let statusDiv = document.getElementById('gameStatus'); 
-                if(g.winner) { 
-                    statusDiv.innerText = g.winner === 'DRAW' ? "🤝 IT'S A DRAW!" : `🏆 ${g.winner} WON!`; 
-                    statusDiv.style.color = '#2ed573'; 
-                } else { 
-                    if(g.turn === myName) { statusDiv.innerText = `👉 Your Turn (${mySymbol})`; statusDiv.style.color = '#00d2ff'; } 
-                    else { statusDiv.innerText = `⏳ Waiting for ${g.turn}...`; statusDiv.style.color = '#64748b'; }
-                } 
-            }); 
-        }
-
-        function makeMove(idx) { 
-            db.ref('games/' + chatId).once('value', s => { 
-                let g = s.val(); 
-                if(g.winner || g.turn !== myName || g.board[idx] !== 0) return; 
-                g.board[idx] = mySymbol; 
-                g.turn = partner; 
-                g.winner = checkWin(g.board); 
-                db.ref('games/' + chatId).set(g); 
-            }); 
-        }
-
-        function checkWin(b) { 
-            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; 
-            for(let w of wins) { if(b[w[0]] !== 0 && b[w[0]] === b[w[1]] && b[w[1]] === b[w[2]]) return b[w[0]]; } 
-            if(!b.includes(0)) return 'DRAW'; 
-            return null; 
-        }
+        function calcLove() { db.ref('games/' + chatId).update({ love: Math.floor(Math.random()*100)+1 }); }
+        function spinTD(m) { let t = ["Sing", "Dance", "Confess"]; db.ref('games/' + chatId).update({ task: m + ": " + t[Math.floor(Math.random()*t.length)] }); }
+        function sendDice() { let d=Math.floor(Math.random()*6)+1; db.ref('chats/' + chatId).push({ from: myName, val: encrypt("🎲 Rolled: "+d), time: Date.now() }); alert(d); }
         function closeGame() { document.getElementById('gameOverlay').style.display = 'none'; db.ref('games/' + chatId).off(); }
-
-        function playGame(type) { 
-            db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
-                 if(s.exists()) return alert("User blocked you.");
-                 let res = (type === 'DICE') ? "🎲 Rolled: " + (Math.floor(Math.random()*6)+1) : "✂️ Chose Rock"; 
-                 db.ref('chats/' + chatId).push({ from: myName, val: encrypt(res), time: Date.now() }); toggleScreen('gameScreen'); 
-            });
-        }
-        function processImg(i) { 
-            db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
-                 if(s.exists()) return alert("User blocked you.");
-                 const r = new FileReader(); r.onload = e => { let secureImg = encrypt(e.target.result); db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: secureImg, time: Date.now() }); }; r.readAsDataURL(i.files[0]); 
-            });
-        }
         
+        function processImg(i) { const r = new FileReader(); r.onload = e => { let s = encrypt(e.target.result); db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: s, time: Date.now() }); }; r.readAsDataURL(i.files[0]); }
         function toggleScreen(id) { let e = document.getElementById(id); e.style.display = e.style.display==='flex'?'none':'flex'; }
-        function doSearch(q) { const res = document.getElementById('searchResults'); res.innerHTML = ""; db.ref('users').once('value', s => { s.forEach(u => { if(u.key.includes(q.toLowerCase()) && u.key !== myName) { res.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${u.key}</b> <button onclick="db.ref('requests/${u.key}/${myName}').set(true);alert('Request Sent')" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button></div>`; } }); }); }
-        function monitorRequests() { db.ref('requests/'+myName).on('value', s => { let c = s.numChildren(); document.getElementById('reqBadge').innerText = c; document.getElementById('reqBadge').style.display = c>0?'flex':'none'; }); }
-        function openRequests() { toggleScreen('requestScreen'); const list = document.getElementById('requestList'); db.ref('requests/'+myName).once('value', s => { list.innerHTML = ""; s.forEach(r => { list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${r.key}</b> <button onclick="accept('${r.key}')" style="background:#4caf50; color:white; border:none; padding:8px 15px; border-radius:8px;">Accept</button></div>`; }); }); }
-        function accept(user) { db.ref('friends/'+myName+'/'+user).set(true); db.ref('friends/'+user+'/'+myName).set(true); db.ref('requests/'+myName+'/'+user).remove(); openRequests(); }
+        function doSearch(q) { const res = document.getElementById('searchResults'); res.innerHTML = ""; db.ref('users').once('value', s => { s.forEach(u => { if(u.key.includes(q.toLowerCase()) && u.key !== myName) { res.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${u.key}</b> <button onclick="db.ref('requests/${u.key}/${myName}').set(true);alert('Sent')" style="background:#007bff; color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button></div>`; } }); }); }
     </script>
 </body>
 </html>
