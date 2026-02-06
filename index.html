@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Pro | Final Version</title>
+    <title>Neon Pro | Strict Key</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,65 +16,53 @@
 
         /* --- UI UPDATES --- */
         .msg-name { font-size: 0.65rem; color: #555; margin-bottom: 2px; font-weight: bold; opacity: 0.8; display: block; }
-        
-        /* Report Link - FIXED VISIBILITY */
-        .report-link { 
-            font-size: 0.65rem; color: #ff4444; cursor: pointer; 
-            margin-top: 5px; display: block; text-align: right; 
-            font-weight: bold; opacity: 0.7; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 4px;
-        }
+        .report-link { font-size: 0.65rem; color: #ff4444; cursor: pointer; margin-top: 5px; display: block; text-align: right; font-weight: bold; opacity: 0.7; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 4px; }
         .report-link:hover { opacity: 1; text-decoration: underline; }
-
         .chat-header-info { display: flex; align-items: center; gap: 10px; }
         .block-btn { color: #ff4444; font-size: 1.1rem; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
         .block-btn:hover { background: rgba(255, 68, 68, 0.1); }
         .blocked-badge { font-size: 0.6rem; background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; display: none; }
         .delete-btn { font-size: 0.7rem; color: #ff4444; cursor: pointer; margin-left: 8px; opacity: 0.6; }
 
-        /* --- STANDARD STYLES (UNCHANGED) --- */
+        /* --- KEY PULSE ANIMATION (To remind user) --- */
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
+        .key-needed { animation: pulse-red 1s infinite; border-color: red !important; }
+
+        /* --- STANDARD STYLES --- */
         .enc-notice { background: #fff9c4; color: #5d4037; font-size: 0.75rem; text-align: center; padding: 10px 15px; margin: 10px auto 20px auto; border-radius: 10px; max-width: 90%; border: 1px solid #ffe082; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .enc-notice i { font-size: 1rem; color: #ffa000; margin-bottom: 3px; }
-
         #termsModal { position: fixed; inset: 0; z-index: 6000; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
         .terms-card { background: #fff; width: 100%; max-width: 400px; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; max-height: 80vh; animation: popUp 0.3s forwards; }
         .terms-head { background: #1e272e; color: white; padding: 20px; text-align: center; font-family: 'Orbitron'; font-size: 1.2rem; border-bottom: 4px solid var(--primary); }
         .terms-body { padding: 20px; overflow-y: auto; font-size: 0.85rem; color: #333; line-height: 1.6; background: #f8f9fa; }
         .btn-agree { background: var(--primary); color: white; padding: 15px; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; }
-
         #banOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, #8b0000 0%, #1a0000 100%); z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 30px; }
         .ban-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; animation: shake 0.5s infinite; }
         .ban-title { font-family: 'Orbitron'; font-size: 2.5rem; color: #ff4444; margin-bottom: 10px; }
         @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -2px); } }
-
         #authLayer { position: fixed; inset: 0; background: white; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .auth-card { background: white; width: 100%; max-width: 380px; padding: 35px 25px; border-radius: 30px; box-shadow: 0 15px 45px rgba(0,0,0,0.1); text-align: center; border: 1px solid #f0f0f0; }
         .auth-card h1 { font-family: 'Orbitron'; color: var(--primary); font-size: 2rem; margin: 0; letter-spacing: 2px; }
         .enc-badge { display: inline-flex; align-items: center; gap: 8px; background: #e3f2fd; color: #1976d2; padding: 8px 18px; border-radius: 50px; font-size: 0.7rem; font-weight: bold; margin: 15px 0; border: 1px solid #bbdefb; }
         .auth-card input { width: 100%; padding: 14px; margin-top: 10px; border-radius: 12px; border: 1.5px solid #eee; font-size: 1rem; }
         .btn-login { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 20px; cursor: pointer; }
-
         #appLayer { display: none; flex-direction: column; height: 100vh; }
         header { padding: 10px 15px; background: white; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; z-index: 1001; }
         .secure-tag { font-size: 0.65rem; color: #28a745; font-weight: bold; display: flex; align-items: center; gap: 4px; background: #f0fff4; padding: 4px 8px; border-radius: 20px; border: 1px solid #c6f6d5; }
-
-        #chatDisplay { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 190px; background-color: #d8d4d0; background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); background-blend-mode: multiply; }
+        #chatDisplay { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 250px !important; background-color: #d8d4d0; background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); background-blend-mode: multiply; }
         .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; }
         .msg-me { align-self: flex-end; background: #dcf8c6; color: #303030; border-top-right-radius: 4px; }
         .msg-them { align-self: flex-start; background: white; color: #303030; border-top-left-radius: 4px; }
-        
-        /* Game Overlay */
         #gameOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; align-items:center; justify-content:center; }
         .cell { width: 70px; height: 70px; background: #0b0f19; border: 2px solid #334155; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-family: 'Orbitron'; cursor: pointer; }
         .cell.X { color: #00d2ff; text-shadow: 0 0 10px #00d2ff; }
         .cell.O { color: #ff4757; text-shadow: 0 0 10px #ff4757; }
-
         .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000; background: white; border-top: 1px solid #eee; }
         .input-bar { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: white; }
         #msgInput { flex: 1; padding: 12px 18px; border-radius: 30px; border: 1.5px solid #eee; background: #f1f3f4; font-size: 1rem; }
         .btn-send { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         #ad-box { height: 60px; width: 100%; display: flex; justify-content: center; align-items: center; }
         .overlay { position: fixed; inset: 0; background: white; z-index: 4000; display: none; flex-direction: column; padding: 25px; }
-
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popUp { to { transform: scale(1); } }
     </style>
@@ -105,18 +93,9 @@
         <div class="terms-card">
             <div class="terms-head"><i class="fas fa-gavel"></i> LEGAL POLICY</div>
             <div class="terms-body">
-                <div class="policy-block">
-                    <h4>1. Data Collection</h4>
-                    <p>We log your unique <b>Device ID</b>, <b>IP Address</b>, and <b>Login Timestamps</b> for security.</p>
-                </div>
-                <div class="policy-block">
-                    <h4>2. Zero Tolerance</h4>
-                    <p>Harassment triggers an immediate <b>Hardware Level Ban</b>.</p>
-                </div>
-                <div class="policy-block">
-                    <h4>3. Encryption</h4>
-                    <p>Messages are E2EE encrypted using AES-256.</p>
-                </div>
+                <div class="policy-block"><h4>1. Data Collection</h4><p>We log your unique <b>Device ID</b> and <b>IP</b>.</p></div>
+                <div class="policy-block"><h4>2. Zero Tolerance</h4><p>Harassment triggers a <b>Hardware Ban</b>.</p></div>
+                <div class="policy-block"><h4>3. Encryption</h4><p>Messages are E2EE using AES-256. <b>Key is Required.</b></p></div>
             </div>
             <button class="btn-agree" onclick="agreeTerms()">I ACCEPT & CONTINUE</button>
         </div>
@@ -128,12 +107,10 @@
             <div class="enc-badge"><i class="fas fa-lock"></i> 100% E2EE ENCRYPTED</div>
             <input type="text" id="uName" placeholder="Username">
             <input type="password" id="uPass" placeholder="Password">
-            
             <div style="font-size: 0.8rem; text-align: left; margin: 20px 0; color: #666; display: flex; gap: 8px; align-items: center;">
                 <input type="checkbox" id="legalCheck"> 
                 <span>I accept the <b style="color:var(--primary); text-decoration:underline; cursor:pointer;" onclick="showTerms()">Strict Terms & Policy</b></span>
             </div>
-            
             <button class="btn-login" onclick="startLogin()">LOG IN</button>
         </div>
     </div>
@@ -144,11 +121,9 @@
                 <div style="font-family:'Orbitron'; color:var(--primary); font-size:1.1rem;" id="chatTitle">NEON</div>
                 <span id="blockedBadge" class="blocked-badge">🚫 BLOCKED</span>
             </div>
-            
             <div style="display:flex; align-items:center; gap:12px;">
                 <i class="fas fa-ban block-btn" id="blockBtn" style="display:none;" onclick="toggleBlockUser()"></i>
-                
-                <input type="password" id="topKey" style="width:60px; padding:6px; border-radius:8px; border:1.5px solid #ff9800; background:#fff3e0; text-align:center; font-size:0.75rem;" placeholder="Key 🔑">
+                <input type="password" id="topKey" style="width:70px; padding:6px; border-radius:8px; border:2px solid #ff9800; background:#fff3e0; text-align:center; font-size:0.75rem;" placeholder="Key Required 🔑" oninput="this.classList.remove('key-needed')">
                 <i class="fas fa-search" onclick="toggleScreen('searchScreen')"></i>
                 <div style="position:relative;" onclick="openRequests()">
                     <i class="fas fa-bell"></i>
@@ -159,7 +134,6 @@
 
         <div style="display:flex; flex:1; overflow:hidden;">
             <div id="friendSidebar" style="width:70px; background:white; border-right:1px solid #eee; display:flex; flex-direction:column; align-items:center; padding:10px 0; gap:15px; overflow-y:auto;"></div>
-            
             <div id="chatDisplay"></div>
         </div>
 
@@ -236,6 +210,23 @@
             document.getElementById('appLayer')?.remove();
         }
 
+        // --- MANDATORY KEY LOGIC ---
+        function getK() { 
+            let k = document.getElementById('topKey').value.trim();
+            if(!k) return null; // No Key = No Logic
+            return k;
+        }
+        function requireKey() {
+            let k = getK();
+            if(!k) {
+                alert("⚠️ SECURITY ALERT: Please enter a Secret Key (🔑) in the top bar to chat!");
+                document.getElementById('topKey').classList.add('key-needed');
+                document.getElementById('topKey').focus();
+                return false;
+            }
+            return true;
+        }
+
         // --- AUTH ---
         function showTerms() { document.getElementById('termsModal').style.display = 'flex'; }
         function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
@@ -262,9 +253,11 @@
             });
         }
 
-        function getK() { return document.getElementById('topKey').value || "NEON_SAFE"; }
         function encrypt(t) { return CryptoJS.AES.encrypt(t, getK()).toString(); }
-        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, getK()).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } }
+        function decrypt(c) { 
+            if(!getK()) return "🔑 Enter Key"; // Visual placeholder
+            try { return CryptoJS.AES.decrypt(c, getK()).toString(CryptoJS.enc.Utf8); } catch(e) { return "❌ Wrong Key"; } 
+        }
 
         function loadFriends() { db.ref('friends/' + myName).on('value', s => { const bar = document.getElementById('friendSidebar'); bar.innerHTML = ""; s.forEach(f => { let d = document.createElement('div'); d.style = "width:50px; height:50px; cursor:pointer;"; d.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}" style="width:100%; border-radius:50%; border:2px solid transparent;" id="av-${f.key}">`; d.onclick = () => { partner = f.key; document.querySelectorAll('#friendSidebar img').forEach(i=>i.style.borderColor='transparent'); document.getElementById('av-'+f.key).style.borderColor='#007bff'; openChat(); }; bar.appendChild(d); }); }); }
         
@@ -285,36 +278,35 @@
                     let msgKey = m.key;
                     d.className = `msg ${dat.from === myName ? 'msg-me' : 'msg-them'}`; 
                     
-                    // 1. NAME TAG
                     let nameTag = document.createElement('span');
                     nameTag.className = "msg-name";
                     nameTag.innerText = dat.from;
                     d.appendChild(nameTag);
 
-                    // 2. MESSAGE CONTENT
                     if(dat.type === 'game_invite') {
                         let btnDiv = document.createElement('div');
                         btnDiv.innerHTML = `<div style="text-align:center;">🎮 LIVE GAME<br><button onclick="joinGame('${dat.gameId}')" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:5px; margin-top:5px; cursor:pointer;">PLAY NOW</button></div>`;
                         d.appendChild(btnDiv);
                     } else if(dat.type === 'img') { 
                         let decryptedImg = decrypt(dat.val); 
-                        if(decryptedImg) {
+                        if(decryptedImg && !decryptedImg.includes("Enter Key") && !decryptedImg.includes("Wrong Key")) {
                             let img = document.createElement('img');
                             img.src = decryptedImg;
                             img.style.width = "100%"; img.style.borderRadius="10px";
                             d.appendChild(img);
+                        } else {
+                            d.innerHTML += `<br><span style="color:red; font-size:0.8rem;">${decryptedImg}</span>`;
                         }
                     } else { 
                         let txt = document.createElement('span');
-                        txt.innerText = decrypt(dat.val) || "🔒 Encrypted"; 
+                        txt.innerText = decrypt(dat.val); 
+                        if(txt.innerText.includes("Enter Key")) txt.style.color = "red";
                         d.appendChild(txt);
                     } 
                     
-                    // 3. ACTION BUTTONS (Report / Delete)
                     if(dat.from === myName) {
                         let delBtn = document.createElement('i'); delBtn.className = "fas fa-trash delete-btn"; delBtn.onclick = () => deleteMsg(msgKey); d.appendChild(delBtn);
                     } else {
-                        // FIXED: Report Button Added Here
                         let rep = document.createElement('span'); 
                         rep.className = "report-link"; 
                         rep.innerHTML = '<i class="fas fa-flag"></i> Report'; 
@@ -327,34 +319,14 @@
             }); 
         }
 
-        function renderNotice(box) {
-            box.innerHTML = `<div class="enc-notice"><i class="fas fa-lock"></i><b>End-to-End Encrypted</b><span>Messages are secured with AES-256.</span></div>`;
-        }
+        function renderNotice(box) { box.innerHTML = `<div class="enc-notice"><i class="fas fa-lock"></i><b>End-to-End Encrypted</b><span>Messages are secured with AES-256.</span></div>`; }
 
-        function checkBlockStatus() {
-            db.ref('users/' + myName + '/blocked/' + partner).on('value', s => {
-                let btn = document.getElementById('blockBtn');
-                if(s.exists()) {
-                    btn.className = "fas fa-unlock block-btn"; btn.style.color = "#2ed573";
-                } else {
-                    btn.className = "fas fa-ban block-btn"; btn.style.color = "#ff4444";
-                }
-            });
-        }
-
-        function toggleBlockUser() {
-            db.ref('users/' + myName + '/blocked/' + partner).once('value', s => {
-                if(s.exists()) {
-                    if(confirm("Unblock " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).remove();
-                } else {
-                    if(confirm("Block " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).set(true);
-                }
-            });
-        }
-
+        function checkBlockStatus() { db.ref('users/' + myName + '/blocked/' + partner).on('value', s => { let btn = document.getElementById('blockBtn'); if(s.exists()) { btn.className = "fas fa-unlock block-btn"; btn.style.color = "#2ed573"; } else { btn.className = "fas fa-ban block-btn"; btn.style.color = "#ff4444"; } }); }
+        function toggleBlockUser() { db.ref('users/' + myName + '/blocked/' + partner).once('value', s => { if(s.exists()) { if(confirm("Unblock " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).remove(); } else { if(confirm("Block " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).set(true); } }); }
         function deleteMsg(key) { if(confirm("Delete for everyone?")) db.ref('chats/' + chatId + '/' + key).remove(); }
         
         function sendTxt() { 
+            if(!requireKey()) return; // Check Key
             let t = document.getElementById('msgInput').value.trim(); 
             if(!t || !partner) return; 
             db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
@@ -370,6 +342,7 @@
         }
 
         function playGame(type) { 
+            if(!requireKey()) return;
             db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
                  if(s.exists()) return alert("User blocked you.");
                  let res = (type === 'DICE') ? "🎲 Rolled: " + (Math.floor(Math.random()*6)+1) : "✂️ Chose Rock"; 
@@ -377,6 +350,7 @@
             });
         }
         function processImg(i) { 
+            if(!requireKey()) return;
             db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
                  if(s.exists()) return alert("User blocked you.");
                  const r = new FileReader(); r.onload = e => { let secureImg = encrypt(e.target.result); db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: secureImg, time: Date.now() }); }; r.readAsDataURL(i.files[0]); 
@@ -384,8 +358,8 @@
         }
         
         function toggleScreen(id) { let e = document.getElementById(id); e.style.display = e.style.display==='flex'?'none':'flex'; }
-        function initGame() { activeGameId = Date.now(); mySymbol = 'X'; db.ref('games/' + chatId).set({ board: [0,0,0, 0,0,0, 0,0,0], turn: myName, status: 'active', winner: null }); db.ref('chats/' + chatId).push({ from: myName, type: 'game_invite', val: encrypt("🎮 Started Game"), gameId: activeGameId, time: Date.now() }); toggleScreen('gameScreen'); openGameUI(); }
-        function joinGame(gId) { activeGameId = gId; db.ref('games/' + chatId).once('value', s => { let g = s.val(); mySymbol = (g.turn === myName) ? 'X' : 'O'; if(myName !== partner) mySymbol = 'O'; openGameUI(); }); }
+        function initGame() { if(!requireKey()) return; activeGameId = Date.now(); mySymbol = 'X'; db.ref('games/' + chatId).set({ board: [0,0,0, 0,0,0, 0,0,0], turn: myName, status: 'active', winner: null }); db.ref('chats/' + chatId).push({ from: myName, type: 'game_invite', val: encrypt("🎮 Started Game"), gameId: activeGameId, time: Date.now() }); toggleScreen('gameScreen'); openGameUI(); }
+        function joinGame(gId) { if(!requireKey()) return; activeGameId = gId; db.ref('games/' + chatId).once('value', s => { let g = s.val(); mySymbol = (g.turn === myName) ? 'X' : 'O'; if(myName !== partner) mySymbol = 'O'; openGameUI(); }); }
         function openGameUI() { document.getElementById('gameOverlay').style.display = 'flex'; db.ref('games/' + chatId).on('value', s => { let g = s.val(); if(!g) return; let cells = document.querySelectorAll('.cell'); g.board.forEach((val, idx) => { cells[idx].innerText = val === 0 ? '' : val; cells[idx].className = 'cell ' + (val === 0 ? '' : val); }); let statusDiv = document.getElementById('gameStatus'); if(g.winner) { statusDiv.innerText = g.winner === 'DRAW' ? "🤝 IT'S A DRAW!" : `🏆 ${g.winner} WON!`; statusDiv.style.color = '#2ed573'; } else { statusDiv.innerText = (g.turn === myName) ? "👉 Your Turn" : "⏳ Waiting..."; statusDiv.style.color = (g.turn === myName) ? '#00d2ff' : '#64748b'; } }); }
         function makeMove(idx) { db.ref('games/' + chatId).once('value', s => { let g = s.val(); if(g.winner || g.turn !== myName || g.board[idx] !== 0) return; g.board[idx] = mySymbol; g.turn = partner; g.winner = checkWin(g.board); db.ref('games/' + chatId).set(g); }); }
         function checkWin(b) { const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; for(let w of wins) { if(b[w[0]] && b[w[0]]===b[w[1]] && b[w[1]]===b[w[2]]) return b[w[0]]; } if(!b.includes(0)) return 'DRAW'; return null; }
