@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Pro | Ultimate</title>
+    <title>Neon Pro | Unique Keys</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -32,14 +32,12 @@
         .enc-notice { background: #fff9c4; color: #5d4037; font-size: 0.75rem; text-align: center; padding: 10px 15px; margin: 10px auto 20px auto; border-radius: 10px; max-width: 90%; border: 1px solid #ffe082; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .enc-notice i { font-size: 1rem; color: #ffa000; margin-bottom: 3px; }
         
-        /* Modals & Overlays */
         #termsModal, #tutorialModal { position: fixed; inset: 0; z-index: 6000; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
         .terms-card, .tut-card { background: #fff; width: 100%; max-width: 400px; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; max-height: 80vh; animation: popUp 0.3s forwards; }
         .terms-head { background: #1e272e; color: white; padding: 20px; text-align: center; font-family: 'Orbitron'; font-size: 1.2rem; border-bottom: 4px solid var(--primary); }
         .terms-body { padding: 20px; overflow-y: auto; font-size: 0.85rem; color: #333; line-height: 1.6; background: #f8f9fa; }
         .btn-agree { background: var(--primary); color: white; padding: 15px; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; }
         
-        /* Tutorial Specific */
         .tut-step { display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-start; }
         .step-num { background: var(--primary); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
         .step-text h4 { margin: 0 0 5px 0; color: #1e272e; }
@@ -122,19 +120,15 @@
             <div class="terms-body" style="background:white;">
                 <div class="tut-step">
                     <div class="step-num">1</div>
-                    <div class="step-text"><h4>Enter a Key</h4><p>To start chatting, you must enter a <b>Secret Key</b> (Password) in the top box.</p></div>
+                    <div class="step-text"><h4>Unique Keys</h4><p>The Key changes automatically for each friend. <b>Enter a different Key for each person.</b></p></div>
                 </div>
                 <div class="tut-step">
                     <div class="step-num">2</div>
-                    <div class="step-text"><h4>Same Key Rule</h4><p>You and your friend must use the <b>EXACT SAME Key</b>. If keys don't match, you can't read messages.</p></div>
+                    <div class="step-text"><h4>Auto-Save</h4><p>Once you enter a key for a friend, the app remembers it <b>only for that friend</b>.</p></div>
                 </div>
                 <div class="tut-step">
                     <div class="step-num">3</div>
-                    <div class="step-text"><h4>Invite Friends</h4><p>Click the <i class="fas fa-user-plus" style="color:var(--primary)"></i> icon to generate a unique link. Send it to a friend to auto-connect!</p></div>
-                </div>
-                <div class="tut-step">
-                    <div class="step-num">4</div>
-                    <div class="step-text"><h4>Stay Safe</h4><p>Messages are encrypted. Click 🗑️ to delete messages for everyone.</p></div>
+                    <div class="step-text"><h4>Invite</h4><p>Click <i class="fas fa-user-plus" style="color:var(--primary)"></i> to create a link with a unique key for a new chat.</p></div>
                 </div>
             </div>
             <button class="btn-agree" onclick="closeTutorial()">GOT IT!</button>
@@ -167,7 +161,8 @@
                 
                 <button onclick="generateInvite()" style="background:none; border:none; cursor:pointer; color:#007bff; font-size:1.1rem;" title="Create Invite Link"><i class="fas fa-user-plus"></i></button>
 
-                <input type="password" id="topKey" style="width:70px; padding:6px; border-radius:8px; border:2px solid #ff9800; background:#fff3e0; text-align:center; font-size:0.75rem;" placeholder="Key Required 🔑" oninput="this.classList.remove('key-needed')">
+                <input type="password" id="topKey" style="width:70px; padding:6px; border-radius:8px; border:2px solid #ff9800; background:#fff3e0; text-align:center; font-size:0.75rem;" placeholder="Key Required 🔑" oninput="saveKey(this.value)">
+                
                 <i class="fas fa-search" onclick="toggleScreen('searchScreen')"></i>
                 
                 <i class="fas fa-sign-out-alt" onclick="logout()" style="color:#ff4444; font-size:1.1rem; cursor:pointer; margin-left:5px;" title="Logout"></i>
@@ -275,15 +270,12 @@
             document.getElementById('appLayer')?.remove();
         }
 
-        // --- KEY & INVITE LOGIC ---
-        const urlParams = new URLSearchParams(window.location.search);
-        const magicKey = urlParams.get('join');
-        if(magicKey) {
-            document.getElementById('topKey').value = magicKey;
-            window.onload = function() {
-                alert("✅ Key Auto-Filled from Invite!");
-                document.getElementById('topKey').style.borderColor = '#2ed573';
-                document.getElementById('topKey').readOnly = true;
+        // --- 2. UNIQUE KEY LOGIC (PER FRIEND) ---
+        // Save Key for the specific friend currently open
+        function saveKey(val) {
+            if(partner) {
+                localStorage.setItem('neonKey_' + partner, val);
+                document.getElementById('topKey').classList.remove('key-needed');
             }
         }
 
@@ -304,11 +296,28 @@
 
         function generateInvite() {
             const randomKey = Math.random().toString(36).substring(2, 10).toUpperCase();
-            document.getElementById('topKey').value = randomKey;
+            
+            // If inside a chat, save this new key for this friend
+            if(partner) {
+                document.getElementById('topKey').value = randomKey;
+                localStorage.setItem('neonKey_' + partner, randomKey);
+            }
+            
             const link = window.location.href.split('?')[0] + "?join=" + randomKey;
             navigator.clipboard.writeText(link).then(() => {
-                alert("🔗 Invite Link Copied!\nSend it to your friend to auto-connect.");
+                alert("🔗 Invite Link Copied!\nUnique Key: " + randomKey + "\nSend this to your friend.");
             }).catch(() => prompt("Copy Link:", link));
+        }
+        
+        // Handle URL Join (Global fallback or overwrite)
+        const urlParams = new URLSearchParams(window.location.search);
+        const magicKey = urlParams.get('join');
+        if(magicKey) {
+            // Temporary storage until they click a friend
+            localStorage.setItem('tempKey', magicKey);
+            window.onload = function() {
+                alert("✅ Key Ready! Select a friend to apply it.");
+            }
         }
 
         // --- AUTH & TUTORIAL ---
@@ -364,6 +373,28 @@
             const box = document.getElementById('chatDisplay');
             document.getElementById('chatTitle').innerText = partner;
             document.getElementById('blockBtn').style.display = 'block';
+            
+            // --- SMART KEY LOADER ---
+            // 1. Check if we have a saved key for THIS specific partner
+            let savedKey = localStorage.getItem('neonKey_' + partner);
+            
+            // 2. If not, maybe we came from an Invite Link?
+            if(!savedKey && localStorage.getItem('tempKey')) {
+                savedKey = localStorage.getItem('tempKey');
+                localStorage.removeItem('tempKey'); // Use once
+                localStorage.setItem('neonKey_' + partner, savedKey); // Save for future
+            }
+
+            // 3. Set the key in the input box
+            if(savedKey) {
+                document.getElementById('topKey').value = savedKey;
+                document.getElementById('topKey').style.borderColor = '#2ed573';
+            } else {
+                document.getElementById('topKey').value = ""; // Clear box if no key found for this person
+                document.getElementById('topKey').style.borderColor = '#ff9800';
+            }
+            // ------------------------
+
             checkBlockStatus();
             renderNotice(box);
 
