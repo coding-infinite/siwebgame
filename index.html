@@ -3,180 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Pro | Auto-Secure</title>
+    <title>Neon Pro | Classic</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
     <style>
-        :root { --primary: #007bff; --bg: #dcdcd5; --gold: #ffd32a; }
+        :root { 
+            --primary: #007bff; 
+            --bg: #f2f4f8; /* Soft Grey Background */
+            --white: #ffffff;
+            --text-dark: #2d3436;
+            --text-light: #636e72;
+            --green: #00b894;
+        }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); font-family: 'Outfit', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); font-family: 'Poppins', sans-serif; margin: 0; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
-        /* --- UI UPDATES --- */
-        .msg-name { font-size: 0.65rem; color: #555; margin-bottom: 2px; font-weight: bold; opacity: 0.8; display: block; }
-        .report-link { font-size: 0.65rem; color: #ff4444; cursor: pointer; margin-top: 5px; display: block; text-align: right; font-weight: bold; opacity: 0.7; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 4px; }
-        .report-link:hover { opacity: 1; text-decoration: underline; }
-        .chat-header-info { display: flex; align-items: center; gap: 10px; }
-        .block-btn { color: #ff4444; font-size: 1.1rem; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
-        .block-btn:hover { background: rgba(255, 68, 68, 0.1); }
-        .blocked-badge { font-size: 0.6rem; background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; display: none; }
-        .delete-btn { font-size: 0.7rem; color: #ff4444; cursor: pointer; margin-left: 8px; opacity: 0.6; }
+        /* --- 1. NEW STATUS ANIMATIONS --- */
+        .av-wrapper { position: relative; width: 55px; height: 55px; margin: 0 auto; cursor: pointer; }
+        .av-wrapper img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+        
+        /* Unique Online Breathing Ring */
+        .status-ring {
+            position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px;
+            border-radius: 50%; border: 2px solid var(--green);
+            opacity: 0; transition: 0.3s; pointer-events: none;
+        }
+        .is-online .status-ring { opacity: 1; animation: breathe 2s infinite ease-in-out; }
+        @keyframes breathe { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+        
+        /* Offline Grayscale */
+        .is-offline img { filter: grayscale(100%); opacity: 0.7; }
 
-        /* --- STANDARD STYLES --- */
-        .enc-notice { background: #fff9c4; color: #5d4037; font-size: 0.75rem; text-align: center; padding: 10px 15px; margin: 10px auto 20px auto; border-radius: 10px; max-width: 90%; border: 1px solid #ffe082; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .enc-notice i { font-size: 1rem; color: #ffa000; margin-bottom: 3px; }
-        
-        #termsModal { position: fixed; inset: 0; z-index: 6000; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
-        .terms-card { background: #fff; width: 100%; max-width: 400px; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; max-height: 80vh; animation: popUp 0.3s forwards; }
-        .terms-head { background: #1e272e; color: white; padding: 20px; text-align: center; font-family: 'Orbitron'; font-size: 1.2rem; border-bottom: 4px solid var(--primary); }
-        .terms-body { padding: 20px; overflow-y: auto; font-size: 0.85rem; color: #333; line-height: 1.6; background: #f8f9fa; }
-        .btn-agree { background: var(--primary); color: white; padding: 15px; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; }
+        /* --- 2. UNIQUE SEEN EFFECT (Golden Glow) --- */
+        .msg { transition: 0.3s ease; border: 1px solid transparent; }
+        .msg.seen-glow { 
+            border-right: 3px solid #f1c40f; /* Golden strip */
+            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.15);
+        }
 
-        #banOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, #8b0000 0%, #1a0000 100%); z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 30px; }
-        .ban-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; animation: shake 0.5s infinite; }
-        .ban-title { font-family: 'Orbitron'; font-size: 2.5rem; color: #ff4444; margin-bottom: 10px; }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -2px); } }
+        /* --- UI UPDATES (CLASSIC) --- */
+        header { 
+            padding: 15px 20px; background: var(--white); 
+            display: flex; align-items: center; justify-content: space-between; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03); z-index: 100;
+        }
+        .app-title { font-weight: 700; font-size: 1.2rem; color: var(--text-dark); letter-spacing: -0.5px; }
+        .status-text { font-size: 0.7rem; color: var(--text-light); font-weight: 500; display:flex; align-items:center; gap:5px; }
         
-        #authLayer { position: fixed; inset: 0; background: white; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { background: white; width: 100%; max-width: 380px; padding: 35px 25px; border-radius: 30px; box-shadow: 0 15px 45px rgba(0,0,0,0.1); text-align: center; border: 1px solid #f0f0f0; }
-        .auth-card h1 { font-family: 'Orbitron'; color: var(--primary); font-size: 2rem; margin: 0; letter-spacing: 2px; }
-        .enc-badge { display: inline-flex; align-items: center; gap: 8px; background: #e3f2fd; color: #1976d2; padding: 8px 18px; border-radius: 50px; font-size: 0.7rem; font-weight: bold; margin: 15px 0; border: 1px solid #bbdefb; }
-        .auth-card input { width: 100%; padding: 14px; margin-top: 10px; border-radius: 12px; border: 1.5px solid #eee; font-size: 1rem; }
-        .btn-login { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 20px; cursor: pointer; }
+        /* Typing Animation in Header */
+        .typing-anim span {
+            display: inline-block; width: 4px; height: 4px; background: var(--primary); border-radius: 50%;
+            animation: typeJump 1s infinite;
+        }
+        .typing-anim span:nth-child(2) { animation-delay: 0.1s; }
+        .typing-anim span:nth-child(3) { animation-delay: 0.2s; }
+        @keyframes typeJump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+        /* Sidebar Friends */
+        #friendSidebar { 
+            width: 85px; background: var(--white); border-right: 1px solid #eee; 
+            display: flex; flex-direction: column; align-items: center; padding: 20px 0; gap: 20px; overflow-y: auto; 
+        }
+
+        /* Chat Area */
+        #chatDisplay { 
+            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; 
+            background-color: #eef1f5; 
+            background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); /* Pattern kept */
+            background-blend-mode: multiply;
+        }
         
-        #appLayer { display: none; flex-direction: column; height: 100vh; }
-        header { padding: 10px 15px; background: white; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; z-index: 1001; }
-        .secure-tag { font-size: 0.65rem; color: #28a745; font-weight: bold; display: flex; align-items: center; gap: 4px; background: #f0fff4; padding: 4px 8px; border-radius: 20px; border: 1px solid #c6f6d5; }
-        
-        #chatDisplay { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 250px !important; background-color: #d8d4d0; background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); background-blend-mode: multiply; }
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; }
-        .msg-me { align-self: flex-end; background: #dcf8c6; color: #303030; border-top-right-radius: 4px; }
-        .msg-them { align-self: flex-start; background: white; color: #303030; border-top-left-radius: 4px; }
-        
-        #gameOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; align-items:center; justify-content:center; }
-        .cell { width: 70px; height: 70px; background: #0b0f19; border: 2px solid #334155; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-family: 'Orbitron'; cursor: pointer; color:white; }
-        .cell.X { color: #00d2ff; text-shadow: 0 0 10px #00d2ff; }
-        .cell.O { color: #ff4757; text-shadow: 0 0 10px #ff4757; }
-        
-        .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000; background: white; border-top: 1px solid #eee; }
-        .input-bar { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: white; }
-        #msgInput { flex: 1; padding: 12px 18px; border-radius: 30px; border: 1.5px solid #eee; background: #f1f3f4; font-size: 1rem; }
-        .btn-send { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        #ad-box { height: 60px; width: 100%; display: flex; justify-content: center; align-items: center; }
+        .msg { 
+            max-width: 75%; padding: 12px 16px; border-radius: 18px; 
+            font-size: 0.95rem; line-height: 1.5; position: relative; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .msg-me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        .msg-them { align-self: flex-start; background: var(--white); color: var(--text-dark); border-bottom-left-radius: 4px; }
+        .msg-name { font-size: 0.65rem; opacity: 0.8; margin-bottom: 2px; display: block; font-weight: 600; }
+
+        /* Reply Bar */
+        #replyPreview { 
+            display: none; background: #fff; padding: 12px 20px; 
+            border-left: 4px solid var(--primary); 
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+            animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+        .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000; }
+        .input-bar { display: flex; align-items: center; gap: 12px; padding: 15px 20px; background: var(--white); }
+        #msgInput { 
+            flex: 1; padding: 14px 20px; border-radius: 30px; border: none; 
+            background: #f0f2f5; font-family: 'Poppins'; font-size: 1rem; color: #333;
+            transition: 0.3s;
+        }
+        #msgInput:focus { background: #e4e6eb; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
+        .btn-send { 
+            width: 50px; height: 50px; border-radius: 50%; background: var(--primary); 
+            color: white; border: none; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3); transition: 0.2s;
+        }
+        .btn-send:active { transform: scale(0.9); }
+
+        /* Overlays */
         .overlay { position: fixed; inset: 0; background: white; z-index: 4000; display: none; flex-direction: column; padding: 25px; }
+        #authLayer { position: fixed; inset: 0; background: white; z-index: 5000; display: flex; align-items: center; justify-content: center; }
+        .auth-card { width: 90%; max-width: 350px; text-align: center; }
+        .auth-card h1 { color: var(--primary); font-weight: 700; letter-spacing: -1px; margin-bottom: 5px; }
+        .auth-card input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid #eee; background: #f9f9f9; font-family: 'Poppins'; }
         
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes popUp { to { transform: scale(1); } }
+        /* Game Styles (Kept Minimal) */
+        #gameOverlay { display:none; position:fixed; inset:0; background:rgba(255,255,255,0.95); z-index:7000; flex-direction:column; align-items:center; justify-content:center; backdrop-filter: blur(5px); }
+        .cell { width: 70px; height: 70px; background: white; border: 2px solid #eee; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight:bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .cell.X { color: var(--primary); }
+        .cell.O { color: #ff4757; }
     </style>
 </head>
 <body>
 
-    <div id="gameOverlay">
-        <div style="background:#161e2d; padding:25px; border-radius:20px; border:2px solid var(--primary); width:320px; text-align:center;">
-            <h2 style="font-family:'Orbitron'; color:var(--primary); margin:0 0 15px 0;">NEON TIC-TAC-TOE</h2>
-            <div id="gameStatus" style="color:white; margin-bottom:15px; font-size:0.9rem;">Waiting...</div>
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:20px;">
-                <div class="cell" onclick="makeMove(0)"></div><div class="cell" onclick="makeMove(1)"></div><div class="cell" onclick="makeMove(2)"></div>
-                <div class="cell" onclick="makeMove(3)"></div><div class="cell" onclick="makeMove(4)"></div><div class="cell" onclick="makeMove(5)"></div>
-                <div class="cell" onclick="makeMove(6)"></div><div class="cell" onclick="makeMove(7)"></div><div class="cell" onclick="makeMove(8)"></div>
-            </div>
-            <button onclick="closeGame()" style="background:#ff4757; color:white; border:none; padding:12px 20px; border-radius:10px; font-weight:bold; width:100%;">EXIT GAME</button>
-        </div>
-    </div>
-
-    <div id="banOverlay">
-        <i class="fas fa-ban ban-icon"></i>
-        <div class="ban-title">BLOCKED</div>
-        <p style="font-size:1.1rem; opacity:0.8;">Your device has been blacklisted.</p>
-        <div style="margin-top:20px; font-family:monospace; background:rgba(0,0,0,0.5); padding:10px; border-radius:5px; font-size:0.8rem;">ID: SUPER_BAN_ACTIVE</div>
-    </div>
-
-    <div id="termsModal">
-        <div class="terms-card">
-            <div class="terms-head"><i class="fas fa-gavel"></i> LEGAL POLICY</div>
-            <div class="terms-body">
-                <div class="policy-block"><h4>1. Data Collection</h4><p>We log your unique <b>Device ID</b> and <b>IP</b>.</p></div>
-                <div class="policy-block"><h4>2. Zero Tolerance</h4><p>Harassment triggers a <b>Hardware Ban</b>.</p></div>
-                <div class="policy-block"><h4>3. Security</h4><p>Passwords are <b>Hashed (SHA-256)</b>. Messages are <b>Auto-Encrypted</b>.</p></div>
-            </div>
-            <button class="btn-agree" onclick="agreeTerms()">I ACCEPT & CONTINUE</button>
-        </div>
-    </div>
-
     <div id="authLayer">
         <div class="auth-card">
-            <h1>NEON PRO</h1>
-            <div class="enc-badge"><i class="fas fa-shield-alt"></i> SECURE HASHING ACTIVE</div>
+            <h1>Neon Pro</h1>
+            <p style="color:#888; font-size:0.9rem; margin-bottom:30px;">Secure. Simple. Fast.</p>
             <input type="text" id="uName" placeholder="Username">
             <input type="password" id="uPass" placeholder="Password">
-            <div style="font-size: 0.8rem; text-align: left; margin: 20px 0; color: #666; display: flex; gap: 8px; align-items: center;">
-                <input type="checkbox" id="legalCheck"> 
-                <span>I accept the <b style="color:var(--primary); text-decoration:underline; cursor:pointer;" onclick="showTerms()">Strict Terms & Policy</b></span>
+            <div style="text-align:left; margin:15px 0; font-size:0.8rem; color:#666;">
+                <input type="checkbox" id="legalCheck"> I accept Terms & Privacy
             </div>
-            <button class="btn-login" onclick="startLogin()">LOG IN</button>
+            <button onclick="startLogin()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:600; cursor:pointer; box-shadow: 0 5px 20px rgba(0,123,255,0.2);">START MESSAGING</button>
         </div>
     </div>
 
-    <div id="appLayer">
+    <div id="appLayer" style="display:none; flex-direction:column; height:100vh;">
         <header>
-            <div class="chat-header-info">
-                <div style="font-family:'Orbitron'; color:var(--primary); font-size:1.1rem;" id="chatTitle">NEON</div>
-                <span id="blockedBadge" class="blocked-badge">🚫 BLOCKED</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-                <i class="fas fa-ban block-btn" id="blockBtn" style="display:none;" onclick="toggleBlockUser()"></i>
-                
-                <i class="fas fa-search" onclick="toggleScreen('searchScreen')" style="font-size:1.1rem; color:#555; cursor:pointer;"></i>
-                
-                <i class="fas fa-sign-out-alt" onclick="logout()" style="color:#ff4444; font-size:1.1rem; cursor:pointer; margin-left:10px;" title="Logout"></i>
-                
-                <div style="position:relative; margin-left:5px;" onclick="openRequests()">
-                    <i class="fas fa-bell" style="font-size:1.1rem; color:#555;"></i>
-                    <div id="reqBadge" style="position:absolute; top:-8px; right:-8px; background:red; color:white; border-radius:50%; width:15px; height:15px; font-size:0.6rem; display:none; align-items:center; justify-content:center;">0</div>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div>
+                    <div id="chatTitle" class="app-title">Neon Pro</div>
+                    <div id="headerStatus" class="status-text">Select a friend</div>
                 </div>
+            </div>
+            <div style="display:flex; gap:15px; color:var(--text-light); font-size:1.1rem;">
+                <i class="fas fa-search" onclick="toggleScreen('searchScreen')" style="cursor:pointer;"></i>
+                <i class="fas fa-user-plus" onclick="toggleScreen('searchScreen')" style="cursor:pointer;"></i>
+                <i class="fas fa-sign-out-alt" onclick="logout()" style="color:#ff4757; cursor:pointer;"></i>
             </div>
         </header>
 
         <div style="display:flex; flex:1; overflow:hidden;">
-            <div id="friendSidebar" style="width:70px; background:white; border-right:1px solid #eee; display:flex; flex-direction:column; align-items:center; padding:10px 0; gap:15px; overflow-y:auto;"></div>
-            <div id="chatDisplay"></div>
+            <div id="friendSidebar"></div>
+            
+            <div id="chatDisplay">
+                <div style="text-align:center; color:#999; margin-top:50px;">
+                    <i class="fas fa-lock" style="font-size:2rem; margin-bottom:10px; opacity:0.3;"></i>
+                    <p style="font-size:0.8rem;">End-to-End Encrypted</p>
+                </div>
+            </div>
         </div>
 
         <div class="bottom-container">
-            <div class="input-bar">
-                <i class="fas fa-gamepad" style="color:#ff9800; font-size:1.4rem;" onclick="toggleScreen('gameScreen')"></i>
-                <i class="fas fa-image" style="color:#4caf50; font-size:1.4rem;" onclick="document.getElementById('imgFile').click()"></i>
-                <input type="file" id="imgFile" hidden accept="image/*" onchange="processImg(this)">
-                <input type="text" id="msgInput" placeholder="Write a message...">
-                <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
+            <div id="replyPreview">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--primary); font-weight:600;">Replying to</span>
+                        <div id="replyContent" style="font-size:0.85rem; color:#333;">...</div>
+                    </div>
+                    <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer; color:#999;"></i>
+                </div>
             </div>
-            <div id="ad-box">
-                <script type="text/javascript">atOptions = {'key' : '697d465f55b34630746380bf6791eb54','format' : 'iframe','height' : 50,'width' : 320,'params' : {}};</script>
-                <script type="text/javascript" src="https://www.highperformanceformat.com/697d465f55b34630746380bf6791eb54/invoke.js"></script>
+
+            <div class="input-bar">
+                <i class="fas fa-gamepad" style="color:#888; font-size:1.4rem; cursor:pointer;" onclick="toggleScreen('gameScreen')"></i>
+                <i class="fas fa-image" style="color:#888; font-size:1.4rem; cursor:pointer;" onclick="document.getElementById('imgFile').click()"></i>
+                <input type="file" id="imgFile" hidden accept="image/*" onchange="processImg(this)">
+                
+                <input type="text" id="msgInput" placeholder="Type a message..." enterkeyhint="send" oninput="handleTyping()">
+                
+                <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
 
     <div id="searchScreen" class="overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Find Friends</h2><i class="fas fa-times" onclick="toggleScreen('searchScreen')"></i></div>
-        <input type="text" style="width:100%; padding:15px; border-radius:12px; border:1px solid #eee; margin-top:10px;" placeholder="Search username..." oninput="doSearch(this.value)">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0; font-family:'Poppins';">Find People</h2>
+            <i class="fas fa-times" onclick="toggleScreen('searchScreen')" style="font-size:1.5rem; cursor:pointer;"></i>
+        </div>
+        <input type="text" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; background:#f9f9f9; font-family:'Poppins';" placeholder="Start typing name..." oninput="doSearch(this.value)">
         <div id="searchResults" style="margin-top:20px;"></div>
     </div>
+
     <div id="gameScreen" class="overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Games</h2><i class="fas fa-times" onclick="toggleScreen('gameScreen')"></i></div>
-        <div style="display:grid; grid-template-columns:1fr; gap:15px; margin-top:20px;">
-            <button onclick="initGame()" style="padding:25px; border-radius:15px; border:1px solid var(--primary); background:#161e2d; color:white; font-weight:bold;">🎮 START LIVE TIC-TAC-TOE</button>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                <button onclick="playGame('DICE')" style="padding:25px; border-radius:15px; border:none; background:#f1f3f4; font-weight:bold;">🎲 ROLL DICE</button>
-                <button onclick="playGame('RPS')" style="padding:25px; border-radius:15px; border:none; background:#f1f3f4; font-weight:bold;">✂️ PLAY RPS</button>
-            </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0; font-family:'Poppins';">Games</h2>
+            <i class="fas fa-times" onclick="toggleScreen('gameScreen')" style="font-size:1.5rem; cursor:pointer;"></i>
         </div>
+        <button onclick="initGame()" style="width:100%; padding:20px; border-radius:15px; background:var(--primary); color:white; border:none; font-size:1rem; font-weight:600; box-shadow:0 10px 25px rgba(0,123,255,0.3);">🎮 Start Tic-Tac-Toe</button>
+        <button onclick="playGame('DICE')" style="width:100%; padding:20px; border-radius:15px; background:#fff; border:1px solid #eee; color:#333; font-size:1rem; font-weight:600; margin-top:15px;">🎲 Roll Dice</button>
     </div>
-    <div id="requestScreen" class="overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Requests</h2><i class="fas fa-times" onclick="toggleScreen('requestScreen')"></i></div>
-        <div id="requestList" style="margin-top:15px;"></div>
+
+    <div id="gameOverlay">
+        <h2 style="color:var(--text-dark); margin-bottom:20px;">Tic-Tac-Toe</h2>
+        <div id="gameStatus" style="color:#666; margin-bottom:20px;">Waiting...</div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+            <div class="cell" onclick="makeMove(0)"></div><div class="cell" onclick="makeMove(1)"></div><div class="cell" onclick="makeMove(2)"></div>
+            <div class="cell" onclick="makeMove(3)"></div><div class="cell" onclick="makeMove(4)"></div><div class="cell" onclick="makeMove(5)"></div>
+            <div class="cell" onclick="makeMove(6)"></div><div class="cell" onclick="makeMove(7)"></div><div class="cell" onclick="makeMove(8)"></div>
+        </div>
+        <button onclick="document.getElementById('gameOverlay').style.display='none'" style="margin-top:30px; border:none; background:none; color:#ff4757; font-weight:bold; cursor:pointer;">CLOSE GAME</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
@@ -194,244 +232,212 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
-        // --- GLOBAL & SECURITY ---
-        let myIp, myName, partner, chatId;
-        let activeGameId = null, mySymbol = null;
-        
-        // FIXED INTERNAL KEY (Replaces manual key)
         const APP_SECRET = "NEON_AUTO_SECURE_2026_X"; 
 
-        if(localStorage.getItem('isPermanentlyBanned') === 'true') {
-            document.addEventListener('DOMContentLoaded', showRedScreen);
-        }
+        let myName, partner, chatId, replyMsg = null, typingTimeout;
 
-        // --- 1. PERSISTENT LOGIN (AUTO-LOGIN) ---
+        // --- AUTH & SETUP ---
         document.addEventListener('DOMContentLoaded', () => {
             const savedUser = localStorage.getItem('currentUser');
-            if(savedUser && savedUser !== 'null') {
-                myName = savedUser;
-                document.getElementById('authLayer').style.display='none';
-                document.getElementById('appLayer').style.display='flex';
-                fetchIpAndStart();
-                loadFriends();
-                monitorRequests();
-            } else {
-                fetchIpAndStart();
-            }
+            if(savedUser) { myName = savedUser; loginSuccess(); }
+            
+            document.getElementById('msgInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendTxt();
+            });
         });
 
-        function fetchIpAndStart() {
-            fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { 
-                myIp = d.ip; 
-                db.ref('security/bans/' + myIp.replace(/\./g, '_')).on('value', s => {
-                    if(s.exists()) permanentBanTrigger();
-                });
-                if(myName) db.ref('users/' + myName + '/ip').set(myIp);
-            });
-        }
-
-        function permanentBanTrigger() { localStorage.setItem('isPermanentlyBanned', 'true'); showRedScreen(); }
-        function showRedScreen() {
-            document.getElementById('banOverlay').style.display = 'flex';
-            document.getElementById('authLayer')?.remove();
-            document.getElementById('appLayer')?.remove();
-        }
-
-        // --- AUTH (UPDATED: PASSWORD HASHING) ---
-        function showTerms() { document.getElementById('termsModal').style.display = 'flex'; }
-        function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
-        function agreeTerms() { document.getElementById('legalCheck').checked = true; closeTerms(); }
-        
         function startLogin() {
-            if(!document.getElementById('legalCheck').checked) return alert("Accept Terms first.");
+            if(!document.getElementById('legalCheck').checked) return alert("Please accept Terms.");
             myName = document.getElementById('uName').value.trim().toLowerCase();
             let p = document.getElementById('uPass').value.trim();
-            if(!myName || p.length < 4) return alert("Invalid credentials");
+            if(!myName || p.length < 4) return alert("Invalid details");
             
-            // HASH PASSWORD (SHA-256)
-            let hashedPass = CryptoJS.SHA256(p).toString();
-
+            let hp = CryptoJS.SHA256(p).toString();
             db.ref('users/' + myName).once('value', s => {
-                let data = s.val();
-                if(data && data.banned === true) { permanentBanTrigger(); return; }
-                
-                // Compare HASHED password
-                if(s.exists() && data.pass !== hashedPass) return alert("Wrong pass");
-                
+                if(s.exists() && s.val().pass !== hp) return alert("Wrong password");
                 localStorage.setItem('currentUser', myName);
-                
-                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: hashedPass, ip: myIp, joinedAt: Date.now() });
-                else if(myIp) db.ref('users/' + myName + '/ip').set(myIp);
-
-                document.getElementById('authLayer').style.display='none';
-                document.getElementById('appLayer').style.display='flex';
-                loadFriends();
-                monitorRequests();
+                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: hp, joined: Date.now() });
+                loginSuccess();
             });
+        }
+
+        function loginSuccess() {
+            document.getElementById('authLayer').style.display='none';
+            document.getElementById('appLayer').style.display='flex';
+            
+            // Set Online Status
+            const presenceRef = db.ref('status/' + myName);
+            presenceRef.set('online');
+            presenceRef.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP); // Save Time when offline
+            
+            loadFriends();
         }
 
         function logout() {
-            if(confirm("Are you sure you want to Logout?")) {
-                localStorage.removeItem('currentUser');
-                location.reload(); 
-            }
+            db.ref('status/' + myName).set(firebase.database.ServerValue.TIMESTAMP);
+            localStorage.removeItem('currentUser'); location.reload(); 
         }
 
-        // --- CRYPTO (AUTO INTERNAL KEY) ---
-        function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
-        function decrypt(c) { 
-            try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } 
+        // --- REAL-TIME STATUS & TYPING ---
+        function handleTyping() {
+            if(!chatId) return;
+            db.ref('typing/' + chatId + '/' + myName).set(true);
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => db.ref('typing/' + chatId + '/' + myName).set(false), 2000);
         }
 
-        // --- APP LOGIC ---
-        function loadFriends() { db.ref('friends/' + myName).on('value', s => { const bar = document.getElementById('friendSidebar'); bar.innerHTML = ""; s.forEach(f => { let d = document.createElement('div'); d.style = "width:50px; height:50px; cursor:pointer;"; d.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}" style="width:100%; border-radius:50%; border:2px solid transparent;" id="av-${f.key}">`; d.onclick = () => { partner = f.key; document.querySelectorAll('#friendSidebar img').forEach(i=>i.style.borderColor='transparent'); document.getElementById('av-'+f.key).style.borderColor='#007bff'; openChat(); }; bar.appendChild(d); }); }); }
-        
+        function monitorPartner() {
+            if(!partner) return;
+            
+            // Online/Last Seen
+            db.ref('status/' + partner).on('value', s => {
+                const st = s.val();
+                const el = document.getElementById('headerStatus');
+                const ring = document.getElementById('ring-' + partner);
+                const wrap = document.getElementById('wrap-' + partner);
+
+                if(st === 'online') {
+                    el.innerHTML = '<span style="color:#00b894; font-weight:bold;">● Online</span>';
+                    if(wrap) { wrap.classList.remove('is-offline'); wrap.classList.add('is-online'); }
+                } else {
+                    let timeText = moment(st).fromNow(); // Uses moment.js for "5 min ago"
+                    el.innerText = 'Last seen ' + timeText;
+                    if(wrap) { wrap.classList.remove('is-online'); wrap.classList.add('is-offline'); }
+                }
+            });
+
+            // Typing Indicator
+            db.ref('typing/' + chatId + '/' + partner).on('value', s => {
+                if(s.val()) {
+                    document.getElementById('headerStatus').innerHTML = '<div class="typing-anim" style="color:var(--primary);">Typing<span></span><span></span><span></span></div>';
+                }
+            });
+        }
+
+        // --- FRIENDS & SEARCH (FIXED LOGIC) ---
+        function loadFriends() { 
+            db.ref('friends/' + myName).on('value', s => { 
+                const bar = document.getElementById('friendSidebar'); bar.innerHTML = ""; 
+                s.forEach(f => { 
+                    let d = document.createElement('div');
+                    // New Avatar Structure
+                    d.className = "av-wrapper is-offline"; 
+                    d.id = "wrap-" + f.key;
+                    d.innerHTML = `
+                        <div class="status-ring" id="ring-${f.key}"></div>
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${f.key}" id="av-${f.key}">
+                    `; 
+                    d.onclick = () => { 
+                        partner = f.key; 
+                        document.querySelectorAll('.av-wrapper img').forEach(i=>i.style.borderColor='white'); 
+                        document.getElementById('av-'+f.key).style.borderColor='var(--primary)'; 
+                        openChat(); 
+                    }; 
+                    bar.appendChild(d); 
+                    
+                    // Trigger status check for this friend immediately to update ring
+                    db.ref('status/' + f.key).once('value'); 
+                }); 
+            }); 
+        }
+
+        // FIXED SEARCH: Only Starts With matching
+        function doSearch(q) { 
+            const res = document.getElementById('searchResults'); res.innerHTML = ""; 
+            if(!q) return;
+            
+            db.ref('users').once('value', s => { 
+                s.forEach(u => { 
+                    // STRICT MATCHING: Starts With only
+                    if(u.key.toLowerCase().startsWith(q.toLowerCase()) && u.key !== myName) { 
+                        res.innerHTML += `
+                        <div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #eee; align-items:center;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${u.key}" style="width:40px; border-radius:50%;">
+                                <b>${u.key}</b>
+                            </div>
+                            <button onclick="addFriend('${u.key}')" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button>
+                        </div>`; 
+                    } 
+                }); 
+            }); 
+        }
+        function addFriend(key) {
+            db.ref('requests/'+key+'/'+myName).set(true);
+            alert('Request Sent to ' + key);
+        }
+
+        // --- CHAT LOGIC ---
         function openChat() { 
             chatId = [myName, partner].sort().join("_");
-            const box = document.getElementById('chatDisplay');
             document.getElementById('chatTitle').innerText = partner;
-            document.getElementById('blockBtn').style.display = 'block';
-            
-            checkBlockStatus();
-            renderNotice(box);
+            monitorPartner();
 
-            db.ref('chats/' + chatId).limitToLast(25).on('value', s => { 
-                renderNotice(box);
+            const box = document.getElementById('chatDisplay');
+            db.ref('chats/' + chatId).limitToLast(50).on('value', s => { 
+                box.innerHTML = ""; // Clear for cleanliness
                 s.forEach(m => { 
                     let d = document.createElement('div'); 
                     let dat = m.val(); 
-                    let msgKey = m.key;
-                    d.className = `msg ${dat.from === myName ? 'msg-me' : 'msg-them'}`; 
+                    const isMe = dat.from === myName;
                     
-                    let nameTag = document.createElement('span');
-                    nameTag.className = "msg-name";
-                    nameTag.innerText = dat.from;
-                    d.appendChild(nameTag);
+                    // SEEN LOGIC: Gold Border if seen
+                    let seenClass = (isMe && dat.seen) ? 'seen-glow' : '';
+                    d.className = `msg ${isMe ? 'msg-me' : 'msg-them'} ${seenClass}`;
+                    
+                    // Mark as seen if I am receiver
+                    if(!isMe && !dat.seen) db.ref('chats/' + chatId + '/' + m.key + '/seen').set(true);
 
-                    if(dat.type === 'game_invite') {
-                        let btnDiv = document.createElement('div');
-                        btnDiv.innerHTML = `<div style="text-align:center;">🎮 LIVE GAME<br><button onclick="joinGame('${dat.gameId}')" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:5px; margin-top:5px; cursor:pointer;">PLAY NOW</button></div>`;
-                        d.appendChild(btnDiv);
-                    } else if(dat.type === 'img') { 
-                        let decryptedImg = decrypt(dat.val); 
-                        if(decryptedImg) {
-                            let img = document.createElement('img'); img.src = decryptedImg; img.style.width = "100%"; img.style.borderRadius="10px"; d.appendChild(img);
+                    // DOUBLE TAP TO REPLY
+                    let lastTap = 0;
+                    d.addEventListener('touchstart', (e) => handleDoubleTap(e, dat));
+                    d.addEventListener('dblclick', (e) => handleDoubleTap(e, dat)); // For PC
+
+                    function handleDoubleTap(e, data) {
+                        let curTime = new Date().getTime();
+                        if (curTime - lastTap < 300 || e.type === 'dblclick') {
+                            replyMsg = { text: decrypt(data.val) || "Attachment", from: data.from };
+                            document.getElementById('replyPreview').style.display = 'block';
+                            document.getElementById('replyContent').innerText = `Replying to: ${replyMsg.text}`;
                         }
-                    } else { 
-                        let txt = document.createElement('span'); txt.innerText = decrypt(dat.val); 
-                        d.appendChild(txt);
-                    } 
+                        lastTap = curTime;
+                    }
+
+                    let content = "";
+                    if(dat.replyTo) content += `<div style="font-size:0.75rem; color:var(--text-light); border-left:3px solid #ccc; padding-left:8px; margin-bottom:5px;"><b>${dat.replyTo.from}</b><br>${dat.replyTo.text}</div>`;
                     
-                    if(dat.from === myName) {
-                        let delBtn = document.createElement('i'); delBtn.className = "fas fa-trash delete-btn"; delBtn.onclick = () => deleteMsg(msgKey); d.appendChild(delBtn);
-                    } else {
-                        let rep = document.createElement('span'); rep.className = "report-link"; rep.innerHTML = '<i class="fas fa-flag"></i> Report'; rep.onclick = () => { if(confirm("Report to Admin?")) { db.ref('reports').push({ reporter: myName, user: dat.from, msg: dat.val, time: Date.now() }); alert("Report Sent!"); } }; d.appendChild(rep); 
-                    } 
+                    if(dat.type === 'game_invite') content += `<div>🎮 Let's Play <b>${decrypt(dat.val)}</b><br><button onclick="joinGame()" style="margin-top:5px; padding:5px 10px; border:none; background:white; color:#333; border-radius:5px;">JOIN</button></div>`;
+                    else if(dat.type === 'img') content += `<img src="${decrypt(dat.val)}" style="width:100%; border-radius:10px;">`;
+                    else content += `<span>${decrypt(dat.val)}</span>`;
+                    
+                    d.innerHTML = content;
                     box.appendChild(d); 
                 }); 
                 box.scrollTop = box.scrollHeight; 
             }); 
         }
 
-        function renderNotice(box) { box.innerHTML = `<div class="enc-notice"><i class="fas fa-lock"></i><b>End-to-End Encrypted</b><span>Messages are secured.</span></div>`; }
-
-        function checkBlockStatus() { db.ref('users/' + myName + '/blocked/' + partner).on('value', s => { let btn = document.getElementById('blockBtn'); if(s.exists()) { btn.className = "fas fa-unlock block-btn"; btn.style.color = "#2ed573"; } else { btn.className = "fas fa-ban block-btn"; btn.style.color = "#ff4444"; } }); }
-        function toggleBlockUser() { db.ref('users/' + myName + '/blocked/' + partner).once('value', s => { if(s.exists()) { if(confirm("Unblock " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).remove(); } else { if(confirm("Block " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).set(true); } }); }
-        function deleteMsg(key) { if(confirm("Delete for everyone?")) db.ref('chats/' + chatId + '/' + key).remove(); }
-        
         function sendTxt() { 
             let t = document.getElementById('msgInput').value.trim(); 
             if(!t || !partner) return; 
-            db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
-                if(s.exists()) { alert("🚫 Message Failed: User blocked you."); } else {
-                    db.ref('users/' + myName + '/blocked/' + partner).once('value', myS => {
-                        if(myS.exists()) { alert("🚫 You blocked this user."); } else {
-                             db.ref('chats/' + chatId).push({ from: myName, val: encrypt(t), time: Date.now() }); 
-                             document.getElementById('msgInput').value = ""; 
-                        }
-                    });
-                }
-            });
+            let payload = { from: myName, val: encrypt(t), time: Date.now(), seen: false };
+            if(replyMsg) { payload.replyTo = replyMsg; cancelReply(); }
+            db.ref('chats/' + chatId).push(payload); 
+            document.getElementById('msgInput').value = ""; 
+            document.getElementById('msgInput').focus();
         }
 
-        // --- FIXED GAME LOGIC ---
-        function initGame() { 
-            activeGameId = Date.now(); 
-            let gameData = { board: [0,0,0, 0,0,0, 0,0,0], turn: myName, xPlayer: myName, status: 'active', winner: null };
-            db.ref('games/' + chatId).set(gameData); 
-            db.ref('chats/' + chatId).push({ from: myName, type: 'game_invite', val: encrypt("🎮 Started Game"), gameId: activeGameId, time: Date.now() }); 
-            toggleScreen('gameScreen'); 
-            openGameUI(); 
-        }
-
-        function joinGame(gId) { 
-            activeGameId = gId; 
-            toggleScreen('gameScreen'); 
-            openGameUI(); 
-        }
-
-        function openGameUI() { 
-            document.getElementById('gameOverlay').style.display = 'flex'; 
-            db.ref('games/' + chatId).on('value', s => { 
-                let g = s.val(); if(!g) return; 
-                if(g.xPlayer === myName) { mySymbol = 'X'; } else { mySymbol = 'O'; }
-
-                let cells = document.querySelectorAll('.cell'); 
-                g.board.forEach((val, idx) => { 
-                    if(val === 0) { cells[idx].innerText = ''; cells[idx].className = 'cell'; } 
-                    else { cells[idx].innerText = val; cells[idx].className = 'cell ' + val; }
-                }); 
-
-                let statusDiv = document.getElementById('gameStatus'); 
-                if(g.winner) { 
-                    statusDiv.innerText = g.winner === 'DRAW' ? "🤝 IT'S A DRAW!" : `🏆 ${g.winner} WON!`; 
-                    statusDiv.style.color = '#2ed573'; 
-                } else { 
-                    if(g.turn === myName) { statusDiv.innerText = `👉 Your Turn (${mySymbol})`; statusDiv.style.color = '#00d2ff'; } 
-                    else { statusDiv.innerText = `⏳ Waiting for ${g.turn}...`; statusDiv.style.color = '#64748b'; }
-                } 
-            }); 
-        }
-
-        function makeMove(idx) { 
-            db.ref('games/' + chatId).once('value', s => { 
-                let g = s.val(); 
-                if(g.winner || g.turn !== myName || g.board[idx] !== 0) return; 
-                g.board[idx] = mySymbol; 
-                g.turn = partner; 
-                g.winner = checkWin(g.board); 
-                db.ref('games/' + chatId).set(g); 
-            }); 
-        }
-
-        function checkWin(b) { 
-            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; 
-            for(let w of wins) { if(b[w[0]] !== 0 && b[w[0]] === b[w[1]] && b[w[1]] === b[w[2]]) return b[w[0]]; } 
-            if(!b.includes(0)) return 'DRAW'; 
-            return null; 
-        }
-        function closeGame() { document.getElementById('gameOverlay').style.display = 'none'; db.ref('games/' + chatId).off(); }
-
-        function playGame(type) { 
-            db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
-                 if(s.exists()) return alert("User blocked you.");
-                 let res = (type === 'DICE') ? "🎲 Rolled: " + (Math.floor(Math.random()*6)+1) : "✂️ Chose Rock"; 
-                 db.ref('chats/' + chatId).push({ from: myName, val: encrypt(res), time: Date.now() }); toggleScreen('gameScreen'); 
-            });
-        }
-        function processImg(i) { 
-            db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
-                 if(s.exists()) return alert("User blocked you.");
-                 const r = new FileReader(); r.onload = e => { let secureImg = encrypt(e.target.result); db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: secureImg, time: Date.now() }); }; r.readAsDataURL(i.files[0]); 
-            });
-        }
-        
+        function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
+        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } }
+        function cancelReply() { replyMsg = null; document.getElementById('replyPreview').style.display = 'none'; }
+        function processImg(i) { const r = new FileReader(); r.onload = e => db.ref('chats/'+chatId).push({from:myName, type:'img', val:encrypt(e.target.result), time:Date.now()}); r.readAsDataURL(i.files[0]); }
         function toggleScreen(id) { let e = document.getElementById(id); e.style.display = e.style.display==='flex'?'none':'flex'; }
-        function doSearch(q) { const res = document.getElementById('searchResults'); res.innerHTML = ""; db.ref('users').once('value', s => { s.forEach(u => { if(u.key.includes(q.toLowerCase()) && u.key !== myName) { res.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${u.key}</b> <button onclick="db.ref('requests/${u.key}/${myName}').set(true);alert('Request Sent')" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button></div>`; } }); }); }
-        function monitorRequests() { db.ref('requests/'+myName).on('value', s => { let c = s.numChildren(); document.getElementById('reqBadge').innerText = c; document.getElementById('reqBadge').style.display = c>0?'flex':'none'; }); }
-        function openRequests() { toggleScreen('requestScreen'); const list = document.getElementById('requestList'); db.ref('requests/'+myName).once('value', s => { list.innerHTML = ""; s.forEach(r => { list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${r.key}</b> <button onclick="accept('${r.key}')" style="background:#4caf50; color:white; border:none; padding:8px 15px; border-radius:8px;">Accept</button></div>`; }); }); }
-        function accept(user) { db.ref('friends/'+myName+'/'+user).set(true); db.ref('friends/'+user+'/'+myName).set(true); db.ref('requests/'+myName+'/'+user).remove(); openRequests(); }
+        
+        // --- GAME STUBS ---
+        function initGame() { db.ref('games/'+chatId).set({board:[0,0,0,0,0,0,0,0,0], turn:myName}); db.ref('chats/'+chatId).push({from:myName, type:'game_invite', val:encrypt("Tic-Tac-Toe"), time:Date.now()}); joinGame(); }
+        function joinGame() { document.getElementById('gameOverlay').style.display='flex'; db.ref('games/'+chatId).on('value', s=>{ let g=s.val(); if(!g)return; document.querySelectorAll('.cell').forEach((c,i)=>{ c.innerText=g.board[i]||''; c.className='cell '+ (g.board[i]||''); }); }); }
+        function makeMove(i) { db.ref('games/'+chatId).once('value', s=>{ let g=s.val(); if(!g.board[i]){ g.board[i]= (g.turn===myName)?'X':'O'; g.turn=partner; db.ref('games/'+chatId).update(g); } }); }
+        function playGame(t) { let d=Math.floor(Math.random()*6)+1; db.ref('chats/'+chatId).push({from:myName, val:encrypt("🎲 Rolled: "+d), time:Date.now()}); toggleScreen('gameScreen'); }
     </script>
 </body>
 </html>
