@@ -21,51 +21,43 @@
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); font-family: 'Outfit', sans-serif; margin: 0; height: 100vh; overflow: hidden; color: var(--text); }
 
-        /* --- 1. NEON STATUS & AVATAR --- */
-        .av-wrapper { position: relative; width: 50px; height: 50px; cursor: pointer; }
-        .av-wrapper img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #334155; object-fit: cover; transition: 0.3s; }
+        /* --- 1. UI & LAYOUT --- */
+        #appLayer { display: none; flex-direction: column; height: 100vh; }
         
-        /* Live Status Indicator */
-        .status-dot {
-            position: absolute; bottom: 2px; right: 2px;
-            width: 12px; height: 12px; border-radius: 50%;
-            border: 2px solid var(--bg);
-            background: #555; /* Default Offline */
-            transition: 0.3s;
-        }
-        .is-online .status-dot { background: #00d2ff; box-shadow: 0 0 10px #00d2ff; }
-        .is-online img { border-color: #00d2ff; }
-
-        /* --- 2. CHAT UI --- */
         header { 
-            padding: 15px; background: var(--panel); border-bottom: 1px solid #334155; 
+            padding: 12px 15px; background: var(--panel); border-bottom: 1px solid #334155; 
             display: flex; align-items: center; justify-content: space-between; z-index: 100;
         }
-        .neon-text { font-family: 'Orbitron'; letter-spacing: 1px; color: var(--primary); text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); }
-        .status-text { font-size: 0.7rem; color: #888; margin-top: 2px; font-weight: bold; }
-        
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .neon-text { font-family: 'Orbitron'; letter-spacing: 1px; color: var(--primary); text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); font-size: 1.1rem; }
+        .status-text { font-size: 0.7rem; color: #888; font-weight: bold; }
+
+        /* --- 2. CHAT DISPLAY (Fixed Hiding) --- */
         #chatDisplay { 
-            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; 
+            flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; 
             background-color: var(--bg); 
             background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 20px 20px;
+            padding-bottom: 140px; /* FIXED: Space for Input + Ads */
         }
         
         .msg { 
             max-width: 75%; padding: 10px 14px; border-radius: 18px; 
             font-size: 0.95rem; line-height: 1.4; position: relative; 
-            background: var(--panel); color: white; border: 1px solid #334155;
+            background: var(--panel); color: white; border: 1px solid #334155; word-wrap: break-word;
         }
-        .msg-me { align-self: flex-end; border-bottom-right-radius: 2px; border-color: var(--primary); }
+        .msg-me { align-self: flex-end; border-bottom-right-radius: 2px; border-color: var(--primary); background: rgba(0, 210, 255, 0.1); }
         .msg-them { align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        /* Seen Effect (Blue Glow) */
-        .msg.seen-glow { box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); border-color: var(--primary); }
+        /* Delete Button on Messages */
+        .del-btn { display: none; font-size: 0.7rem; color: var(--secondary); margin-left: 5px; cursor: pointer; }
+        .msg-me:hover .del-btn { display: inline-block; }
 
-        /* --- 3. INPUT & KEYBOARD --- */
+        /* --- 3. INPUT & ADS (Fixed) --- */
         .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--panel); border-top: 1px solid #334155; z-index: 1000; }
+        
         .input-bar { display: flex; align-items: center; gap: 10px; padding: 10px; }
         #msgInput { 
-            flex: 1; padding: 12px 20px; border-radius: 30px; border: none; 
+            flex: 1; padding: 12px 15px; border-radius: 25px; border: none; 
             background: #0b0f19; color: white; font-family: 'Outfit'; border: 1px solid #334155;
         }
         #msgInput:focus { border-color: var(--primary); }
@@ -75,44 +67,83 @@
             box-shadow: 0 0 10px var(--primary);
         }
 
-        /* --- 4. MODALS & SEARCH --- */
+        /* Ad Slot - Visible */
+        #ad-box { 
+            height: 60px; width: 100%; background: black; 
+            display: flex; align-items: center; justify-content: center; 
+            border-top: 1px solid #333; overflow: hidden;
+        }
+
+        /* --- 4. MODALS & POPUPS --- */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-card { background: var(--panel); width: 90%; max-width: 350px; padding: 25px; border-radius: 20px; border: 1px solid #334155; text-align: center; color: white; }
-        .search-item { padding: 12px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .modal-card { background: var(--panel); width: 85%; max-width: 320px; padding: 25px; border-radius: 20px; border: 1px solid #334155; text-align: center; color: white; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        
+        /* Auth */
+        #authLayer { display: flex; }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #0b0f19; border: 1px solid #333; color: white; border-radius: 8px; }
+        .btn-neon { width: 100%; padding: 12px; background: var(--primary); color: black; font-weight: bold; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; font-family: 'Orbitron'; }
+
+        /* Ban Screen */
+        #banOverlay { display: none; z-index: 9999; background: #2c0000; }
         
         /* Game Grid */
-        #gameOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:7000; flex-direction:column; align-items:center; justify-content:center; }
-        .cell { width: 70px; height: 70px; background: #0b0f19; border: 2px solid #334155; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-family: 'Orbitron'; cursor: pointer; color: white; }
+        #gameOverlay { display:none; }
+        .cell { width: 60px; height: 60px; background: #0b0f19; border: 2px solid #334155; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2rem; cursor: pointer; color: white; font-family: 'Orbitron'; }
         .disabled { opacity: 0.3; pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <div id="authLayer" class="overlay" style="display:flex; background:#0b0f19;">
+    <div id="banOverlay" class="overlay">
+        <div class="modal-card" style="border-color: var(--secondary);">
+            <i class="fas fa-ban" style="font-size: 3rem; color: var(--secondary); margin-bottom: 10px;"></i>
+            <h2 style="color: var(--secondary);">BANNED</h2>
+            <p>Your device has been restricted due to policy violations.</p>
+        </div>
+    </div>
+
+    <div id="authLayer" class="overlay">
         <div class="modal-card" style="border: 2px solid var(--primary); box-shadow: 0 0 30px rgba(0,210,255,0.1);">
-            <h1 class="neon-text" style="font-size:2rem; margin-bottom:10px;">NEON PRO</h1>
-            <input type="text" id="uName" placeholder="Username" style="width:100%; padding:12px; margin:10px 0; background:#0b0f19; border:1px solid #333; color:white; border-radius:8px;">
-            <input type="password" id="uPass" placeholder="Password" style="width:100%; padding:12px; margin:10px 0; background:#0b0f19; border:1px solid #333; color:white; border-radius:8px;">
+            <h1 class="neon-text" style="font-size:2rem; margin-bottom:5px;">NEON PRO</h1>
+            <p style="color:#888; font-size:0.8rem; margin-bottom:20px;">Secure. Dark. Fast.</p>
             
-            <div style="text-align:left; font-size:0.8rem; margin:15px 0; color:#aaa;">
-                <input type="checkbox" id="legalCheck"> Accept Terms & Conditions
+            <input type="text" id="uName" class="auth-input" placeholder="Username">
+            <input type="password" id="uPass" class="auth-input" placeholder="Password">
+            
+            <div style="text-align:left; font-size:0.8rem; margin:15px 0; display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="legalCheck"> 
+                <span style="color:#aaa;">I accept <a href="#" onclick="showTerms()" style="color:var(--primary); text-decoration: underline;">Terms & Conditions</a></span>
             </div>
-            <button onclick="startLogin()" style="width:100%; padding:12px; background:var(--primary); font-weight:bold; border:none; border-radius:8px; cursor:pointer;">SYSTEM LOGIN</button>
+            
+            <button onclick="startLogin()" class="btn-neon">ENTER SYSTEM</button>
+        </div>
+    </div>
+
+    <div id="termsModal" class="overlay">
+        <div class="modal-card">
+            <h3 class="neon-text">TERMS & PRIVACY</h3>
+            <div style="height:150px; overflow-y:auto; text-align:left; font-size:0.8rem; color:#aaa; background:#0b0f19; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #333;">
+                1. No abusive content.<br>2. Messages are E2E Encrypted locally.<br>3. We log IPs for security.<br>4. Harassment leads to a PERMANENT BAN.<br>5. Respect user privacy.
+            </div>
+            <button onclick="closeTerms()" class="btn-neon" style="background:var(--secondary); color:white;">CLOSE</button>
         </div>
     </div>
 
     <div id="appLayer" style="display:none; flex-direction:column; height:100vh;">
         <header>
-            <div style="display:flex; align-items:center; gap:15px;">
+            <div class="header-left">
                 <i class="fas fa-arrow-left" id="backBtn" onclick="closeChat()" style="display:none; cursor:pointer; color:var(--primary); font-size:1.2rem;"></i>
                 <div>
                     <div id="chatTitle" class="neon-text" style="font-size:1.1rem;">NEON PRO</div>
                     <div id="headerStatus" class="status-text">Online</div>
                 </div>
             </div>
-            <div style="display:flex; gap:20px; color:#888; font-size:1.2rem;">
+            
+            <div style="display:flex; gap:15px; color:#888; font-size:1.1rem;">
+                <i class="fas fa-ban" id="blockBtn" onclick="toggleBlock()" style="display:none; cursor:pointer; color:var(--secondary);" title="Block User"></i>
+                <i class="fas fa-flag" id="repBtn" onclick="reportUser()" style="display:none; cursor:pointer; color:#ffa502;" title="Report"></i>
                 <i class="fas fa-user-plus" onclick="openSearch()" style="cursor:pointer; color:white;"></i>
-                <i class="fas fa-power-off" onclick="logout()" style="cursor:pointer; color:var(--secondary);"></i>
+                <i class="fas fa-sign-out-alt" onclick="logout()" style="cursor:pointer; color:var(--secondary);"></i>
             </div>
         </header>
 
@@ -136,8 +167,12 @@
                         <input type="file" id="imgFile" hidden accept="image/*" onchange="sendImg(this)">
                         
                         <input type="text" id="msgInput" placeholder="Message..." enterkeyhint="send" oninput="handleTyping()">
-                        
                         <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    
+                    <div id="ad-box">
+                        <script type="text/javascript">atOptions = {'key' : '697d465f55b34630746380bf6791eb54','format' : 'iframe','height' : 50,'width' : 320,'params' : {}};</script>
+                        <script type="text/javascript" src="https://www.highperformanceformat.com/697d465f55b34630746380bf6791eb54/invoke.js"></script>
                     </div>
                 </div>
             </div>
@@ -147,24 +182,24 @@
     <div id="searchModal" class="overlay">
         <div class="modal-card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 class="neon-text">DATABASE</h3>
+                <h3 class="neon-text">FIND USER</h3>
                 <i class="fas fa-times" onclick="document.getElementById('searchModal').style.display='none'" style="cursor:pointer;"></i>
             </div>
-            <input type="text" placeholder="Search Username..." oninput="doSearch(this.value)" style="width:100%; padding:10px; margin:10px 0; background:#0b0f19; border:1px solid #333; color:white;">
-            <div id="searchResults" style="max-height:200px; overflow-y:auto;"></div>
+            <input type="text" placeholder="Search Username..." oninput="doSearch(this.value)" class="auth-input">
+            <div id="searchResults" style="max-height:200px; overflow-y:auto; margin-top:10px;"></div>
         </div>
     </div>
 
-    <div id="gameOverlay">
-        <div class="modal-card" style="width:300px;">
-            <h2 class="neon-text">NEON GRID</h2>
+    <div id="gameOverlay" class="overlay">
+        <div class="modal-card">
+            <h2 class="neon-text">TIC-TAC-TOE</h2>
             <div id="gameTurnInfo" style="color:#aaa; margin-bottom:15px;">Initializing...</div>
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; justify-content:center; margin-bottom:20px;">
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; justify-content:center; margin-bottom:20px;">
                 <div class="cell" onclick="moveGame(0)"></div><div class="cell" onclick="moveGame(1)"></div><div class="cell" onclick="moveGame(2)"></div>
                 <div class="cell" onclick="moveGame(3)"></div><div class="cell" onclick="moveGame(4)"></div><div class="cell" onclick="moveGame(5)"></div>
                 <div class="cell" onclick="moveGame(6)"></div><div class="cell" onclick="moveGame(7)"></div><div class="cell" onclick="moveGame(8)"></div>
             </div>
-            <button onclick="document.getElementById('gameOverlay').style.display='none'" style="padding:10px; background:var(--secondary); border:none; width:100%; font-weight:bold;">CLOSE</button>
+            <button onclick="quitGame()" class="btn-neon" style="background:var(--secondary); color:white;">EXIT GAME</button>
         </div>
     </div>
 
@@ -175,26 +210,39 @@
         const firebaseConfig = { apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M", authDomain: "neon-game-hub.firebaseapp.com", databaseURL: "https://neon-game-hub-default-rtdb.firebaseio.com", projectId: "neon-game-hub", storageBucket: "neon-game-hub.firebasestorage.app", messagingSenderId: "636141968933", appId: "1:636141968933:web:60c7cc21d75883ef08a9cc" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const APP_SECRET = "NEON_PRO_X";
+        const APP_SECRET = "NEON_FINAL_2026";
 
         let myName, partner, chatId, replyMsg = null, typingTimer;
 
-        // --- 1. SETUP & PRESENCE ---
+        // --- AUTH & SECURITY ---
         document.addEventListener('DOMContentLoaded', () => {
             const user = localStorage.getItem('neonUser');
             if(user) { myName = user; initApp(); }
-            
-            // Enter Key Listener
-            document.getElementById('msgInput').addEventListener('keypress', (e) => {
-                if(e.key === 'Enter') sendTxt();
-            });
+            checkBan();
+            document.getElementById('msgInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendTxt(); });
         });
+
+        function checkBan() {
+            fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>{
+                let ip = d.ip.replace(/\./g, '_');
+                db.ref('security/bans/'+ip).on('value', s=>{
+                    if(s.exists()) {
+                        document.getElementById('banOverlay').style.display = 'flex';
+                        document.getElementById('appLayer').remove();
+                        document.getElementById('authLayer').remove();
+                    }
+                });
+            });
+        }
+
+        function showTerms() { document.getElementById('termsModal').style.display='flex'; }
+        function closeTerms() { document.getElementById('termsModal').style.display='none'; }
 
         function startLogin() {
             if(!document.getElementById('legalCheck').checked) return alert("Accept Terms");
             myName = document.getElementById('uName').value.trim().toLowerCase();
             let p = document.getElementById('uPass').value.trim();
-            if(!myName || p.length < 4) return alert("Invalid Input");
+            if(!myName || p.length<4) return alert("Invalid Input");
             let hp = CryptoJS.SHA256(p).toString();
             
             db.ref('users/'+myName).once('value', s => {
@@ -208,17 +256,8 @@
         function initApp() {
             document.getElementById('authLayer').style.display = 'none';
             document.getElementById('appLayer').style.display = 'flex';
-            
-            // Real-time Presence System
-            const connectedRef = db.ref(".info/connected");
-            connectedRef.on("value", (snap) => {
-                if (snap.val() === true) {
-                    const con = db.ref("status/" + myName);
-                    con.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
-                    con.set("online");
-                }
-            });
-            
+            db.ref('status/' + myName).set('online');
+            db.ref('status/' + myName).onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
             loadFriends();
         }
 
@@ -227,50 +266,29 @@
             localStorage.removeItem('neonUser'); location.reload();
         }
 
-        // --- 2. SEARCH & FRIENDS (Fixed Suggestions) ---
+        // --- FRIENDS & SEARCH ---
         function loadFriends() {
             db.ref('friends/' + myName).on('value', s => {
                 const list = document.getElementById('friendList'); list.innerHTML = "";
                 s.forEach(f => {
                     const div = document.createElement('div');
                     div.style = "padding:15px; border-bottom:1px solid #222; display:flex; align-items:center; gap:15px; cursor:pointer;";
-                    div.innerHTML = `
-                        <div class="av-wrapper is-offline" id="wrap-${f.key}">
-                            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}">
-                            <div class="status-dot"></div>
-                        </div>
-                        <div>
-                            <div style="font-weight:600; color:white; font-size:1.1rem;">${f.key}</div>
-                            <div style="font-size:0.75rem; color:#666;">Tap to chat</div>
-                        </div>
-                    `;
+                    div.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}" style="width:45px; border-radius:50%; border:2px solid #333;">
+                        <div><div style="font-weight:600; color:white; font-size:1.1rem;">${f.key}</div><div style="font-size:0.75rem; color:#666;">Tap to chat</div></div>`;
                     div.onclick = () => openChat(f.key);
                     list.appendChild(div);
-                    
-                    // Live Status Update in List
-                    db.ref('status/'+f.key).on('value', st => {
-                        const wrap = document.getElementById('wrap-'+f.key);
-                        if(st.val()==='online') { wrap.classList.remove('is-offline'); wrap.classList.add('is-online'); }
-                        else { wrap.classList.remove('is-online'); wrap.classList.add('is-offline'); }
-                    });
                 });
             });
         }
 
         function openSearch() { document.getElementById('searchModal').style.display='flex'; }
-        
-        // FIXED SEARCH: StartsWith Only
         function doSearch(q) {
             const div = document.getElementById('searchResults'); div.innerHTML = "";
             if(!q) return;
+            // FIXED: Only startsWith logic
             db.ref('users').orderByKey().startAt(q.toLowerCase()).endAt(q.toLowerCase()+"\uf8ff").limitToFirst(5).once('value', s => {
                 s.forEach(u => {
-                    if(u.key !== myName) {
-                        div.innerHTML += `<div class="search-item">
-                            <span style="color:white; font-weight:bold;">${u.key}</span>
-                            <button onclick="addFriend('${u.key}')" style="background:var(--primary); border:none; padding:5px 10px; border-radius:5px; font-weight:bold;">ADD</button>
-                        </div>`;
-                    }
+                    if(u.key !== myName) div.innerHTML += `<div class="search-item"><span style="color:white;">${u.key}</span><button onclick="addFriend('${u.key}')" class="btn-neon" style="width:auto; padding:5px 10px; margin:0;">ADD</button></div>`;
                 });
             });
         }
@@ -279,16 +297,18 @@
             document.getElementById('searchModal').style.display='none';
         }
 
-        // --- 3. CHAT LOGIC ---
+        // --- CHAT LOGIC ---
         function openChat(key) {
             partner = key; chatId = [myName, partner].sort().join("_");
             document.getElementById('friendList').style.display = 'none';
             document.getElementById('chatContainer').style.display = 'flex';
             document.getElementById('backBtn').style.display = 'block';
+            document.getElementById('blockBtn').style.display = 'block';
+            document.getElementById('repBtn').style.display = 'block';
             document.getElementById('chatTitle').innerText = partner;
             
             monitorStatus();
-            db.ref('chats/'+chatId).off(); 
+            db.ref('chats/'+chatId).off(); // Prevent Loops
             
             const box = document.getElementById('chatDisplay');
             db.ref('chats/'+chatId).limitToLast(50).on('value', s => {
@@ -296,32 +316,28 @@
                 s.forEach(m => {
                     const dat = m.val();
                     const isMe = dat.from === myName;
-                    const div = document.createElement('div');
-                    const seenClass = (isMe && dat.seen) ? 'seen-glow' : '';
-                    div.className = `msg ${isMe ? 'msg-me' : 'msg-them'} ${seenClass}`;
                     
-                    if(!isMe && !dat.seen) db.ref('chats/'+chatId+'/'+m.key+'/seen').set(true);
-
-                    // Double Tap Reply
-                    let lastTap = 0;
+                    const div = document.createElement('div');
+                    div.className = `msg ${isMe ? 'msg-me' : 'msg-them'}`;
+                    
+                    // Delete Feature
+                    let delHtml = isMe ? `<i class="fas fa-trash del-btn" onclick="deleteMsg('${m.key}')"></i>` : "";
+                    
+                    // Reply & Double Tap
                     div.addEventListener('click', () => {
-                        let now = new Date().getTime();
-                        if(now - lastTap < 300) {
-                            replyMsg = { text: decrypt(dat.val) || "Media", from: dat.from };
-                            document.getElementById('replyPreview').style.display = 'block';
-                            document.getElementById('replyText').innerText = replyMsg.text;
-                        }
-                        lastTap = now;
+                        replyMsg = { text: decrypt(dat.val) || "Media", from: dat.from };
+                        document.getElementById('replyPreview').style.display = 'flex';
+                        document.getElementById('replyText').innerText = "Replying to: " + replyMsg.text;
                     });
 
                     let content = "";
                     if(dat.reply) content += `<div style="border-left:2px solid var(--primary); padding-left:5px; margin-bottom:5px; font-size:0.75rem; color:#aaa;"><b>${dat.reply.from}</b>: ${dat.reply.text}</div>`;
                     
-                    if(dat.type === 'game') content += `<div style="text-align:center;">🎮 GAME REQUEST<br><button onclick="joinGame()" style="margin-top:5px; background:var(--primary); border:none; padding:5px 10px; border-radius:5px; font-weight:bold;">OPEN GRID</button></div>`;
+                    if(dat.type === 'game') content += `<div style="text-align:center;">🎮 GAME<br><button onclick="joinGame()" style="margin-top:5px; background:var(--primary); border:none; padding:5px 10px; border-radius:5px; font-weight:bold;">OPEN</button></div>`;
                     else if(dat.type === 'img') content += `<img src="${decrypt(dat.val)}" style="width:100%; border-radius:10px;">`;
                     else content += `<span>${decrypt(dat.val)}</span>`;
                     
-                    div.innerHTML = content;
+                    div.innerHTML = `${content} ${delHtml}`;
                     box.appendChild(div);
                 });
                 box.scrollTop = box.scrollHeight;
@@ -334,10 +350,33 @@
             document.getElementById('chatContainer').style.display = 'none';
             document.getElementById('friendList').style.display = 'block';
             document.getElementById('backBtn').style.display = 'none';
+            document.getElementById('blockBtn').style.display = 'none';
+            document.getElementById('repBtn').style.display = 'none';
             document.getElementById('chatTitle').innerText = "NEON PRO";
         }
 
-        // --- 4. LIVE STATUS & TYPING ---
+        // --- FEATURES: DELETE, BLOCK, REPORT ---
+        function deleteMsg(key) {
+            if(confirm("Delete message?")) db.ref('chats/'+chatId+'/'+key).remove();
+        }
+
+        function toggleBlock() {
+            if(confirm("Block/Unblock user?")) {
+                db.ref('users/'+myName+'/blocked/'+partner).once('value', s => {
+                    if(s.exists()) { db.ref('users/'+myName+'/blocked/'+partner).remove(); alert("Unblocked"); }
+                    else { db.ref('users/'+myName+'/blocked/'+partner).set(true); alert("Blocked"); }
+                });
+            }
+        }
+
+        function reportUser() {
+            if(confirm("Report this user for violating rules?")) {
+                db.ref('reports').push({ from: myName, reported: partner, time: Date.now() });
+                alert("Report Sent. Admin will review.");
+            }
+        }
+
+        // --- STATUS & SENDING ---
         function monitorStatus() {
             db.ref('status/'+partner).on('value', s => {
                 const st = s.val();
@@ -346,10 +385,7 @@
                 else { el.innerText = "Last seen " + moment(st).fromNow(); el.style.color = "#888"; }
             });
             db.ref('typing/'+chatId+'/'+partner).on('value', s => {
-                if(s.val()) {
-                    document.getElementById('headerStatus').innerText = "Typing...";
-                    document.getElementById('headerStatus').style.color = "#00d2ff";
-                }
+                if(s.val()) document.getElementById('headerStatus').innerText = "Typing...";
             });
         }
 
@@ -364,11 +400,16 @@
             const inp = document.getElementById('msgInput');
             const t = inp.value.trim();
             if(!t || !chatId) return;
-            const payload = { from: myName, val: encrypt(t), time: Date.now(), seen: false };
-            if(replyMsg) { payload.reply = replyMsg; closeReply(); }
-            db.ref('chats/'+chatId).push(payload);
-            inp.value = ""; 
-            inp.focus(); // STICKY KEYBOARD FIX
+            
+            // Check Block
+            db.ref('users/'+partner+'/blocked/'+myName).once('value', s => {
+                if(s.exists()) { alert("You are blocked."); return; }
+                
+                const pl = { from: myName, val: encrypt(t), time: Date.now() };
+                if(replyMsg) { pl.reply = replyMsg; closeReply(); }
+                db.ref('chats/'+chatId).push(pl);
+                inp.value = ""; inp.focus();
+            });
         }
 
         // --- HELPERS ---
@@ -377,10 +418,9 @@
         function closeReply() { replyMsg=null; document.getElementById('replyPreview').style.display='none'; }
         function sendImg(i) { const r = new FileReader(); r.onload=e=>db.ref('chats/'+chatId).push({from:myName,type:'img',val:encrypt(e.target.result),time:Date.now()}); r.readAsDataURL(i.files[0]); }
 
-        // --- 5. GAME LOGIC ---
+        // --- GAME (Turn Based Fixed) ---
         function initGame() {
-            const board = [0,0,0,0,0,0,0,0,0];
-            db.ref('games/'+chatId).set({ board, turn: myName, x: myName, o: partner });
+            db.ref('games/'+chatId).set({ board: [0,0,0,0,0,0,0,0,0], turn: myName, x: myName, o: partner });
             db.ref('chats/'+chatId).push({ from: myName, type: 'game', val: encrypt('Started Game'), time: Date.now() });
             joinGame();
         }
@@ -411,6 +451,7 @@
                 db.ref('games/'+chatId).update(g);
             });
         }
+        function quitGame() { document.getElementById('gameOverlay').style.display='none'; db.ref('games/'+chatId).off(); }
     </script>
 </body>
 </html>
