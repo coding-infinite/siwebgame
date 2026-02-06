@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -23,6 +23,10 @@
         .block-btn:hover { background: rgba(255, 68, 68, 0.1); }
         .blocked-badge { font-size: 0.6rem; background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; display: none; }
         .delete-btn { font-size: 0.7rem; color: #ff4444; cursor: pointer; margin-left: 8px; opacity: 0.6; }
+
+        /* Reply Preview UI */
+        #replyPreview { display: none; background: #e9ecef; padding: 8px 15px; border-left: 4px solid var(--primary); font-size: 0.85rem; justify-content: space-between; align-items: center; }
+        .reply-box-context { border-left: 3px solid var(--primary); background: rgba(0,0,0,0.05); padding: 5px; margin-bottom: 5px; font-size: 0.8rem; border-radius: 4px; }
 
         /* --- STANDARD STYLES --- */
         .enc-notice { background: #fff9c4; color: #5d4037; font-size: 0.75rem; text-align: center; padding: 10px 15px; margin: 10px auto 20px auto; border-radius: 10px; max-width: 90%; border: 1px solid #ffe082; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; gap: 5px; }
@@ -51,7 +55,7 @@
         .secure-tag { font-size: 0.65rem; color: #28a745; font-weight: bold; display: flex; align-items: center; gap: 4px; background: #f0fff4; padding: 4px 8px; border-radius: 20px; border: 1px solid #c6f6d5; }
         
         #chatDisplay { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 250px !important; background-color: #d8d4d0; background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); background-blend-mode: multiply; }
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; user-select: none; }
         .msg-me { align-self: flex-end; background: #dcf8c6; color: #303030; border-top-right-radius: 4px; }
         .msg-them { align-self: flex-start; background: white; color: #303030; border-top-left-radius: 4px; }
         
@@ -145,11 +149,15 @@
         </div>
 
         <div class="bottom-container">
+            <div id="replyPreview">
+                <div id="replyContent" style="color: #555;"></div>
+                <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer; color:red;"></i>
+            </div>
             <div class="input-bar">
                 <i class="fas fa-gamepad" style="color:#ff9800; font-size:1.4rem;" onclick="toggleScreen('gameScreen')"></i>
                 <i class="fas fa-image" style="color:#4caf50; font-size:1.4rem;" onclick="document.getElementById('imgFile').click()"></i>
                 <input type="file" id="imgFile" hidden accept="image/*" onchange="processImg(this)">
-                <input type="text" id="msgInput" placeholder="Write a message...">
+                <input type="text" id="msgInput" placeholder="Write a message..." enterkeyhint="send">
                 <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
             </div>
             <div id="ad-box">
@@ -198,6 +206,7 @@
         // --- GLOBAL & SECURITY ---
         let myIp, myName, partner, chatId;
         let activeGameId = null, mySymbol = null;
+        let replyMsg = null; // Store reply context
         
         // FIXED INTERNAL KEY (Replaces manual key)
         const APP_SECRET = "NEON_AUTO_SECURE_2026_X"; 
@@ -219,6 +228,13 @@
             } else {
                 fetchIpAndStart();
             }
+
+            // Keyboard Enter to Send
+            document.getElementById('msgInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendTxt();
+                }
+            });
         });
 
         function fetchIpAndStart() {
@@ -238,7 +254,7 @@
             document.getElementById('appLayer')?.remove();
         }
 
-        // --- AUTH (UPDATED: PASSWORD HASHING) ---
+        // --- AUTH ---
         function showTerms() { document.getElementById('termsModal').style.display = 'flex'; }
         function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
         function agreeTerms() { document.getElementById('legalCheck').checked = true; closeTerms(); }
@@ -249,18 +265,14 @@
             let p = document.getElementById('uPass').value.trim();
             if(!myName || p.length < 4) return alert("Invalid credentials");
             
-            // HASH PASSWORD (SHA-256)
             let hashedPass = CryptoJS.SHA256(p).toString();
 
             db.ref('users/' + myName).once('value', s => {
                 let data = s.val();
                 if(data && data.banned === true) { permanentBanTrigger(); return; }
-                
-                // Compare HASHED password
                 if(s.exists() && data.pass !== hashedPass) return alert("Wrong pass");
                 
                 localStorage.setItem('currentUser', myName);
-                
                 if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: hashedPass, ip: myIp, joinedAt: Date.now() });
                 else if(myIp) db.ref('users/' + myName + '/ip').set(myIp);
 
@@ -278,10 +290,16 @@
             }
         }
 
-        // --- CRYPTO (AUTO INTERNAL KEY) ---
+        // --- CRYPTO ---
         function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
         function decrypt(c) { 
             try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } 
+        }
+
+        // --- REPLY SYSTEM ---
+        function cancelReply() {
+            replyMsg = null;
+            document.getElementById('replyPreview').style.display = 'none';
         }
 
         // --- APP LOGIC ---
@@ -304,10 +322,33 @@
                     let msgKey = m.key;
                     d.className = `msg ${dat.from === myName ? 'msg-me' : 'msg-them'}`; 
                     
+                    // Double Tap to Reply
+                    let lastTap = 0;
+                    d.addEventListener('touchstart', (e) => {
+                        let curTime = new Date().getTime();
+                        let tapLen = curTime - lastTap;
+                        if (tapLen < 300 && tapLen > 0) {
+                            e.preventDefault();
+                            let plain = (dat.type === 'img') ? "Photo" : decrypt(dat.val);
+                            replyMsg = { text: plain, from: dat.from };
+                            document.getElementById('replyPreview').style.display = 'flex';
+                            document.getElementById('replyContent').innerText = `Replying to: ${plain}`;
+                        }
+                        lastTap = curTime;
+                    });
+                    
                     let nameTag = document.createElement('span');
                     nameTag.className = "msg-name";
                     nameTag.innerText = dat.from;
                     d.appendChild(nameTag);
+
+                    // Add Reply context if exists
+                    if(dat.replyTo) {
+                        let rBox = document.createElement('div');
+                        rBox.className = "reply-box-context";
+                        rBox.innerHTML = `<b>${dat.replyTo.from}</b>: ${dat.replyTo.text}`;
+                        d.appendChild(rBox);
+                    }
 
                     if(dat.type === 'game_invite') {
                         let btnDiv = document.createElement('div');
@@ -347,15 +388,21 @@
                 if(s.exists()) { alert("🚫 Message Failed: User blocked you."); } else {
                     db.ref('users/' + myName + '/blocked/' + partner).once('value', myS => {
                         if(myS.exists()) { alert("🚫 You blocked this user."); } else {
-                             db.ref('chats/' + chatId).push({ from: myName, val: encrypt(t), time: Date.now() }); 
+                             let msgData = { from: myName, val: encrypt(t), time: Date.now() };
+                             if(replyMsg) {
+                                 msgData.replyTo = replyMsg;
+                                 cancelReply();
+                             }
+                             db.ref('chats/' + chatId).push(msgData); 
                              document.getElementById('msgInput').value = ""; 
+                             document.getElementById('msgInput').focus(); // Keep keyboard
                         }
                     });
                 }
             });
         }
 
-        // --- FIXED GAME LOGIC ---
+        // --- GAME LOGIC ---
         function initGame() { 
             activeGameId = Date.now(); 
             let gameData = { board: [0,0,0, 0,0,0, 0,0,0], turn: myName, xPlayer: myName, status: 'active', winner: null };
@@ -376,13 +423,11 @@
             db.ref('games/' + chatId).on('value', s => { 
                 let g = s.val(); if(!g) return; 
                 if(g.xPlayer === myName) { mySymbol = 'X'; } else { mySymbol = 'O'; }
-
                 let cells = document.querySelectorAll('.cell'); 
                 g.board.forEach((val, idx) => { 
                     if(val === 0) { cells[idx].innerText = ''; cells[idx].className = 'cell'; } 
                     else { cells[idx].innerText = val; cells[idx].className = 'cell ' + val; }
                 }); 
-
                 let statusDiv = document.getElementById('gameStatus'); 
                 if(g.winner) { 
                     statusDiv.innerText = g.winner === 'DRAW' ? "🤝 IT'S A DRAW!" : `🏆 ${g.winner} WON!`; 
