@@ -3,170 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chat Classic</title>
+    <title>Neon Pro | Ultimate</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
     <style>
         :root { 
-            --primary: #008069; /* WhatsApp Green */
-            --bg: #efe7dd; /* Chat Wallpaper Color */
-            --white: #ffffff;
-            --msg-out: #e7ffdb;
-            --msg-in: #ffffff;
+            --primary: #00d2ff; 
+            --secondary: #ff4757;
+            --bg: #0b0f19;
+            --panel: #161e2d;
+            --text: #e0e6ed;
         }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { background: #d1d7db; font-family: 'Helvetica Neue', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); font-family: 'Outfit', sans-serif; margin: 0; height: 100vh; overflow: hidden; color: var(--text); }
 
-        /* --- UI: CLASSIC & CLEAN --- */
-        #appLayer { display: none; flex-direction: column; height: 100vh; max-width: 600px; margin: 0 auto; background: #fff; position: relative; }
+        /* --- 1. NEON STATUS UI --- */
+        .av-wrapper { position: relative; width: 55px; height: 55px; margin: 0 auto; cursor: pointer; }
+        .av-wrapper img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #334155; transition: 0.3s; object-fit: cover; }
         
-        header { 
-            background: #008069; color: white; padding: 10px 15px; 
-            display: flex; align-items: center; justify-content: space-between; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); z-index: 100;
+        /* Neon Breathing Ring */
+        .status-ring {
+            position: absolute; inset: -4px; border-radius: 50%; 
+            border: 2px solid var(--primary);
+            opacity: 0; transition: 0.3s; pointer-events: none;
+            box-shadow: 0 0 10px var(--primary);
         }
-        .header-info h2 { margin: 0; font-size: 1rem; font-weight: 600; }
-        .header-status { font-size: 0.75rem; opacity: 0.8; margin-top: 2px; }
+        .is-online .status-ring { opacity: 1; animation: neonBreathe 2s infinite alternate; }
+        .is-online img { border-color: transparent; }
+        .is-offline img { filter: grayscale(1); opacity: 0.5; }
+        
+        @keyframes neonBreathe { 0% { box-shadow: 0 0 5px var(--primary); opacity: 0.7; } 100% { box-shadow: 0 0 20px var(--primary), 0 0 10px var(--primary); opacity: 1; } }
 
-        /* --- CHAT AREA --- */
+        /* --- 2. CHAT & GLOW --- */
+        header { 
+            padding: 15px; background: var(--panel); border-bottom: 1px solid #334155; 
+            display: flex; align-items: center; justify-content: space-between; z-index: 100;
+        }
+        .neon-text { font-family: 'Orbitron'; letter-spacing: 1px; color: var(--primary); text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); }
+        
         #chatDisplay { 
-            flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; 
-            padding-bottom:180px;            background-color: var(--bg); 
-            background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
-            opacity: 1;
+            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; 
+            background-color: var(--bg); 
+            background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 20px 20px;
         }
         
         .msg { 
-            max-width: 75%; padding: 8px 10px; border-radius: 8px; 
-            font-size: 0.95rem; line-height: 1.4; position: relative; 
-            box-shadow: 0 1px 1px rgba(0,0,0,0.1); word-wrap: break-word;
+            max-width: 75%; padding: 12px 16px; border-radius: 18px; 
+            font-size: 0.95rem; line-height: 1.5; position: relative; 
+            background: var(--panel); color: white; border: 1px solid #334155;
         }
-        .msg-me { align-self: flex-end; background: var(--msg-out); border-top-right-radius: 0; }
-        .msg-them { align-self: flex-start; background: var(--msg-in); border-top-left-radius: 0; }
+        .msg-me { align-self: flex-end; border-bottom-right-radius: 2px; border-color: var(--primary); }
+        .msg-them { align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        .msg-meta { 
-            display: flex; justify-content: flex-end; align-items: center; gap: 4px; 
-            font-size: 0.65rem; color: #999; margin-top: 2px; 
+        /* Unique Seen Glow */
+        .msg.seen-glow { 
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); 
+            border: 1px solid var(--primary);
         }
-        .tick { color: #999; font-size: 0.7rem; }
-        .tick.blue { color: #34b7f1; } /* Blue Ticks */
 
-        /* --- BOTTOM BAR & ADS --- */
-        .bottom-container { background: #f0f2f5; width: 100%; z-index: 1000; }
-        .input-bar { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+        /* --- 3. INPUT & ADS --- */
+        .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--panel); border-top: 1px solid #334155; z-index: 1000; }
+        .input-bar { display: flex; align-items: center; gap: 10px; padding: 12px; }
         #msgInput { 
-            flex: 1; padding: 12px; border-radius: 20px; border: none; 
-            background: white; font-size: 1rem; 
+            flex: 1; padding: 12px 20px; border-radius: 30px; border: none; 
+            background: #0b0f19; color: white; font-family: 'Outfit'; border: 1px solid #334155;
         }
-        .btn-icon { color: #54656f; font-size: 1.4rem; cursor: pointer; padding: 5px; }
+        #msgInput:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,210,255,0.2); }
         .btn-send { 
-            background: #008069; color: white; width: 45px; height: 45px; 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; border:none; 
-        }
-        
-        /* ADVERTISEMENT SLOT (Bottom Fixed) */
-        #ad-slot {
-            height: 60px; background: #fff; border-top: 1px solid #ddd;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.8rem; color: #aaa;
+            width: 45px; height: 45px; border-radius: 50%; background: var(--primary); 
+            color: #000; border: none; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 15px var(--primary);
         }
 
-        /* --- AUTH & MODALS --- */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 5000; display: none; align-items: center; justify-content: center; }
-        .modal-card { background: white; width: 90%; max-width: 350px; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 5px 25px rgba(0,0,0,0.2); }
-        
-        /* Login Styles */
-        #authLayer { display: flex; }
-        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; }
-        .btn-primary { width: 100%; padding: 12px; background: #008069; color: white; border: none; border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        /* Ad Slot */
+        #ad-slot { height: 60px; display:flex; align-items:center; justify-content:center; background:#000; border-top:1px solid #333; }
 
-        /* Game Board */
-        .cell { width: 60px; height: 60px; background: white; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; cursor: pointer; }
-        .cell.X { color: #e74c3c; } .cell.O { color: #3498db; }
-        .disabled { opacity: 0.5; pointer-events: none; } /* For turn logic */
+        /* --- 4. GAME OVERLAY (FIXED) --- */
+        #gameOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:7000; flex-direction:column; align-items:center; justify-content:center; backdrop-filter: blur(10px); }
+        .game-card { background: var(--panel); padding: 25px; border-radius: 20px; border: 2px solid var(--primary); width: 300px; text-align: center; box-shadow: 0 0 30px rgba(0, 210, 255, 0.1); }
+        .cell { width: 70px; height: 70px; background: #0b0f19; border: 2px solid #334155; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-family: 'Orbitron'; cursor: pointer; color: white; }
+        .cell.X { color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+        .cell.O { color: var(--secondary); text-shadow: 0 0 10px var(--secondary); }
+        .disabled { opacity: 0.3; pointer-events: none; }
 
-        /* Search Results */
-        .user-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; align-items: center; background: white; }
+        /* --- 5. MODALS & SEARCH --- */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; display: none; align-items: center; justify-content: center; }
+        .modal-card { background: var(--panel); width: 90%; max-width: 350px; padding: 25px; border-radius: 20px; border: 1px solid #334155; text-align: center; color: white; }
+        .modal-card input { width: 100%; padding: 12px; margin: 10px 0; background: #0b0f19; border: 1px solid #334155; color: white; border-radius: 8px; }
+        .btn-neon { width: 100%; padding: 12px; background: var(--primary); color: black; font-weight: bold; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; font-family: 'Orbitron'; }
     </style>
 </head>
 <body>
 
-    <div id="authLayer" class="overlay" style="display:flex; background:#fff;">
-        <div class="modal-card" style="box-shadow:none;">
-            <h1 style="color:#008069; margin-bottom:5px;">Chat Classic</h1>
-            <p style="color:#666; font-size:0.9rem;">Simple. Secure. Reliable.</p>
+    <div id="authLayer" class="overlay" style="display:flex; background:#0b0f19;">
+        <div class="modal-card" style="border: 2px solid var(--primary); box-shadow: 0 0 30px rgba(0,210,255,0.1);">
+            <h1 class="neon-text" style="font-size:2rem; margin-bottom:10px;">NEON PRO</h1>
+            <p style="color:#888; font-size:0.8rem; margin-bottom:20px;">The Future of Chat</p>
             
-            <input type="text" id="uName" class="login-input" placeholder="Username">
-            <input type="password" id="uPass" class="login-input" placeholder="Password">
+            <input type="text" id="uName" placeholder="Username">
+            <input type="password" id="uPass" placeholder="Password">
             
-            <div style="text-align:left; font-size:0.8rem; margin:10px 0; display:flex; align-items:center; gap:5px;">
+            <div style="text-align:left; font-size:0.8rem; margin:15px 0; display:flex; align-items:center; gap:8px;">
                 <input type="checkbox" id="legalCheck"> 
-                <span>I agree to <a href="#" onclick="document.getElementById('termsModal').style.display='flex'" style="color:#008069;">Terms & Conditions</a></span>
+                <span style="color:#aaa;">I accept <a href="#" onclick="document.getElementById('termsModal').style.display='flex'" style="color:var(--primary);">Terms</a></span>
             </div>
             
-            <button onclick="startLogin()" class="btn-primary">START MESSAGING</button>
+            <button onclick="startLogin()" class="btn-neon">SYSTEM LOGIN</button>
         </div>
     </div>
 
     <div id="termsModal" class="overlay">
         <div class="modal-card">
-            <h3>Terms & Privacy</h3>
-            <div style="height:150px; overflow-y:auto; text-align:left; font-size:0.85rem; color:#555; background:#f9f9f9; padding:10px; margin-bottom:15px;">
-                1. No harassment allowed.<br>
-                2. We store messages securely.<br>
-                3. Do not share illegal content.<br>
-                4. Your IP is logged for security.<br>
-                5. Admins can ban violators.
+            <h3 class="neon-text">Protocol</h3>
+            <div style="height:150px; overflow-y:auto; text-align:left; font-size:0.8rem; color:#aaa; background:#0b0f19; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #333;">
+                1. Encrypted Environment.<br>2. Zero Tolerance for abuse.<br>3. IP Logging Active.<br>4. Be Respectful.<br>5. Have Fun.
             </div>
-            <button onclick="document.getElementById('termsModal').style.display='none'" class="btn-primary">CLOSE</button>
+            <button onclick="document.getElementById('termsModal').style.display='none'" class="btn-neon" style="background:var(--secondary); color:white;">ACCEPT</button>
         </div>
     </div>
 
-    <div id="appLayer">
+    <div id="appLayer" style="display:none; flex-direction:column; height:100vh;">
         <header>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <i class="fas fa-arrow-left" id="backBtn" onclick="closeChat()" style="display:none; cursor:pointer;"></i>
-                
-                <div class="header-info">
-                    <h2 id="headerTitle">Chats</h2>
-                    <div id="headerStatus" class="header-status"></div>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <i class="fas fa-arrow-left" id="backBtn" onclick="closeChat()" style="display:none; cursor:pointer; color:var(--primary); font-size:1.2rem;"></i>
+                <div>
+                    <div id="chatTitle" class="neon-text" style="font-size:1.1rem;">NEON PRO</div>
+                    <div id="headerStatus" style="font-size:0.7rem; color:#888; margin-top:3px;">System Ready</div>
                 </div>
             </div>
-            <div style="display:flex; gap:20px;">
-                <i class="fas fa-user-plus" onclick="openSearch()" style="cursor:pointer;"></i>
-                <i class="fas fa-power-off" onclick="logout()" style="cursor:pointer;"></i>
+            <div style="display:flex; gap:20px; color:#888; font-size:1.2rem;">
+                <i class="fas fa-user-plus" onclick="openSearch()" style="cursor:pointer; color:white;"></i>
+                <i class="fas fa-power-off" onclick="logout()" style="cursor:pointer; color:var(--secondary);"></i>
             </div>
         </header>
 
-        <div id="friendList" style="flex:1; overflow-y:auto; background:white;"></div>
+        <div style="display:flex; flex:1; overflow:hidden;">
+            <div id="friendList" style="flex:1; overflow-y:auto; background:var(--bg);"></div>
 
-        <div id="chatContainer" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
-            <div id="chatDisplay"></div>
-            
-            <div id="replyPreview" style="display:none; background:#f0f2f5; padding:8px 15px; border-left:4px solid #008069; font-size:0.8rem;">
-                <div style="display:flex; justify-content:space-between;">
-                    <span id="replyText" style="color:#555;">...</span>
-                    <i class="fas fa-times" onclick="closeReply()" style="cursor:pointer;"></i>
-                </div>
-            </div>
-
-            <div class="bottom-container">
-                <div class="input-bar">
-                    <i class="fas fa-gamepad btn-icon" onclick="initGame()"></i>
-                    <i class="fas fa-image btn-icon" onclick="document.getElementById('imgFile').click()"></i>
-                    <input type="file" id="imgFile" hidden accept="image/*" onchange="sendImg(this)">
-                    
-                    <input type="text" id="msgInput" placeholder="Message" enterkeyhint="send">
-                    <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
-                </div>
+            <div id="chatContainer" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
+                <div id="chatDisplay"></div>
                 
-                <div id="ad-slot">
-                    <script type="text/javascript">atOptions = {'key' : '697d465f55b34630746380bf6791eb54','format' : 'iframe','height' : 50,'width' : 320,'params' : {}};</script>
-                    <script type="text/javascript" src="https://www.highperformanceformat.com/697d465f55b34630746380bf6791eb54/invoke.js"></script>
+                <div id="replyPreview" style="display:none; background:#161e2d; padding:10px; border-left:3px solid var(--primary); font-size:0.8rem; color:#aaa;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span id="replyText">...</span>
+                        <i class="fas fa-times" onclick="closeReply()" style="cursor:pointer; color:white;"></i>
+                    </div>
+                </div>
+
+                <div class="bottom-container">
+                    <div class="input-bar">
+                        <i class="fas fa-gamepad" style="color:var(--secondary); font-size:1.5rem; cursor:pointer;" onclick="initGame()"></i>
+                        <i class="fas fa-image" style="color:#00d2ff; font-size:1.5rem; cursor:pointer;" onclick="document.getElementById('imgFile').click()"></i>
+                        <input type="file" id="imgFile" hidden accept="image/*" onchange="sendImg(this)">
+                        
+                        <input type="text" id="msgInput" placeholder="Message..." enterkeyhint="send" oninput="handleTyping()">
+                        <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    <div id="ad-slot">
+                        <script type="text/javascript">atOptions = {'key' : '697d465f55b34630746380bf6791eb54','format' : 'iframe','height' : 50,'width' : 320,'params' : {}};</script>
+                        <script type="text/javascript" src="https://www.highperformanceformat.com/697d465f55b34630746380bf6791eb54/invoke.js"></script>
+                    </div>
                 </div>
             </div>
         </div>
@@ -174,23 +174,30 @@
 
     <div id="searchModal" class="overlay">
         <div class="modal-card">
-            <h3>Find User</h3>
-            <input type="text" style="width:100%; padding:10px; margin-bottom:10px;" placeholder="Username..." oninput="doSearch(this.value)">
-            <div id="searchResults" style="max-height:150px; overflow-y:auto; text-align:left;"></div>
-            <button onclick="document.getElementById('searchModal').style.display='none'" style="margin-top:10px; padding:8px; background:#ddd; border:none; width:100%;">Close</button>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 class="neon-text">USER DATABASE</h3>
+                <i class="fas fa-times" onclick="document.getElementById('searchModal').style.display='none'" style="cursor:pointer;"></i>
+            </div>
+            <input type="text" placeholder="Search ID..." oninput="doSearch(this.value)">
+            <div id="searchResults" style="max-height:200px; overflow-y:auto; margin-top:10px;"></div>
         </div>
     </div>
 
-    <div id="gameModal" class="overlay">
-        <div class="modal-card">
-            <h3 id="gameTitle">Tic-Tac-Toe</h3>
-            <p id="gameTurnInfo" style="font-size:0.9rem; margin-bottom:10px;">Waiting...</p>
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; width:200px; margin:0 auto;">
+    <div id="gameOverlay">
+        <div class="game-card">
+            <h2 class="neon-text" style="margin-bottom:10px;">NEON GRID</h2>
+            <div id="gameTurnInfo" style="color:white; margin-bottom:15px; font-size:0.9rem;">Initializing...</div>
+            
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; justify-content:center; margin-bottom:20px;">
                 <div class="cell" onclick="moveGame(0)"></div><div class="cell" onclick="moveGame(1)"></div><div class="cell" onclick="moveGame(2)"></div>
                 <div class="cell" onclick="moveGame(3)"></div><div class="cell" onclick="moveGame(4)"></div><div class="cell" onclick="moveGame(5)"></div>
                 <div class="cell" onclick="moveGame(6)"></div><div class="cell" onclick="moveGame(7)"></div><div class="cell" onclick="moveGame(8)"></div>
             </div>
-            <button onclick="quitGame()" style="margin-top:20px; padding:10px; background:#e74c3c; color:white; border:none; width:100%; border-radius:5px;">EXIT GAME</button>
+            
+            <div style="display:flex; gap:10px;">
+                <button onclick="initGame()" style="flex:1; padding:10px; background:var(--primary); border:none; border-radius:8px; font-weight:bold;">RESET</button>
+                <button onclick="quitGame()" style="flex:1; padding:10px; background:var(--secondary); border:none; border-radius:8px; font-weight:bold; color:white;">EXIT</button>
+            </div>
         </div>
     </div>
 
@@ -201,31 +208,27 @@
         const firebaseConfig = { apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M", authDomain: "neon-game-hub.firebaseapp.com", databaseURL: "https://neon-game-hub-default-rtdb.firebaseio.com", projectId: "neon-game-hub", storageBucket: "neon-game-hub.firebasestorage.app", messagingSenderId: "636141968933", appId: "1:636141968933:web:60c7cc21d75883ef08a9cc" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const APP_SECRET = "CLASSIC_SECURE_X";
+        const APP_SECRET = "NEON_FIX_2026";
 
         let myName, partner, chatId, replyMsg = null, typingTimer;
 
-        // --- AUTH & SETUP ---
+        // --- AUTH ---
         document.addEventListener('DOMContentLoaded', () => {
-            const user = localStorage.getItem('classicUser');
+            const user = localStorage.getItem('neonUser');
             if(user) { myName = user; initApp(); }
-            
-            // Enter key logic
-            document.getElementById('msgInput').addEventListener('keypress', (e) => {
-                if(e.key === 'Enter') sendTxt();
-            });
+            document.getElementById('msgInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendTxt(); });
         });
 
         function startLogin() {
-            if(!document.getElementById('legalCheck').checked) return alert("Please accept Terms.");
+            if(!document.getElementById('legalCheck').checked) return alert("Accept Protocol.");
             myName = document.getElementById('uName').value.trim().toLowerCase();
             let p = document.getElementById('uPass').value.trim();
-            if(!myName || p.length < 4) return alert("Invalid inputs");
-            
+            if(!myName || p.length < 4) return alert("Invalid Credentials");
             let hp = CryptoJS.SHA256(p).toString();
+            
             db.ref('users/'+myName).once('value', s => {
-                if(s.exists() && s.val().pass !== hp) return alert("Wrong password");
-                localStorage.setItem('classicUser', myName);
+                if(s.exists() && s.val().pass !== hp) return alert("Access Denied");
+                localStorage.setItem('neonUser', myName);
                 if(!s.exists()) db.ref('users/'+myName).set({ pass: hp, joined: Date.now() });
                 initApp();
             });
@@ -234,40 +237,42 @@
         function initApp() {
             document.getElementById('authLayer').style.display = 'none';
             document.getElementById('appLayer').style.display = 'flex';
-            
-            // Online Presence
             const ref = db.ref('status/' + myName);
             ref.set('online');
             ref.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
-            
             loadFriends();
         }
 
         function logout() {
             db.ref('status/' + myName).set(firebase.database.ServerValue.TIMESTAMP);
-            localStorage.removeItem('classicUser');
-            location.reload();
+            localStorage.removeItem('neonUser'); location.reload();
         }
 
-        // --- FRIENDS LIST ---
+        // --- FRIENDS & SEARCH (Combined) ---
         function loadFriends() {
             db.ref('friends/' + myName).on('value', s => {
-                const list = document.getElementById('friendList');
-                list.innerHTML = "";
-                if(!s.exists()) list.innerHTML = "<div style='padding:20px; text-align:center; color:#999;'>No chats yet. Add someone!</div>";
-                
+                const list = document.getElementById('friendList'); list.innerHTML = "";
                 s.forEach(f => {
                     const div = document.createElement('div');
-                    div.style = "padding:15px; border-bottom:1px solid #f0f0f0; display:flex; align-items:center; gap:15px; cursor:pointer;";
+                    div.style = "padding:15px; border-bottom:1px solid #222; display:flex; align-items:center; gap:15px; cursor:pointer;";
                     div.innerHTML = `
-                        <img src="https://api.dicebear.com/7.x/initials/svg?seed=${f.key}" style="width:45px; border-radius:50%;">
+                        <div class="av-wrapper is-offline" id="wrap-${f.key}">
+                            <div class="status-ring"></div>
+                            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}">
+                        </div>
                         <div>
-                            <div style="font-weight:bold; font-size:1rem;">${f.key}</div>
-                            <div style="font-size:0.8rem; color:#888;">Tap to chat</div>
+                            <div style="font-weight:600; color:white; font-size:1.1rem;">${f.key}</div>
+                            <div style="font-size:0.75rem; color:#666;">Tap to initiate</div>
                         </div>
                     `;
                     div.onclick = () => openChat(f.key);
                     list.appendChild(div);
+                    // Check Status
+                    db.ref('status/'+f.key).on('value', st => {
+                        const wrap = document.getElementById('wrap-'+f.key);
+                        if(st.val()==='online') { wrap.classList.remove('is-offline'); wrap.classList.add('is-online'); }
+                        else { wrap.classList.remove('is-online'); wrap.classList.add('is-offline'); }
+                    });
                 });
             });
         }
@@ -279,140 +284,114 @@
             db.ref('users').limitToFirst(10).once('value', s => {
                 s.forEach(u => {
                     if(u.key.startsWith(q.toLowerCase()) && u.key !== myName) {
-                        div.innerHTML += `<div class="user-item"><b>${u.key}</b> <button onclick="addFriend('${u.key}')" style="background:#008069; color:white; border:none; padding:5px 10px; border-radius:5px;">ADD</button></div>`;
+                        div.innerHTML += `<div style="padding:10px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:white; font-weight:bold;">${u.key}</span>
+                            <button onclick="addFriend('${u.key}')" style="background:var(--primary); border:none; padding:5px 10px; border-radius:5px; font-weight:bold;">ADD</button>
+                        </div>`;
                     }
                 });
             });
         }
         function addFriend(key) {
-            db.ref('friends/'+myName+'/'+key).set(true);
-            db.ref('friends/'+key+'/'+myName).set(true);
+            db.ref('friends/'+myName+'/'+key).set(true); db.ref('friends/'+key+'/'+myName).set(true);
             document.getElementById('searchModal').style.display='none';
-            alert('Added ' + key);
         }
 
-        // --- CHAT LOGIC (FIXED LOOPS) ---
+        // --- CHAT ---
         function openChat(key) {
-            partner = key;
-            chatId = [myName, partner].sort().join("_");
-            
-            // UI Switch
+            partner = key; chatId = [myName, partner].sort().join("_");
             document.getElementById('friendList').style.display = 'none';
             document.getElementById('chatContainer').style.display = 'flex';
             document.getElementById('backBtn').style.display = 'block';
-            document.getElementById('headerTitle').innerText = partner;
+            document.getElementById('chatTitle').innerText = partner;
             
             monitorStatus();
+            db.ref('chats/'+chatId).off(); // FIX LOOP
             
-            // Remove old listeners to prevent loops
-            db.ref('chats/' + chatId).off(); 
+            const box = document.getElementById('chatDisplay');
+            db.ref('chats/'+chatId).limitToLast(50).on('value', s => {
+                box.innerHTML = "";
+                s.forEach(m => {
+                    const dat = m.val();
+                    const isMe = dat.from === myName;
+                    
+                    const div = document.createElement('div');
+                    const seenClass = (isMe && dat.seen) ? 'seen-glow' : '';
+                    div.className = `msg ${isMe ? 'msg-me' : 'msg-them'} ${seenClass}`;
+                    
+                    if(!isMe && !dat.seen) db.ref('chats/'+chatId+'/'+m.key+'/seen').set(true);
 
-            // Load Messages
-            db.ref('chats/' + chatId).limitToLast(50).on('child_added', s => {
-                renderMsg(s.val(), s.key);
-                if(s.val().from !== myName && !s.val().seen) {
-                    db.ref('chats/'+chatId+'/'+s.key+'/seen').set(true);
-                }
-            });
-            
-            // Watch for Seen updates (Blue ticks)
-            db.ref('chats/' + chatId).limitToLast(50).on('child_changed', s => {
-                const el = document.getElementById('tick-' + s.key);
-                if(el && s.val().seen) {
-                    el.classList.add('blue');
-                    el.innerText = "✓✓";
-                }
+                    // Double Tap
+                    let lastTap = 0;
+                    div.addEventListener('click', () => {
+                        let now = new Date().getTime();
+                        if(now - lastTap < 300) {
+                            replyMsg = { text: decrypt(dat.val) || "Media", from: dat.from };
+                            document.getElementById('replyPreview').style.display = 'block';
+                            document.getElementById('replyText').innerText = replyMsg.text;
+                        }
+                        lastTap = now;
+                    });
+
+                    let content = "";
+                    if(dat.reply) content += `<div style="border-left:2px solid var(--primary); padding-left:5px; margin-bottom:5px; font-size:0.75rem; color:#aaa;"><b>${dat.reply.from}</b>: ${dat.reply.text}</div>`;
+                    
+                    if(dat.type === 'game') content += `<div style="text-align:center;">🎮 GAME REQUEST<br><button onclick="joinGame()" style="margin-top:5px; background:var(--primary); border:none; padding:5px 10px; border-radius:5px; font-weight:bold;">OPEN GRID</button></div>`;
+                    else if(dat.type === 'img') content += `<img src="${decrypt(dat.val)}" style="width:100%; border-radius:10px;">`;
+                    else content += `<span>${decrypt(dat.val)}</span>`;
+                    
+                    div.innerHTML = content;
+                    box.appendChild(div);
+                });
+                box.scrollTop = box.scrollHeight;
             });
         }
 
         function closeChat() {
-            if(chatId) {
-                db.ref('chats/'+chatId).off(); // Stop listening
-                db.ref('typing/'+chatId+'/'+myName).set(false);
-            }
-            partner = null; chatId = null;
+            if(chatId) db.ref('chats/'+chatId).off();
+            partner = null;
             document.getElementById('chatContainer').style.display = 'none';
             document.getElementById('friendList').style.display = 'block';
             document.getElementById('backBtn').style.display = 'none';
-            document.getElementById('headerTitle').innerText = "Chats";
-            document.getElementById('headerStatus').innerText = "";
-            document.getElementById('chatDisplay').innerHTML = ""; // Clear UI
+            document.getElementById('chatTitle').innerText = "NEON PRO";
         }
 
         function monitorStatus() {
             db.ref('status/'+partner).on('value', s => {
                 const st = s.val();
                 const el = document.getElementById('headerStatus');
-                if(st === 'online') el.innerText = "Online";
-                else el.innerText = "Last seen " + moment(st).fromNow();
+                if(st === 'online') { el.innerText = "● ONLINE"; el.style.color = "#00d2ff"; }
+                else { el.innerText = "Last seen " + moment(st).fromNow(); el.style.color = "#888"; }
             });
-            
             db.ref('typing/'+chatId+'/'+partner).on('value', s => {
                 if(s.val()) document.getElementById('headerStatus').innerText = "Typing...";
             });
         }
 
-        function renderMsg(dat, key) {
-            const box = document.getElementById('chatDisplay');
-            const isMe = dat.from === myName;
-            const div = document.createElement('div');
-            div.className = `msg ${isMe ? 'msg-me' : 'msg-them'}`;
-            
-            // Double Tap Reply
-            let lastTap = 0;
-            div.addEventListener('click', () => {
-                let now = new Date().getTime();
-                if(now - lastTap < 300) {
-                    replyMsg = { text: decrypt(dat.val) || "Media", from: dat.from };
-                    document.getElementById('replyPreview').style.display = 'block';
-                    document.getElementById('replyText').innerText = replyMsg.text;
-                }
-                lastTap = now;
-            });
-
-            let content = "";
-            if(dat.reply) content += `<div style="background:rgba(0,0,0,0.05); padding:5px; border-left:3px solid #008069; font-size:0.8rem; margin-bottom:5px;"><b>${dat.reply.from}</b>: ${dat.reply.text}</div>`;
-            
-            if(dat.type === 'game') content += `<div style="text-align:center;">🎮 <b>Tic-Tac-Toe</b><br><button onclick="joinGame()" style="margin-top:5px; background:#008069; color:white; border:none; padding:5px; border-radius:3px;">OPEN GAME</button></div>`;
-            else if(dat.type === 'img') content += `<img src="${decrypt(dat.val)}" style="width:100%; border-radius:5px;">`;
-            else content += `<span>${decrypt(dat.val)}</span>`;
-
-            // Meta (Time + Tick)
-            const time = new Date(dat.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            let tickHtml = "";
-            if(isMe) {
-                const tickClass = dat.seen ? "tick blue" : "tick";
-                const tickIcon = dat.seen ? "✓✓" : "✓";
-                tickHtml = `<span class="${tickClass}" id="tick-${key}">${tickIcon}</span>`;
-            }
-
-            div.innerHTML = `${content}<div class="msg-meta">${time} ${tickHtml}</div>`;
-            box.appendChild(div);
-            box.scrollTop = box.scrollHeight;
+        function handleTyping() {
+            if(!chatId) return;
+            db.ref('typing/'+chatId+'/'+myName).set(true);
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => db.ref('typing/'+chatId+'/'+myName).set(false), 2000);
         }
 
         function sendTxt() {
             const inp = document.getElementById('msgInput');
             const t = inp.value.trim();
             if(!t || !chatId) return;
-            
             const payload = { from: myName, val: encrypt(t), time: Date.now(), seen: false };
             if(replyMsg) { payload.reply = replyMsg; closeReply(); }
-            
             db.ref('chats/'+chatId).push(payload);
-            inp.value = "";
-            inp.focus();
+            inp.value = ""; inp.focus();
         }
 
-        // --- TYPING LOGIC ---
-        document.getElementById('msgInput').addEventListener('input', () => {
-            if(!chatId) return;
-            db.ref('typing/'+chatId+'/'+myName).set(true);
-            clearTimeout(typingTimer);
-            typingTimer = setTimeout(() => db.ref('typing/'+chatId+'/'+myName).set(false), 2000);
-        });
+        // --- HELPERS ---
+        function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
+        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e){return "";} }
+        function closeReply() { replyMsg=null; document.getElementById('replyPreview').style.display='none'; }
+        function sendImg(i) { const r = new FileReader(); r.onload=e=>db.ref('chats/'+chatId).push({from:myName,type:'img',val:encrypt(e.target.result),time:Date.now()}); r.readAsDataURL(i.files[0]); }
 
-        // --- GAME LOGIC (TURN BASED) ---
+        // --- GAME (FIXED TURN & RESET) ---
         function initGame() {
             const board = [0,0,0,0,0,0,0,0,0];
             db.ref('games/'+chatId).set({ board, turn: myName, x: myName, o: partner });
@@ -421,25 +400,20 @@
         }
 
         function joinGame() {
-            document.getElementById('gameModal').style.display = 'flex';
+            document.getElementById('gameOverlay').style.display = 'flex';
             db.ref('games/'+chatId).on('value', s => {
-                const g = s.val();
-                if(!g) return;
-                
-                const cells = document.querySelectorAll('.cell');
+                const g = s.val(); if(!g) return;
                 const isMyTurn = g.turn === myName;
-                document.getElementById('gameTurnInfo').innerText = isMyTurn ? "Your Turn!" : `Waiting for ${g.turn}...`;
-                
-                g.board.forEach((v, i) => {
-                    cells[i].innerText = v || "";
-                    cells[i].className = "cell " + (v || "");
-                    if(v !== 0) cells[i].classList.add('disabled'); // Can't click filled
+                document.getElementById('gameTurnInfo').innerText = isMyTurn ? "YOUR TURN" : `WAITING FOR ${g.turn}...`;
+                document.getElementById('gameTurnInfo').style.color = isMyTurn ? "var(--primary)" : "#888";
+
+                document.querySelectorAll('.cell').forEach((c, i) => {
+                    c.innerText = g.board[i] || "";
+                    c.className = "cell " + (g.board[i] || "");
+                    // Block clicks if cell filled OR not my turn
+                    if(g.board[i] !== 0 || !isMyTurn) c.classList.add('disabled');
+                    else c.classList.remove('disabled');
                 });
-                
-                // Disable entire board if not my turn
-                const boardDiv = document.querySelector('#gameModal .modal-card');
-                boardDiv.style.pointerEvents = isMyTurn ? 'auto' : 'none';
-                boardDiv.style.opacity = isMyTurn ? 1 : 0.7;
             });
         }
 
@@ -450,35 +424,27 @@
                 
                 const sym = (g.x === myName) ? 'X' : 'O';
                 g.board[idx] = sym;
-                g.turn = partner; // Switch turn
-                
+                g.turn = partner; 
                 db.ref('games/'+chatId).update(g);
                 checkWin(g.board);
             });
         }
-        
+
         function checkWin(b) {
             const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
             for(let w of wins) {
                 if(b[w[0]] && b[w[0]] === b[w[1]] && b[w[1]] === b[w[2]]) {
                     alert(b[w[0]] + " WINS!");
-                    quitGame();
+                    // Reset Logic could go here
                     return;
                 }
             }
-            if(!b.includes(0)) { alert("DRAW!"); quitGame(); }
         }
 
         function quitGame() {
-            document.getElementById('gameModal').style.display = 'none';
+            document.getElementById('gameOverlay').style.display = 'none';
             db.ref('games/'+chatId).off();
         }
-
-        // --- HELPERS ---
-        function sendImg(i) { const r = new FileReader(); r.onload=e=>db.ref('chats/'+chatId).push({from:myName,type:'img',val:encrypt(e.target.result),time:Date.now()}); r.readAsDataURL(i.files[0]); }
-        function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
-        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e){return "";} }
-        function closeReply() { replyMsg=null; document.getElementById('replyPreview').style.display='none'; }
     </script>
 </body>
 </html>
