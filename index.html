@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Pro | Unique Keys</title>
+    <title>Neon Pro | Auto-Secure</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,24 +24,15 @@
         .blocked-badge { font-size: 0.6rem; background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; display: none; }
         .delete-btn { font-size: 0.7rem; color: #ff4444; cursor: pointer; margin-left: 8px; opacity: 0.6; }
 
-        /* Key Pulse Animation */
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
-        .key-needed { animation: pulse-red 1s infinite; border-color: red !important; }
-
         /* --- STANDARD STYLES --- */
         .enc-notice { background: #fff9c4; color: #5d4037; font-size: 0.75rem; text-align: center; padding: 10px 15px; margin: 10px auto 20px auto; border-radius: 10px; max-width: 90%; border: 1px solid #ffe082; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .enc-notice i { font-size: 1rem; color: #ffa000; margin-bottom: 3px; }
         
-        #termsModal, #tutorialModal { position: fixed; inset: 0; z-index: 6000; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
-        .terms-card, .tut-card { background: #fff; width: 100%; max-width: 400px; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; max-height: 80vh; animation: popUp 0.3s forwards; }
+        #termsModal { position: fixed; inset: 0; z-index: 6000; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
+        .terms-card { background: #fff; width: 100%; max-width: 400px; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; max-height: 80vh; animation: popUp 0.3s forwards; }
         .terms-head { background: #1e272e; color: white; padding: 20px; text-align: center; font-family: 'Orbitron'; font-size: 1.2rem; border-bottom: 4px solid var(--primary); }
         .terms-body { padding: 20px; overflow-y: auto; font-size: 0.85rem; color: #333; line-height: 1.6; background: #f8f9fa; }
         .btn-agree { background: var(--primary); color: white; padding: 15px; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; }
-        
-        .tut-step { display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-start; }
-        .step-num { background: var(--primary); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
-        .step-text h4 { margin: 0 0 5px 0; color: #1e272e; }
-        .step-text p { margin: 0; font-size: 0.85rem; color: #666; }
 
         #banOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, #8b0000 0%, #1a0000 100%); z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 30px; }
         .ban-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; animation: shake 0.5s infinite; }
@@ -108,37 +99,16 @@
             <div class="terms-body">
                 <div class="policy-block"><h4>1. Data Collection</h4><p>We log your unique <b>Device ID</b> and <b>IP</b>.</p></div>
                 <div class="policy-block"><h4>2. Zero Tolerance</h4><p>Harassment triggers a <b>Hardware Ban</b>.</p></div>
-                <div class="policy-block"><h4>3. Encryption</h4><p>Messages are E2EE using AES-256. <b>Key is Required.</b></p></div>
+                <div class="policy-block"><h4>3. Security</h4><p>Passwords are <b>Hashed (SHA-256)</b>. Messages are <b>Auto-Encrypted</b>.</p></div>
             </div>
             <button class="btn-agree" onclick="agreeTerms()">I ACCEPT & CONTINUE</button>
-        </div>
-    </div>
-
-    <div id="tutorialModal">
-        <div class="tut-card">
-            <div class="terms-head" style="background:var(--primary);"><i class="fas fa-info-circle"></i> HOW IT WORKS</div>
-            <div class="terms-body" style="background:white;">
-                <div class="tut-step">
-                    <div class="step-num">1</div>
-                    <div class="step-text"><h4>Unique Keys</h4><p>The Key changes automatically for each friend. <b>Enter a different Key for each person.</b></p></div>
-                </div>
-                <div class="tut-step">
-                    <div class="step-num">2</div>
-                    <div class="step-text"><h4>Auto-Save</h4><p>Once you enter a key for a friend, the app remembers it <b>only for that friend</b>.</p></div>
-                </div>
-                <div class="tut-step">
-                    <div class="step-num">3</div>
-                    <div class="step-text"><h4>Invite</h4><p>Click <i class="fas fa-user-plus" style="color:var(--primary)"></i> to create a link with a unique key for a new chat.</p></div>
-                </div>
-            </div>
-            <button class="btn-agree" onclick="closeTutorial()">GOT IT!</button>
         </div>
     </div>
 
     <div id="authLayer">
         <div class="auth-card">
             <h1>NEON PRO</h1>
-            <div class="enc-badge"><i class="fas fa-lock"></i> 100% E2EE ENCRYPTED</div>
+            <div class="enc-badge"><i class="fas fa-shield-alt"></i> SECURE HASHING ACTIVE</div>
             <input type="text" id="uName" placeholder="Username">
             <input type="password" id="uPass" placeholder="Password">
             <div style="font-size: 0.8rem; text-align: left; margin: 20px 0; color: #666; display: flex; gap: 8px; align-items: center;">
@@ -154,21 +124,16 @@
             <div class="chat-header-info">
                 <div style="font-family:'Orbitron'; color:var(--primary); font-size:1.1rem;" id="chatTitle">NEON</div>
                 <span id="blockedBadge" class="blocked-badge">🚫 BLOCKED</span>
-                <i class="fas fa-question-circle" onclick="openTutorial()" style="color:#aaa; font-size:1rem; cursor:pointer; margin-left:5px;"></i>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
                 <i class="fas fa-ban block-btn" id="blockBtn" style="display:none;" onclick="toggleBlockUser()"></i>
                 
-                <button onclick="generateInvite()" style="background:none; border:none; cursor:pointer; color:#007bff; font-size:1.1rem;" title="Create Invite Link"><i class="fas fa-user-plus"></i></button>
-
-                <input type="password" id="topKey" style="width:70px; padding:6px; border-radius:8px; border:2px solid #ff9800; background:#fff3e0; text-align:center; font-size:0.75rem;" placeholder="Key Required 🔑" oninput="saveKey(this.value)">
+                <i class="fas fa-search" onclick="toggleScreen('searchScreen')" style="font-size:1.1rem; color:#555; cursor:pointer;"></i>
                 
-                <i class="fas fa-search" onclick="toggleScreen('searchScreen')"></i>
+                <i class="fas fa-sign-out-alt" onclick="logout()" style="color:#ff4444; font-size:1.1rem; cursor:pointer; margin-left:10px;" title="Logout"></i>
                 
-                <i class="fas fa-sign-out-alt" onclick="logout()" style="color:#ff4444; font-size:1.1rem; cursor:pointer; margin-left:5px;" title="Logout"></i>
-                
-                <div style="position:relative;" onclick="openRequests()">
-                    <i class="fas fa-bell"></i>
+                <div style="position:relative; margin-left:5px;" onclick="openRequests()">
+                    <i class="fas fa-bell" style="font-size:1.1rem; color:#555;"></i>
                     <div id="reqBadge" style="position:absolute; top:-8px; right:-8px; background:red; color:white; border-radius:50%; width:15px; height:15px; font-size:0.6rem; display:none; align-items:center; justify-content:center;">0</div>
                 </div>
             </div>
@@ -233,6 +198,9 @@
         // --- GLOBAL & SECURITY ---
         let myIp, myName, partner, chatId;
         let activeGameId = null, mySymbol = null;
+        
+        // FIXED INTERNAL KEY (Replaces manual key)
+        const APP_SECRET = "NEON_AUTO_SECURE_2026_X"; 
 
         if(localStorage.getItem('isPermanentlyBanned') === 'true') {
             document.addEventListener('DOMContentLoaded', showRedScreen);
@@ -270,78 +238,30 @@
             document.getElementById('appLayer')?.remove();
         }
 
-        // --- 2. UNIQUE KEY LOGIC (PER FRIEND) ---
-        // Save Key for the specific friend currently open
-        function saveKey(val) {
-            if(partner) {
-                localStorage.setItem('neonKey_' + partner, val);
-                document.getElementById('topKey').classList.remove('key-needed');
-            }
-        }
-
-        function getK() { 
-            let k = document.getElementById('topKey').value.trim();
-            if(!k) return null;
-            return k;
-        }
-        function requireKey() {
-            if(!getK()) {
-                alert("⚠️ Please enter a Secret Key (🔑) to chat!");
-                document.getElementById('topKey').classList.add('key-needed');
-                document.getElementById('topKey').focus();
-                return false;
-            }
-            return true;
-        }
-
-        function generateInvite() {
-            const randomKey = Math.random().toString(36).substring(2, 10).toUpperCase();
-            
-            // If inside a chat, save this new key for this friend
-            if(partner) {
-                document.getElementById('topKey').value = randomKey;
-                localStorage.setItem('neonKey_' + partner, randomKey);
-            }
-            
-            const link = window.location.href.split('?')[0] + "?join=" + randomKey;
-            navigator.clipboard.writeText(link).then(() => {
-                alert("🔗 Invite Link Copied!\nUnique Key: " + randomKey + "\nSend this to your friend.");
-            }).catch(() => prompt("Copy Link:", link));
-        }
-        
-        // Handle URL Join (Global fallback or overwrite)
-        const urlParams = new URLSearchParams(window.location.search);
-        const magicKey = urlParams.get('join');
-        if(magicKey) {
-            // Temporary storage until they click a friend
-            localStorage.setItem('tempKey', magicKey);
-            window.onload = function() {
-                alert("✅ Key Ready! Select a friend to apply it.");
-            }
-        }
-
-        // --- AUTH & TUTORIAL ---
+        // --- AUTH (UPDATED: PASSWORD HASHING) ---
         function showTerms() { document.getElementById('termsModal').style.display = 'flex'; }
         function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
         function agreeTerms() { document.getElementById('legalCheck').checked = true; closeTerms(); }
         
-        function openTutorial() { document.getElementById('tutorialModal').style.display = 'flex'; }
-        function closeTutorial() { document.getElementById('tutorialModal').style.display = 'none'; }
-
         function startLogin() {
             if(!document.getElementById('legalCheck').checked) return alert("Accept Terms first.");
             myName = document.getElementById('uName').value.trim().toLowerCase();
             let p = document.getElementById('uPass').value.trim();
             if(!myName || p.length < 4) return alert("Invalid credentials");
             
+            // HASH PASSWORD (SHA-256)
+            let hashedPass = CryptoJS.SHA256(p).toString();
+
             db.ref('users/' + myName).once('value', s => {
                 let data = s.val();
                 if(data && data.banned === true) { permanentBanTrigger(); return; }
-                if(s.exists() && data.pass !== p) return alert("Wrong pass");
+                
+                // Compare HASHED password
+                if(s.exists() && data.pass !== hashedPass) return alert("Wrong pass");
                 
                 localStorage.setItem('currentUser', myName);
                 
-                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: p, ip: myIp, joinedAt: Date.now() });
+                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: hashedPass, ip: myIp, joinedAt: Date.now() });
                 else if(myIp) db.ref('users/' + myName + '/ip').set(myIp);
 
                 document.getElementById('authLayer').style.display='none';
@@ -358,11 +278,10 @@
             }
         }
 
-        // --- CRYPTO ---
-        function encrypt(t) { return CryptoJS.AES.encrypt(t, getK()).toString(); }
+        // --- CRYPTO (AUTO INTERNAL KEY) ---
+        function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
         function decrypt(c) { 
-            if(!getK()) return "🔑 Enter Key"; 
-            try { return CryptoJS.AES.decrypt(c, getK()).toString(CryptoJS.enc.Utf8); } catch(e) { return "❌ Wrong Key"; } 
+            try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } 
         }
 
         // --- APP LOGIC ---
@@ -374,27 +293,6 @@
             document.getElementById('chatTitle').innerText = partner;
             document.getElementById('blockBtn').style.display = 'block';
             
-            // --- SMART KEY LOADER ---
-            // 1. Check if we have a saved key for THIS specific partner
-            let savedKey = localStorage.getItem('neonKey_' + partner);
-            
-            // 2. If not, maybe we came from an Invite Link?
-            if(!savedKey && localStorage.getItem('tempKey')) {
-                savedKey = localStorage.getItem('tempKey');
-                localStorage.removeItem('tempKey'); // Use once
-                localStorage.setItem('neonKey_' + partner, savedKey); // Save for future
-            }
-
-            // 3. Set the key in the input box
-            if(savedKey) {
-                document.getElementById('topKey').value = savedKey;
-                document.getElementById('topKey').style.borderColor = '#2ed573';
-            } else {
-                document.getElementById('topKey').value = ""; // Clear box if no key found for this person
-                document.getElementById('topKey').style.borderColor = '#ff9800';
-            }
-            // ------------------------
-
             checkBlockStatus();
             renderNotice(box);
 
@@ -417,12 +315,11 @@
                         d.appendChild(btnDiv);
                     } else if(dat.type === 'img') { 
                         let decryptedImg = decrypt(dat.val); 
-                        if(decryptedImg && !decryptedImg.includes("Enter Key") && !decryptedImg.includes("Wrong Key")) {
+                        if(decryptedImg) {
                             let img = document.createElement('img'); img.src = decryptedImg; img.style.width = "100%"; img.style.borderRadius="10px"; d.appendChild(img);
-                        } else { d.innerHTML += `<br><span style="color:red; font-size:0.8rem;">${decryptedImg}</span>`; }
+                        }
                     } else { 
                         let txt = document.createElement('span'); txt.innerText = decrypt(dat.val); 
-                        if(txt.innerText.includes("Enter Key")) txt.style.color = "red";
                         d.appendChild(txt);
                     } 
                     
@@ -437,14 +334,13 @@
             }); 
         }
 
-        function renderNotice(box) { box.innerHTML = `<div class="enc-notice"><i class="fas fa-lock"></i><b>End-to-End Encrypted</b><span>Messages are secured with AES-256.</span></div>`; }
+        function renderNotice(box) { box.innerHTML = `<div class="enc-notice"><i class="fas fa-lock"></i><b>End-to-End Encrypted</b><span>Messages are secured.</span></div>`; }
 
         function checkBlockStatus() { db.ref('users/' + myName + '/blocked/' + partner).on('value', s => { let btn = document.getElementById('blockBtn'); if(s.exists()) { btn.className = "fas fa-unlock block-btn"; btn.style.color = "#2ed573"; } else { btn.className = "fas fa-ban block-btn"; btn.style.color = "#ff4444"; } }); }
         function toggleBlockUser() { db.ref('users/' + myName + '/blocked/' + partner).once('value', s => { if(s.exists()) { if(confirm("Unblock " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).remove(); } else { if(confirm("Block " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).set(true); } }); }
         function deleteMsg(key) { if(confirm("Delete for everyone?")) db.ref('chats/' + chatId + '/' + key).remove(); }
         
         function sendTxt() { 
-            if(!requireKey()) return; 
             let t = document.getElementById('msgInput').value.trim(); 
             if(!t || !partner) return; 
             db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
@@ -461,7 +357,6 @@
 
         // --- FIXED GAME LOGIC ---
         function initGame() { 
-            if(!requireKey()) return; 
             activeGameId = Date.now(); 
             let gameData = { board: [0,0,0, 0,0,0, 0,0,0], turn: myName, xPlayer: myName, status: 'active', winner: null };
             db.ref('games/' + chatId).set(gameData); 
@@ -471,7 +366,6 @@
         }
 
         function joinGame(gId) { 
-            if(!requireKey()) return; 
             activeGameId = gId; 
             toggleScreen('gameScreen'); 
             openGameUI(); 
@@ -520,7 +414,6 @@
         function closeGame() { document.getElementById('gameOverlay').style.display = 'none'; db.ref('games/' + chatId).off(); }
 
         function playGame(type) { 
-            if(!requireKey()) return;
             db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
                  if(s.exists()) return alert("User blocked you.");
                  let res = (type === 'DICE') ? "🎲 Rolled: " + (Math.floor(Math.random()*6)+1) : "✂️ Chose Rock"; 
@@ -528,7 +421,6 @@
             });
         }
         function processImg(i) { 
-            if(!requireKey()) return;
             db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
                  if(s.exists()) return alert("User blocked you.");
                  const r = new FileReader(); r.onload = e => { let secureImg = encrypt(e.target.result); db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: secureImg, time: Date.now() }); }; r.readAsDataURL(i.files[0]); 
