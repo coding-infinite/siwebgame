@@ -3,246 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Pro | Classic</title>
+    <title>Chat Classic</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
     <style>
         :root { 
-            --primary: #007bff; 
-            --bg: #f2f4f8; /* Soft Grey Background */
+            --primary: #008069; /* WhatsApp Green */
+            --bg: #efe7dd; /* Chat Wallpaper Color */
             --white: #ffffff;
-            --text-dark: #2d3436;
-            --text-light: #636e72;
-            --green: #00b894;
+            --msg-out: #e7ffdb;
+            --msg-in: #ffffff;
         }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); font-family: 'Poppins', sans-serif; margin: 0; height: 100vh; overflow: hidden; color: var(--text-dark); }
+        body { background: #d1d7db; font-family: 'Helvetica Neue', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
 
-        /* --- 1. NEW STATUS ANIMATIONS --- */
-        .av-wrapper { position: relative; width: 55px; height: 55px; margin: 0 auto; cursor: pointer; }
-        .av-wrapper img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+        /* --- UI: CLASSIC & CLEAN --- */
+        #appLayer { display: none; flex-direction: column; height: 100vh; max-width: 600px; margin: 0 auto; background: #fff; position: relative; }
         
-        /* Unique Online Breathing Ring */
-        .status-ring {
-            position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px;
-            border-radius: 50%; border: 2px solid var(--green);
-            opacity: 0; transition: 0.3s; pointer-events: none;
-        }
-        .is-online .status-ring { opacity: 1; animation: breathe 2s infinite ease-in-out; }
-        @keyframes breathe { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
-        
-        /* Offline Grayscale */
-        .is-offline img { filter: grayscale(100%); opacity: 0.7; }
-
-        /* --- 2. UNIQUE SEEN EFFECT (Golden Glow) --- */
-        .msg { transition: 0.3s ease; border: 1px solid transparent; }
-        .msg.seen-glow { 
-            border-right: 3px solid #f1c40f; /* Golden strip */
-            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.15);
-        }
-
-        /* --- UI UPDATES (CLASSIC) --- */
         header { 
-            padding: 15px 20px; background: var(--white); 
+            background: #008069; color: white; padding: 10px 15px; 
             display: flex; align-items: center; justify-content: space-between; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03); z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); z-index: 100;
         }
-        .app-title { font-weight: 700; font-size: 1.2rem; color: var(--text-dark); letter-spacing: -0.5px; }
-        .status-text { font-size: 0.7rem; color: var(--text-light); font-weight: 500; display:flex; align-items:center; gap:5px; }
-        
-        /* Typing Animation in Header */
-        .typing-anim span {
-            display: inline-block; width: 4px; height: 4px; background: var(--primary); border-radius: 50%;
-            animation: typeJump 1s infinite;
-        }
-        .typing-anim span:nth-child(2) { animation-delay: 0.1s; }
-        .typing-anim span:nth-child(3) { animation-delay: 0.2s; }
-        @keyframes typeJump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        .header-info h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+        .header-status { font-size: 0.75rem; opacity: 0.8; margin-top: 2px; }
 
-        /* Sidebar Friends */
-        #friendSidebar { 
-            width: 85px; background: var(--white); border-right: 1px solid #eee; 
-            display: flex; flex-direction: column; align-items: center; padding: 20px 0; gap: 20px; overflow-y: auto; 
-        }
-
-        /* Chat Area */
+        /* --- CHAT AREA --- */
         #chatDisplay { 
-            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; 
-            background-color: #eef1f5; 
-            background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); /* Pattern kept */
-            background-blend-mode: multiply;
+            flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; 
+            padding-bottom:180px;            background-color: var(--bg); 
+            background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
+            opacity: 1;
         }
         
         .msg { 
-            max-width: 75%; padding: 12px 16px; border-radius: 18px; 
-            font-size: 0.95rem; line-height: 1.5; position: relative; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            max-width: 75%; padding: 8px 10px; border-radius: 8px; 
+            font-size: 0.95rem; line-height: 1.4; position: relative; 
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1); word-wrap: break-word;
         }
-        .msg-me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-        .msg-them { align-self: flex-start; background: var(--white); color: var(--text-dark); border-bottom-left-radius: 4px; }
-        .msg-name { font-size: 0.65rem; opacity: 0.8; margin-bottom: 2px; display: block; font-weight: 600; }
-
-        /* Reply Bar */
-        #replyPreview { 
-            display: none; background: #fff; padding: 12px 20px; 
-            border-left: 4px solid var(--primary); 
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-            animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes slideUp { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
-
-        .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000; }
-        .input-bar { display: flex; align-items: center; gap: 12px; padding: 15px 20px; background: var(--white); }
-        #msgInput { 
-            flex: 1; padding: 14px 20px; border-radius: 30px; border: none; 
-            background: #f0f2f5; font-family: 'Poppins'; font-size: 1rem; color: #333;
-            transition: 0.3s;
-        }
-        #msgInput:focus { background: #e4e6eb; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
-        .btn-send { 
-            width: 50px; height: 50px; border-radius: 50%; background: var(--primary); 
-            color: white; border: none; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3); transition: 0.2s;
-        }
-        .btn-send:active { transform: scale(0.9); }
-
-        /* Overlays */
-        .overlay { position: fixed; inset: 0; background: white; z-index: 4000; display: none; flex-direction: column; padding: 25px; }
-        #authLayer { position: fixed; inset: 0; background: white; z-index: 5000; display: flex; align-items: center; justify-content: center; }
-        .auth-card { width: 90%; max-width: 350px; text-align: center; }
-        .auth-card h1 { color: var(--primary); font-weight: 700; letter-spacing: -1px; margin-bottom: 5px; }
-        .auth-card input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid #eee; background: #f9f9f9; font-family: 'Poppins'; }
+        .msg-me { align-self: flex-end; background: var(--msg-out); border-top-right-radius: 0; }
+        .msg-them { align-self: flex-start; background: var(--msg-in); border-top-left-radius: 0; }
         
-        /* Game Styles (Kept Minimal) */
-        #gameOverlay { display:none; position:fixed; inset:0; background:rgba(255,255,255,0.95); z-index:7000; flex-direction:column; align-items:center; justify-content:center; backdrop-filter: blur(5px); }
-        .cell { width: 70px; height: 70px; background: white; border: 2px solid #eee; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight:bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .cell.X { color: var(--primary); }
-        .cell.O { color: #ff4757; }
+        .msg-meta { 
+            display: flex; justify-content: flex-end; align-items: center; gap: 4px; 
+            font-size: 0.65rem; color: #999; margin-top: 2px; 
+        }
+        .tick { color: #999; font-size: 0.7rem; }
+        .tick.blue { color: #34b7f1; } /* Blue Ticks */
+
+        /* --- BOTTOM BAR & ADS --- */
+        .bottom-container { background: #f0f2f5; width: 100%; z-index: 1000; }
+        .input-bar { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+        #msgInput { 
+            flex: 1; padding: 12px; border-radius: 20px; border: none; 
+            background: white; font-size: 1rem; 
+        }
+        .btn-icon { color: #54656f; font-size: 1.4rem; cursor: pointer; padding: 5px; }
+        .btn-send { 
+            background: #008069; color: white; width: 45px; height: 45px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; border:none; 
+        }
+        
+        /* ADVERTISEMENT SLOT (Bottom Fixed) */
+        #ad-slot {
+            height: 60px; background: #fff; border-top: 1px solid #ddd;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; color: #aaa;
+        }
+
+        /* --- AUTH & MODALS --- */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 5000; display: none; align-items: center; justify-content: center; }
+        .modal-card { background: white; width: 90%; max-width: 350px; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 5px 25px rgba(0,0,0,0.2); }
+        
+        /* Login Styles */
+        #authLayer { display: flex; }
+        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; }
+        .btn-primary { width: 100%; padding: 12px; background: #008069; color: white; border: none; border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+
+        /* Game Board */
+        .cell { width: 60px; height: 60px; background: white; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; cursor: pointer; }
+        .cell.X { color: #e74c3c; } .cell.O { color: #3498db; }
+        .disabled { opacity: 0.5; pointer-events: none; } /* For turn logic */
+
+        /* Search Results */
+        .user-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; align-items: center; background: white; }
     </style>
 </head>
 <body>
 
-    <div id="authLayer">
-        <div class="auth-card">
-            <h1>Neon Pro</h1>
-            <p style="color:#888; font-size:0.9rem; margin-bottom:30px;">Secure. Simple. Fast.</p>
-            <input type="text" id="uName" placeholder="Username">
-            <input type="password" id="uPass" placeholder="Password">
-            <div style="text-align:left; margin:15px 0; font-size:0.8rem; color:#666;">
-                <input type="checkbox" id="legalCheck"> I accept Terms & Privacy
+    <div id="authLayer" class="overlay" style="display:flex; background:#fff;">
+        <div class="modal-card" style="box-shadow:none;">
+            <h1 style="color:#008069; margin-bottom:5px;">Chat Classic</h1>
+            <p style="color:#666; font-size:0.9rem;">Simple. Secure. Reliable.</p>
+            
+            <input type="text" id="uName" class="login-input" placeholder="Username">
+            <input type="password" id="uPass" class="login-input" placeholder="Password">
+            
+            <div style="text-align:left; font-size:0.8rem; margin:10px 0; display:flex; align-items:center; gap:5px;">
+                <input type="checkbox" id="legalCheck"> 
+                <span>I agree to <a href="#" onclick="document.getElementById('termsModal').style.display='flex'" style="color:#008069;">Terms & Conditions</a></span>
             </div>
-            <button onclick="startLogin()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:600; cursor:pointer; box-shadow: 0 5px 20px rgba(0,123,255,0.2);">START MESSAGING</button>
+            
+            <button onclick="startLogin()" class="btn-primary">START MESSAGING</button>
         </div>
     </div>
 
-    <div id="appLayer" style="display:none; flex-direction:column; height:100vh;">
+    <div id="termsModal" class="overlay">
+        <div class="modal-card">
+            <h3>Terms & Privacy</h3>
+            <div style="height:150px; overflow-y:auto; text-align:left; font-size:0.85rem; color:#555; background:#f9f9f9; padding:10px; margin-bottom:15px;">
+                1. No harassment allowed.<br>
+                2. We store messages securely.<br>
+                3. Do not share illegal content.<br>
+                4. Your IP is logged for security.<br>
+                5. Admins can ban violators.
+            </div>
+            <button onclick="document.getElementById('termsModal').style.display='none'" class="btn-primary">CLOSE</button>
+        </div>
+    </div>
+
+    <div id="appLayer">
         <header>
-            <div style="display:flex; align-items:center; gap:15px;">
-                <div>
-                    <div id="chatTitle" class="app-title">Neon Pro</div>
-                    <div id="headerStatus" class="status-text">Select a friend</div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-arrow-left" id="backBtn" onclick="closeChat()" style="display:none; cursor:pointer;"></i>
+                
+                <div class="header-info">
+                    <h2 id="headerTitle">Chats</h2>
+                    <div id="headerStatus" class="header-status"></div>
                 </div>
             </div>
-            <div style="display:flex; gap:15px; color:var(--text-light); font-size:1.1rem;">
-                <i class="fas fa-search" onclick="toggleScreen('searchScreen')" style="cursor:pointer;"></i>
-                <i class="fas fa-user-plus" onclick="toggleScreen('searchScreen')" style="cursor:pointer;"></i>
-                <i class="fas fa-sign-out-alt" onclick="logout()" style="color:#ff4757; cursor:pointer;"></i>
+            <div style="display:flex; gap:20px;">
+                <i class="fas fa-user-plus" onclick="openSearch()" style="cursor:pointer;"></i>
+                <i class="fas fa-power-off" onclick="logout()" style="cursor:pointer;"></i>
             </div>
         </header>
 
-        <div style="display:flex; flex:1; overflow:hidden;">
-            <div id="friendSidebar"></div>
+        <div id="friendList" style="flex:1; overflow-y:auto; background:white;"></div>
+
+        <div id="chatContainer" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
+            <div id="chatDisplay"></div>
             
-            <div id="chatDisplay">
-                <div style="text-align:center; color:#999; margin-top:50px;">
-                    <i class="fas fa-lock" style="font-size:2rem; margin-bottom:10px; opacity:0.3;"></i>
-                    <p style="font-size:0.8rem;">End-to-End Encrypted</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bottom-container">
-            <div id="replyPreview">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <span style="font-size:0.75rem; color:var(--primary); font-weight:600;">Replying to</span>
-                        <div id="replyContent" style="font-size:0.85rem; color:#333;">...</div>
-                    </div>
-                    <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer; color:#999;"></i>
+            <div id="replyPreview" style="display:none; background:#f0f2f5; padding:8px 15px; border-left:4px solid #008069; font-size:0.8rem;">
+                <div style="display:flex; justify-content:space-between;">
+                    <span id="replyText" style="color:#555;">...</span>
+                    <i class="fas fa-times" onclick="closeReply()" style="cursor:pointer;"></i>
                 </div>
             </div>
 
-            <div class="input-bar">
-                <i class="fas fa-gamepad" style="color:#888; font-size:1.4rem; cursor:pointer;" onclick="toggleScreen('gameScreen')"></i>
-                <i class="fas fa-image" style="color:#888; font-size:1.4rem; cursor:pointer;" onclick="document.getElementById('imgFile').click()"></i>
-                <input type="file" id="imgFile" hidden accept="image/*" onchange="processImg(this)">
+            <div class="bottom-container">
+                <div class="input-bar">
+                    <i class="fas fa-gamepad btn-icon" onclick="initGame()"></i>
+                    <i class="fas fa-image btn-icon" onclick="document.getElementById('imgFile').click()"></i>
+                    <input type="file" id="imgFile" hidden accept="image/*" onchange="sendImg(this)">
+                    
+                    <input type="text" id="msgInput" placeholder="Message" enterkeyhint="send">
+                    <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
+                </div>
                 
-                <input type="text" id="msgInput" placeholder="Type a message..." enterkeyhint="send" oninput="handleTyping()">
-                
-                <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
+                <div id="ad-slot">
+                    <script type="text/javascript">atOptions = {'key' : '697d465f55b34630746380bf6791eb54','format' : 'iframe','height' : 50,'width' : 320,'params' : {}};</script>
+                    <script type="text/javascript" src="https://www.highperformanceformat.com/697d465f55b34630746380bf6791eb54/invoke.js"></script>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="searchScreen" class="overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0; font-family:'Poppins';">Find People</h2>
-            <i class="fas fa-times" onclick="toggleScreen('searchScreen')" style="font-size:1.5rem; cursor:pointer;"></i>
+    <div id="searchModal" class="overlay">
+        <div class="modal-card">
+            <h3>Find User</h3>
+            <input type="text" style="width:100%; padding:10px; margin-bottom:10px;" placeholder="Username..." oninput="doSearch(this.value)">
+            <div id="searchResults" style="max-height:150px; overflow-y:auto; text-align:left;"></div>
+            <button onclick="document.getElementById('searchModal').style.display='none'" style="margin-top:10px; padding:8px; background:#ddd; border:none; width:100%;">Close</button>
         </div>
-        <input type="text" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; background:#f9f9f9; font-family:'Poppins';" placeholder="Start typing name..." oninput="doSearch(this.value)">
-        <div id="searchResults" style="margin-top:20px;"></div>
     </div>
 
-    <div id="gameScreen" class="overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0; font-family:'Poppins';">Games</h2>
-            <i class="fas fa-times" onclick="toggleScreen('gameScreen')" style="font-size:1.5rem; cursor:pointer;"></i>
+    <div id="gameModal" class="overlay">
+        <div class="modal-card">
+            <h3 id="gameTitle">Tic-Tac-Toe</h3>
+            <p id="gameTurnInfo" style="font-size:0.9rem; margin-bottom:10px;">Waiting...</p>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; width:200px; margin:0 auto;">
+                <div class="cell" onclick="moveGame(0)"></div><div class="cell" onclick="moveGame(1)"></div><div class="cell" onclick="moveGame(2)"></div>
+                <div class="cell" onclick="moveGame(3)"></div><div class="cell" onclick="moveGame(4)"></div><div class="cell" onclick="moveGame(5)"></div>
+                <div class="cell" onclick="moveGame(6)"></div><div class="cell" onclick="moveGame(7)"></div><div class="cell" onclick="moveGame(8)"></div>
+            </div>
+            <button onclick="quitGame()" style="margin-top:20px; padding:10px; background:#e74c3c; color:white; border:none; width:100%; border-radius:5px;">EXIT GAME</button>
         </div>
-        <button onclick="initGame()" style="width:100%; padding:20px; border-radius:15px; background:var(--primary); color:white; border:none; font-size:1rem; font-weight:600; box-shadow:0 10px 25px rgba(0,123,255,0.3);">🎮 Start Tic-Tac-Toe</button>
-        <button onclick="playGame('DICE')" style="width:100%; padding:20px; border-radius:15px; background:#fff; border:1px solid #eee; color:#333; font-size:1rem; font-weight:600; margin-top:15px;">🎲 Roll Dice</button>
-    </div>
-
-    <div id="gameOverlay">
-        <h2 style="color:var(--text-dark); margin-bottom:20px;">Tic-Tac-Toe</h2>
-        <div id="gameStatus" style="color:#666; margin-bottom:20px;">Waiting...</div>
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
-            <div class="cell" onclick="makeMove(0)"></div><div class="cell" onclick="makeMove(1)"></div><div class="cell" onclick="makeMove(2)"></div>
-            <div class="cell" onclick="makeMove(3)"></div><div class="cell" onclick="makeMove(4)"></div><div class="cell" onclick="makeMove(5)"></div>
-            <div class="cell" onclick="makeMove(6)"></div><div class="cell" onclick="makeMove(7)"></div><div class="cell" onclick="makeMove(8)"></div>
-        </div>
-        <button onclick="document.getElementById('gameOverlay').style.display='none'" style="margin-top:30px; border:none; background:none; color:#ff4757; font-weight:bold; cursor:pointer;">CLOSE GAME</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M",
-            authDomain: "neon-game-hub.firebaseapp.com",
-            databaseURL: "https://neon-game-hub-default-rtdb.firebaseio.com",
-            projectId: "neon-game-hub",
-            storageBucket: "neon-game-hub.firebasestorage.app",
-            messagingSenderId: "636141968933",
-            appId: "1:636141968933:web:60c7cc21d75883ef08a9cc"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyANEPedAQAd9VYnMMdw42Bjw_tQkBxxn2M", authDomain: "neon-game-hub.firebaseapp.com", databaseURL: "https://neon-game-hub-default-rtdb.firebaseio.com", projectId: "neon-game-hub", storageBucket: "neon-game-hub.firebasestorage.app", messagingSenderId: "636141968933", appId: "1:636141968933:web:60c7cc21d75883ef08a9cc" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const APP_SECRET = "NEON_AUTO_SECURE_2026_X"; 
+        const APP_SECRET = "CLASSIC_SECURE_X";
 
-        let myName, partner, chatId, replyMsg = null, typingTimeout;
+        let myName, partner, chatId, replyMsg = null, typingTimer;
 
         // --- AUTH & SETUP ---
         document.addEventListener('DOMContentLoaded', () => {
-            const savedUser = localStorage.getItem('currentUser');
-            if(savedUser) { myName = savedUser; loginSuccess(); }
+            const user = localStorage.getItem('classicUser');
+            if(user) { myName = user; initApp(); }
             
+            // Enter key logic
             document.getElementById('msgInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendTxt();
+                if(e.key === 'Enter') sendTxt();
             });
         });
 
@@ -250,194 +220,265 @@
             if(!document.getElementById('legalCheck').checked) return alert("Please accept Terms.");
             myName = document.getElementById('uName').value.trim().toLowerCase();
             let p = document.getElementById('uPass').value.trim();
-            if(!myName || p.length < 4) return alert("Invalid details");
+            if(!myName || p.length < 4) return alert("Invalid inputs");
             
             let hp = CryptoJS.SHA256(p).toString();
-            db.ref('users/' + myName).once('value', s => {
+            db.ref('users/'+myName).once('value', s => {
                 if(s.exists() && s.val().pass !== hp) return alert("Wrong password");
-                localStorage.setItem('currentUser', myName);
-                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: hp, joined: Date.now() });
-                loginSuccess();
+                localStorage.setItem('classicUser', myName);
+                if(!s.exists()) db.ref('users/'+myName).set({ pass: hp, joined: Date.now() });
+                initApp();
             });
         }
 
-        function loginSuccess() {
-            document.getElementById('authLayer').style.display='none';
-            document.getElementById('appLayer').style.display='flex';
+        function initApp() {
+            document.getElementById('authLayer').style.display = 'none';
+            document.getElementById('appLayer').style.display = 'flex';
             
-            // Set Online Status
-            const presenceRef = db.ref('status/' + myName);
-            presenceRef.set('online');
-            presenceRef.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP); // Save Time when offline
+            // Online Presence
+            const ref = db.ref('status/' + myName);
+            ref.set('online');
+            ref.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
             
             loadFriends();
         }
 
         function logout() {
             db.ref('status/' + myName).set(firebase.database.ServerValue.TIMESTAMP);
-            localStorage.removeItem('currentUser'); location.reload(); 
+            localStorage.removeItem('classicUser');
+            location.reload();
         }
 
-        // --- REAL-TIME STATUS & TYPING ---
-        function handleTyping() {
-            if(!chatId) return;
-            db.ref('typing/' + chatId + '/' + myName).set(true);
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => db.ref('typing/' + chatId + '/' + myName).set(false), 2000);
-        }
-
-        function monitorPartner() {
-            if(!partner) return;
-            
-            // Online/Last Seen
-            db.ref('status/' + partner).on('value', s => {
-                const st = s.val();
-                const el = document.getElementById('headerStatus');
-                const ring = document.getElementById('ring-' + partner);
-                const wrap = document.getElementById('wrap-' + partner);
-
-                if(st === 'online') {
-                    el.innerHTML = '<span style="color:#00b894; font-weight:bold;">● Online</span>';
-                    if(wrap) { wrap.classList.remove('is-offline'); wrap.classList.add('is-online'); }
-                } else {
-                    let timeText = moment(st).fromNow(); // Uses moment.js for "5 min ago"
-                    el.innerText = 'Last seen ' + timeText;
-                    if(wrap) { wrap.classList.remove('is-online'); wrap.classList.add('is-offline'); }
-                }
-            });
-
-            // Typing Indicator
-            db.ref('typing/' + chatId + '/' + partner).on('value', s => {
-                if(s.val()) {
-                    document.getElementById('headerStatus').innerHTML = '<div class="typing-anim" style="color:var(--primary);">Typing<span></span><span></span><span></span></div>';
-                }
+        // --- FRIENDS LIST ---
+        function loadFriends() {
+            db.ref('friends/' + myName).on('value', s => {
+                const list = document.getElementById('friendList');
+                list.innerHTML = "";
+                if(!s.exists()) list.innerHTML = "<div style='padding:20px; text-align:center; color:#999;'>No chats yet. Add someone!</div>";
+                
+                s.forEach(f => {
+                    const div = document.createElement('div');
+                    div.style = "padding:15px; border-bottom:1px solid #f0f0f0; display:flex; align-items:center; gap:15px; cursor:pointer;";
+                    div.innerHTML = `
+                        <img src="https://api.dicebear.com/7.x/initials/svg?seed=${f.key}" style="width:45px; border-radius:50%;">
+                        <div>
+                            <div style="font-weight:bold; font-size:1rem;">${f.key}</div>
+                            <div style="font-size:0.8rem; color:#888;">Tap to chat</div>
+                        </div>
+                    `;
+                    div.onclick = () => openChat(f.key);
+                    list.appendChild(div);
+                });
             });
         }
 
-        // --- FRIENDS & SEARCH (FIXED LOGIC) ---
-        function loadFriends() { 
-            db.ref('friends/' + myName).on('value', s => { 
-                const bar = document.getElementById('friendSidebar'); bar.innerHTML = ""; 
-                s.forEach(f => { 
-                    let d = document.createElement('div');
-                    // New Avatar Structure
-                    d.className = "av-wrapper is-offline"; 
-                    d.id = "wrap-" + f.key;
-                    d.innerHTML = `
-                        <div class="status-ring" id="ring-${f.key}"></div>
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${f.key}" id="av-${f.key}">
-                    `; 
-                    d.onclick = () => { 
-                        partner = f.key; 
-                        document.querySelectorAll('.av-wrapper img').forEach(i=>i.style.borderColor='white'); 
-                        document.getElementById('av-'+f.key).style.borderColor='var(--primary)'; 
-                        openChat(); 
-                    }; 
-                    bar.appendChild(d); 
-                    
-                    // Trigger status check for this friend immediately to update ring
-                    db.ref('status/' + f.key).once('value'); 
-                }); 
-            }); 
-        }
-
-        // FIXED SEARCH: Only Starts With matching
-        function doSearch(q) { 
-            const res = document.getElementById('searchResults'); res.innerHTML = ""; 
+        function openSearch() { document.getElementById('searchModal').style.display='flex'; }
+        function doSearch(q) {
+            const div = document.getElementById('searchResults'); div.innerHTML = "";
             if(!q) return;
-            
-            db.ref('users').once('value', s => { 
-                s.forEach(u => { 
-                    // STRICT MATCHING: Starts With only
-                    if(u.key.toLowerCase().startsWith(q.toLowerCase()) && u.key !== myName) { 
-                        res.innerHTML += `
-                        <div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #eee; align-items:center;">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${u.key}" style="width:40px; border-radius:50%;">
-                                <b>${u.key}</b>
-                            </div>
-                            <button onclick="addFriend('${u.key}')" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button>
-                        </div>`; 
-                    } 
-                }); 
-            }); 
+            db.ref('users').limitToFirst(10).once('value', s => {
+                s.forEach(u => {
+                    if(u.key.startsWith(q.toLowerCase()) && u.key !== myName) {
+                        div.innerHTML += `<div class="user-item"><b>${u.key}</b> <button onclick="addFriend('${u.key}')" style="background:#008069; color:white; border:none; padding:5px 10px; border-radius:5px;">ADD</button></div>`;
+                    }
+                });
+            });
         }
         function addFriend(key) {
-            db.ref('requests/'+key+'/'+myName).set(true);
-            alert('Request Sent to ' + key);
+            db.ref('friends/'+myName+'/'+key).set(true);
+            db.ref('friends/'+key+'/'+myName).set(true);
+            document.getElementById('searchModal').style.display='none';
+            alert('Added ' + key);
         }
 
-        // --- CHAT LOGIC ---
-        function openChat() { 
+        // --- CHAT LOGIC (FIXED LOOPS) ---
+        function openChat(key) {
+            partner = key;
             chatId = [myName, partner].sort().join("_");
-            document.getElementById('chatTitle').innerText = partner;
-            monitorPartner();
+            
+            // UI Switch
+            document.getElementById('friendList').style.display = 'none';
+            document.getElementById('chatContainer').style.display = 'flex';
+            document.getElementById('backBtn').style.display = 'block';
+            document.getElementById('headerTitle').innerText = partner;
+            
+            monitorStatus();
+            
+            // Remove old listeners to prevent loops
+            db.ref('chats/' + chatId).off(); 
 
+            // Load Messages
+            db.ref('chats/' + chatId).limitToLast(50).on('child_added', s => {
+                renderMsg(s.val(), s.key);
+                if(s.val().from !== myName && !s.val().seen) {
+                    db.ref('chats/'+chatId+'/'+s.key+'/seen').set(true);
+                }
+            });
+            
+            // Watch for Seen updates (Blue ticks)
+            db.ref('chats/' + chatId).limitToLast(50).on('child_changed', s => {
+                const el = document.getElementById('tick-' + s.key);
+                if(el && s.val().seen) {
+                    el.classList.add('blue');
+                    el.innerText = "✓✓";
+                }
+            });
+        }
+
+        function closeChat() {
+            if(chatId) {
+                db.ref('chats/'+chatId).off(); // Stop listening
+                db.ref('typing/'+chatId+'/'+myName).set(false);
+            }
+            partner = null; chatId = null;
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('friendList').style.display = 'block';
+            document.getElementById('backBtn').style.display = 'none';
+            document.getElementById('headerTitle').innerText = "Chats";
+            document.getElementById('headerStatus').innerText = "";
+            document.getElementById('chatDisplay').innerHTML = ""; // Clear UI
+        }
+
+        function monitorStatus() {
+            db.ref('status/'+partner).on('value', s => {
+                const st = s.val();
+                const el = document.getElementById('headerStatus');
+                if(st === 'online') el.innerText = "Online";
+                else el.innerText = "Last seen " + moment(st).fromNow();
+            });
+            
+            db.ref('typing/'+chatId+'/'+partner).on('value', s => {
+                if(s.val()) document.getElementById('headerStatus').innerText = "Typing...";
+            });
+        }
+
+        function renderMsg(dat, key) {
             const box = document.getElementById('chatDisplay');
-            db.ref('chats/' + chatId).limitToLast(50).on('value', s => { 
-                box.innerHTML = ""; // Clear for cleanliness
-                s.forEach(m => { 
-                    let d = document.createElement('div'); 
-                    let dat = m.val(); 
-                    const isMe = dat.from === myName;
-                    
-                    // SEEN LOGIC: Gold Border if seen
-                    let seenClass = (isMe && dat.seen) ? 'seen-glow' : '';
-                    d.className = `msg ${isMe ? 'msg-me' : 'msg-them'} ${seenClass}`;
-                    
-                    // Mark as seen if I am receiver
-                    if(!isMe && !dat.seen) db.ref('chats/' + chatId + '/' + m.key + '/seen').set(true);
+            const isMe = dat.from === myName;
+            const div = document.createElement('div');
+            div.className = `msg ${isMe ? 'msg-me' : 'msg-them'}`;
+            
+            // Double Tap Reply
+            let lastTap = 0;
+            div.addEventListener('click', () => {
+                let now = new Date().getTime();
+                if(now - lastTap < 300) {
+                    replyMsg = { text: decrypt(dat.val) || "Media", from: dat.from };
+                    document.getElementById('replyPreview').style.display = 'block';
+                    document.getElementById('replyText').innerText = replyMsg.text;
+                }
+                lastTap = now;
+            });
 
-                    // DOUBLE TAP TO REPLY
-                    let lastTap = 0;
-                    d.addEventListener('touchstart', (e) => handleDoubleTap(e, dat));
-                    d.addEventListener('dblclick', (e) => handleDoubleTap(e, dat)); // For PC
+            let content = "";
+            if(dat.reply) content += `<div style="background:rgba(0,0,0,0.05); padding:5px; border-left:3px solid #008069; font-size:0.8rem; margin-bottom:5px;"><b>${dat.reply.from}</b>: ${dat.reply.text}</div>`;
+            
+            if(dat.type === 'game') content += `<div style="text-align:center;">🎮 <b>Tic-Tac-Toe</b><br><button onclick="joinGame()" style="margin-top:5px; background:#008069; color:white; border:none; padding:5px; border-radius:3px;">OPEN GAME</button></div>`;
+            else if(dat.type === 'img') content += `<img src="${decrypt(dat.val)}" style="width:100%; border-radius:5px;">`;
+            else content += `<span>${decrypt(dat.val)}</span>`;
 
-                    function handleDoubleTap(e, data) {
-                        let curTime = new Date().getTime();
-                        if (curTime - lastTap < 300 || e.type === 'dblclick') {
-                            replyMsg = { text: decrypt(data.val) || "Attachment", from: data.from };
-                            document.getElementById('replyPreview').style.display = 'block';
-                            document.getElementById('replyContent').innerText = `Replying to: ${replyMsg.text}`;
-                        }
-                        lastTap = curTime;
-                    }
+            // Meta (Time + Tick)
+            const time = new Date(dat.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            let tickHtml = "";
+            if(isMe) {
+                const tickClass = dat.seen ? "tick blue" : "tick";
+                const tickIcon = dat.seen ? "✓✓" : "✓";
+                tickHtml = `<span class="${tickClass}" id="tick-${key}">${tickIcon}</span>`;
+            }
 
-                    let content = "";
-                    if(dat.replyTo) content += `<div style="font-size:0.75rem; color:var(--text-light); border-left:3px solid #ccc; padding-left:8px; margin-bottom:5px;"><b>${dat.replyTo.from}</b><br>${dat.replyTo.text}</div>`;
-                    
-                    if(dat.type === 'game_invite') content += `<div>🎮 Let's Play <b>${decrypt(dat.val)}</b><br><button onclick="joinGame()" style="margin-top:5px; padding:5px 10px; border:none; background:white; color:#333; border-radius:5px;">JOIN</button></div>`;
-                    else if(dat.type === 'img') content += `<img src="${decrypt(dat.val)}" style="width:100%; border-radius:10px;">`;
-                    else content += `<span>${decrypt(dat.val)}</span>`;
-                    
-                    d.innerHTML = content;
-                    box.appendChild(d); 
-                }); 
-                box.scrollTop = box.scrollHeight; 
-            }); 
+            div.innerHTML = `${content}<div class="msg-meta">${time} ${tickHtml}</div>`;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
         }
 
-        function sendTxt() { 
-            let t = document.getElementById('msgInput').value.trim(); 
-            if(!t || !partner) return; 
-            let payload = { from: myName, val: encrypt(t), time: Date.now(), seen: false };
-            if(replyMsg) { payload.replyTo = replyMsg; cancelReply(); }
-            db.ref('chats/' + chatId).push(payload); 
-            document.getElementById('msgInput').value = ""; 
-            document.getElementById('msgInput').focus();
+        function sendTxt() {
+            const inp = document.getElementById('msgInput');
+            const t = inp.value.trim();
+            if(!t || !chatId) return;
+            
+            const payload = { from: myName, val: encrypt(t), time: Date.now(), seen: false };
+            if(replyMsg) { payload.reply = replyMsg; closeReply(); }
+            
+            db.ref('chats/'+chatId).push(payload);
+            inp.value = "";
+            inp.focus();
         }
 
-        function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
-        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } }
-        function cancelReply() { replyMsg = null; document.getElementById('replyPreview').style.display = 'none'; }
-        function processImg(i) { const r = new FileReader(); r.onload = e => db.ref('chats/'+chatId).push({from:myName, type:'img', val:encrypt(e.target.result), time:Date.now()}); r.readAsDataURL(i.files[0]); }
-        function toggleScreen(id) { let e = document.getElementById(id); e.style.display = e.style.display==='flex'?'none':'flex'; }
+        // --- TYPING LOGIC ---
+        document.getElementById('msgInput').addEventListener('input', () => {
+            if(!chatId) return;
+            db.ref('typing/'+chatId+'/'+myName).set(true);
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => db.ref('typing/'+chatId+'/'+myName).set(false), 2000);
+        });
+
+        // --- GAME LOGIC (TURN BASED) ---
+        function initGame() {
+            const board = [0,0,0,0,0,0,0,0,0];
+            db.ref('games/'+chatId).set({ board, turn: myName, x: myName, o: partner });
+            db.ref('chats/'+chatId).push({ from: myName, type: 'game', val: encrypt('Started Game'), time: Date.now() });
+            joinGame();
+        }
+
+        function joinGame() {
+            document.getElementById('gameModal').style.display = 'flex';
+            db.ref('games/'+chatId).on('value', s => {
+                const g = s.val();
+                if(!g) return;
+                
+                const cells = document.querySelectorAll('.cell');
+                const isMyTurn = g.turn === myName;
+                document.getElementById('gameTurnInfo').innerText = isMyTurn ? "Your Turn!" : `Waiting for ${g.turn}...`;
+                
+                g.board.forEach((v, i) => {
+                    cells[i].innerText = v || "";
+                    cells[i].className = "cell " + (v || "");
+                    if(v !== 0) cells[i].classList.add('disabled'); // Can't click filled
+                });
+                
+                // Disable entire board if not my turn
+                const boardDiv = document.querySelector('#gameModal .modal-card');
+                boardDiv.style.pointerEvents = isMyTurn ? 'auto' : 'none';
+                boardDiv.style.opacity = isMyTurn ? 1 : 0.7;
+            });
+        }
+
+        function moveGame(idx) {
+            db.ref('games/'+chatId).once('value', s => {
+                const g = s.val();
+                if(g.turn !== myName || g.board[idx] !== 0) return;
+                
+                const sym = (g.x === myName) ? 'X' : 'O';
+                g.board[idx] = sym;
+                g.turn = partner; // Switch turn
+                
+                db.ref('games/'+chatId).update(g);
+                checkWin(g.board);
+            });
+        }
         
-        // --- GAME STUBS ---
-        function initGame() { db.ref('games/'+chatId).set({board:[0,0,0,0,0,0,0,0,0], turn:myName}); db.ref('chats/'+chatId).push({from:myName, type:'game_invite', val:encrypt("Tic-Tac-Toe"), time:Date.now()}); joinGame(); }
-        function joinGame() { document.getElementById('gameOverlay').style.display='flex'; db.ref('games/'+chatId).on('value', s=>{ let g=s.val(); if(!g)return; document.querySelectorAll('.cell').forEach((c,i)=>{ c.innerText=g.board[i]||''; c.className='cell '+ (g.board[i]||''); }); }); }
-        function makeMove(i) { db.ref('games/'+chatId).once('value', s=>{ let g=s.val(); if(!g.board[i]){ g.board[i]= (g.turn===myName)?'X':'O'; g.turn=partner; db.ref('games/'+chatId).update(g); } }); }
-        function playGame(t) { let d=Math.floor(Math.random()*6)+1; db.ref('chats/'+chatId).push({from:myName, val:encrypt("🎲 Rolled: "+d), time:Date.now()}); toggleScreen('gameScreen'); }
+        function checkWin(b) {
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for(let w of wins) {
+                if(b[w[0]] && b[w[0]] === b[w[1]] && b[w[1]] === b[w[2]]) {
+                    alert(b[w[0]] + " WINS!");
+                    quitGame();
+                    return;
+                }
+            }
+            if(!b.includes(0)) { alert("DRAW!"); quitGame(); }
+        }
+
+        function quitGame() {
+            document.getElementById('gameModal').style.display = 'none';
+            db.ref('games/'+chatId).off();
+        }
+
+        // --- HELPERS ---
+        function sendImg(i) { const r = new FileReader(); r.onload=e=>db.ref('chats/'+chatId).push({from:myName,type:'img',val:encrypt(e.target.result),time:Date.now()}); r.readAsDataURL(i.files[0]); }
+        function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
+        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e){return "";} }
+        function closeReply() { replyMsg=null; document.getElementById('replyPreview').style.display='none'; }
     </script>
 </body>
 </html>
