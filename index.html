@@ -3,183 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Pro | Ultimate Secure Chat</title>
+    <title>Neon Pro | Auto-Secure</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <style>
-        :root { --primary: #6366f1; --accent: #00d2ff; --bg: #0f172a; --glass: rgba(255, 255, 255, 0.05); }
+        :root { --primary: #007bff; --bg: #dcdcd5; --gold: #ffd32a; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); font-family: 'Outfit', sans-serif; margin: 0; height: 100vh; overflow: hidden; color: white; }
+        body { background: var(--bg); font-family: 'Outfit', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
 
-        /* --- BEAUTIFUL ANIMATED LOGIN --- */
-        #authLayer { 
-            position: fixed; inset: 0; z-index: 9000; 
-            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #1e1b4b);
-            background-size: 400% 400%; animation: gradientBG 15s ease infinite;
-            display: flex; align-items: center; justify-content: center; padding: 20px;
-        }
-        @keyframes gradientBG { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
+        /* --- UI UPDATES --- */
+        .msg-name { font-size: 0.65rem; color: #555; margin-bottom: 2px; font-weight: bold; opacity: 0.8; display: block; }
+        .report-link { font-size: 0.65rem; color: #ff4444; cursor: pointer; margin-top: 5px; display: block; text-align: right; font-weight: bold; opacity: 0.7; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 4px; }
+        .report-link:hover { opacity: 1; text-decoration: underline; }
+        .chat-header-info { display: flex; align-items: center; gap: 10px; }
+        .block-btn { color: #ff4444; font-size: 1.1rem; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
+        .block-btn:hover { background: rgba(255, 68, 68, 0.1); }
+        .blocked-badge { font-size: 0.6rem; background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; display: none; }
+        .delete-btn { font-size: 0.7rem; color: #ff4444; cursor: pointer; margin-left: 8px; opacity: 0.6; }
+
+        /* --- STANDARD STYLES --- */
+        .enc-notice { background: #fff9c4; color: #5d4037; font-size: 0.75rem; text-align: center; padding: 10px 15px; margin: 10px auto 20px auto; border-radius: 10px; max-width: 90%; border: 1px solid #ffe082; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .enc-notice i { font-size: 1rem; color: #ffa000; margin-bottom: 3px; }
         
-        .auth-card { 
-            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px);
-            padding: 40px 30px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1);
-            width: 100%; max-width: 380px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-        }
-        .auth-card h1 { font-family: 'Orbitron'; font-size: 2.2rem; color: var(--accent); margin: 0; letter-spacing: 3px; text-shadow: 0 0 15px var(--accent); }
-        .auth-card input { 
-            width: 100%; padding: 15px; margin: 10px 0; background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; color: white; font-size: 1rem;
-        }
-        .btn-main { 
-            width: 100%; padding: 15px; background: var(--primary); color: white; border: none; 
-            border-radius: 15px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s;
-        }
+        #termsModal { position: fixed; inset: 0; z-index: 6000; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
+        .terms-card { background: #fff; width: 100%; max-width: 400px; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; max-height: 80vh; animation: popUp 0.3s forwards; }
+        .terms-head { background: #1e272e; color: white; padding: 20px; text-align: center; font-family: 'Orbitron'; font-size: 1.2rem; border-bottom: 4px solid var(--primary); }
+        .terms-body { padding: 20px; overflow-y: auto; font-size: 0.85rem; color: #333; line-height: 1.6; background: #f8f9fa; }
+        .btn-agree { background: var(--primary); color: white; padding: 15px; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; }
 
-        /* --- APP HEADER --- */
-        header { 
-            padding: 15px 20px; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px);
-            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .status-container { display: flex; align-items: center; gap: 10px; }
-        .pfp-orbit { 
-            width: 45px; height: 45px; border-radius: 50%; position: relative; 
-            padding: 2px; border: 2px solid transparent; transition: 0.5s;
-        }
-        .pfp-orbit img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .is-online .pfp-orbit { border-color: var(--accent); box-shadow: 0 0 10px var(--accent); animation: rotateOrbit 3s linear infinite; }
-        @keyframes rotateOrbit { 0% { border-top-color: var(--accent); } 50% { border-right-color: var(--accent); } 100% { border-top-color: var(--accent); } }
-
-        /* --- POPUP USER LIST --- */
-        #userModal { 
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 8000; 
-            display: none; flex-direction: column; padding: 30px 20px; animation: zoomIn 0.3s ease;
-        }
-        .user-card { 
-            background: var(--glass); padding: 15px; border-radius: 20px; margin-bottom: 12px;
-            display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        /* --- CHAT DISPLAY & UNIQUE SEEN --- */
-        #chatDisplay { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .msg { 
-            max-width: 75%; padding: 12px 16px; border-radius: 20px; position: relative;
-            font-size: 0.95rem; animation: msgSlide 0.3s ease;
-        }
-        @keyframes msgSlide { from { transform: translateY(10px); opacity:0; } to { transform: translateY(0); opacity:1; } }
-        .msg-me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
-        .msg-them { align-self: flex-start; background: var(--glass); border-bottom-left-radius: 2px; }
+        #banOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, #8b0000 0%, #1a0000 100%); z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 30px; }
+        .ban-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; animation: shake 0.5s infinite; }
+        .ban-title { font-family: 'Orbitron'; font-size: 2.5rem; color: #ff4444; margin-bottom: 10px; }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -2px); } }
         
-        /* Unique Seen Glow */
-        .msg.seen-glow { box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); border: 1px solid var(--accent); }
-
-        /* --- REDESIGNED TYPING --- */
-        .typing-pill { 
-            position: fixed; bottom: 85px; left: 20px; background: var(--primary);
-            padding: 8px 15px; border-radius: 20px; display: none; align-items: center; gap: 5px;
-        }
-        .dot { width: 6px; height: 6px; background: white; border-radius: 50%; animation: jump 1.4s infinite ease-in-out; }
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes jump { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-
-        /* --- INPUT AREA --- */
-        .bottom-bar { padding: 15px; background: rgba(15, 23, 42, 0.9); border-top: 1px solid rgba(255,255,255,0.05); }
-        .input-wrap { display: flex; align-items: center; gap: 12px; }
-        #msgInput { 
-            flex: 1; padding: 15px 20px; border-radius: 25px; border: none; 
-            background: var(--glass); color: white; font-size: 1rem;
-        }
-        .btn-circle { width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-
-        /* --- SAFE TERMS POPUP --- */
-        #termsModal { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 20px; }
-        .safe-box { background: #1e293b; padding: 30px; border-radius: 25px; max-width: 400px; text-align: left; border: 1px solid var(--accent); }
-        .safe-box h2 { color: var(--accent); margin-top: 0; }
-        .safe-box ul { padding-left: 20px; color: #cbd5e1; font-size: 0.9rem; }
-        .safe-box li { margin-bottom: 10px; }
-
-        /* Double Tap Animation */
-        .reply-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        #authLayer { position: fixed; inset: 0; background: white; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { background: white; width: 100%; max-width: 380px; padding: 35px 25px; border-radius: 30px; box-shadow: 0 15px 45px rgba(0,0,0,0.1); text-align: center; border: 1px solid #f0f0f0; }
+        .auth-card h1 { font-family: 'Orbitron'; color: var(--primary); font-size: 2rem; margin: 0; letter-spacing: 2px; }
+        .enc-badge { display: inline-flex; align-items: center; gap: 8px; background: #e3f2fd; color: #1976d2; padding: 8px 18px; border-radius: 50px; font-size: 0.7rem; font-weight: bold; margin: 15px 0; border: 1px solid #bbdefb; }
+        .auth-card input { width: 100%; padding: 14px; margin-top: 10px; border-radius: 12px; border: 1.5px solid #eee; font-size: 1rem; }
+        .btn-login { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 20px; cursor: pointer; }
+        
+        #appLayer { display: none; flex-direction: column; height: 100vh; }
+        header { padding: 10px 15px; background: white; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; z-index: 1001; }
+        .secure-tag { font-size: 0.65rem; color: #28a745; font-weight: bold; display: flex; align-items: center; gap: 4px; background: #f0fff4; padding: 4px 8px; border-radius: 20px; border: 1px solid #c6f6d5; }
+        
+        #chatDisplay { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 250px !important; background-color: #d8d4d0; background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); background-blend-mode: multiply; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; }
+        .msg-me { align-self: flex-end; background: #dcf8c6; color: #303030; border-top-right-radius: 4px; }
+        .msg-them { align-self: flex-start; background: white; color: #303030; border-top-left-radius: 4px; }
+        
+        #gameOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; align-items:center; justify-content:center; }
+        .cell { width: 70px; height: 70px; background: #0b0f19; border: 2px solid #334155; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-family: 'Orbitron'; cursor: pointer; color:white; }
+        .cell.X { color: #00d2ff; text-shadow: 0 0 10px #00d2ff; }
+        .cell.O { color: #ff4757; text-shadow: 0 0 10px #ff4757; }
+        
+        .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000; background: white; border-top: 1px solid #eee; }
+        .input-bar { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: white; }
+        #msgInput { flex: 1; padding: 12px 18px; border-radius: 30px; border: 1.5px solid #eee; background: #f1f3f4; font-size: 1rem; }
+        .btn-send { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        #ad-box { height: 60px; width: 100%; display: flex; justify-content: center; align-items: center; }
+        .overlay { position: fixed; inset: 0; background: white; z-index: 4000; display: none; flex-direction: column; padding: 25px; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popUp { to { transform: scale(1); } }
     </style>
 </head>
 <body>
 
+    <div id="gameOverlay">
+        <div style="background:#161e2d; padding:25px; border-radius:20px; border:2px solid var(--primary); width:320px; text-align:center;">
+            <h2 style="font-family:'Orbitron'; color:var(--primary); margin:0 0 15px 0;">NEON TIC-TAC-TOE</h2>
+            <div id="gameStatus" style="color:white; margin-bottom:15px; font-size:0.9rem;">Waiting...</div>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:20px;">
+                <div class="cell" onclick="makeMove(0)"></div><div class="cell" onclick="makeMove(1)"></div><div class="cell" onclick="makeMove(2)"></div>
+                <div class="cell" onclick="makeMove(3)"></div><div class="cell" onclick="makeMove(4)"></div><div class="cell" onclick="makeMove(5)"></div>
+                <div class="cell" onclick="makeMove(6)"></div><div class="cell" onclick="makeMove(7)"></div><div class="cell" onclick="makeMove(8)"></div>
+            </div>
+            <button onclick="closeGame()" style="background:#ff4757; color:white; border:none; padding:12px 20px; border-radius:10px; font-weight:bold; width:100%;">EXIT GAME</button>
+        </div>
+    </div>
+
+    <div id="banOverlay">
+        <i class="fas fa-ban ban-icon"></i>
+        <div class="ban-title">BLOCKED</div>
+        <p style="font-size:1.1rem; opacity:0.8;">Your device has been blacklisted.</p>
+        <div style="margin-top:20px; font-family:monospace; background:rgba(0,0,0,0.5); padding:10px; border-radius:5px; font-size:0.8rem;">ID: SUPER_BAN_ACTIVE</div>
+    </div>
+
+    <div id="termsModal">
+        <div class="terms-card">
+            <div class="terms-head"><i class="fas fa-gavel"></i> LEGAL POLICY</div>
+            <div class="terms-body">
+                <div class="policy-block"><h4>1. Data Collection</h4><p>We log your unique <b>Device ID</b> and <b>IP</b>.</p></div>
+                <div class="policy-block"><h4>2. Zero Tolerance</h4><p>Harassment triggers a <b>Hardware Ban</b>.</p></div>
+                <div class="policy-block"><h4>3. Security</h4><p>Passwords are <b>Hashed (SHA-256)</b>. Messages are <b>Auto-Encrypted</b>.</p></div>
+            </div>
+            <button class="btn-agree" onclick="agreeTerms()">I ACCEPT & CONTINUE</button>
+        </div>
+    </div>
+
     <div id="authLayer">
         <div class="auth-card">
             <h1>NEON PRO</h1>
-            <p style="color:#94a3b8; margin: 15px 0 25px 0;">The future of private chatting.</p>
+            <div class="enc-badge"><i class="fas fa-shield-alt"></i> SECURE HASHING ACTIVE</div>
             <input type="text" id="uName" placeholder="Username">
             <input type="password" id="uPass" placeholder="Password">
-            <p style="font-size: 0.75rem; color: #64748b; cursor: pointer; text-decoration: underline;" onclick="toggleScreen('termsModal')">Safety & Security Terms</p>
-            <button class="btn-main" onclick="startLogin()">GET STARTED</button>
-        </div>
-    </div>
-
-    <div id="termsModal" style="display:none;">
-        <div class="safe-box">
-            <h2>🛡️ Your Safety First</h2>
-            <ul>
-                <li><b>No Logs:</b> We never store your real-time messages after delivery.</li>
-                <li><b>Hashed Passwords:</b> Even we cannot see your password.</li>
-                <li><b>E2EE Active:</b> All chats are automatically encrypted with AES-256.</li>
-                <li><b>Hardware Ban:</b> Abusive users are banned by Device ID & IP.</li>
-            </ul>
-            <button class="btn-main" onclick="toggleScreen('termsModal')">I FEEL SAFE NOW</button>
-        </div>
-    </div>
-
-    <div id="appLayer" style="display:none; flex-direction:column; height:100vh;">
-        <header>
-            <div class="status-container" id="myStatusBox">
-                <div class="pfp-orbit"><img id="myPfp" src="https://api.dicebear.com/7.x/avataaars/svg?seed=me" onclick="document.getElementById('pfpInput').click()"></div>
-                <div><div style="font-size:0.8rem; font-weight:600;">Me</div><div style="font-size:0.6rem; color:var(--accent);">Active</div></div>
+            <div style="font-size: 0.8rem; text-align: left; margin: 20px 0; color: #666; display: flex; gap: 8px; align-items: center;">
+                <input type="checkbox" id="legalCheck"> 
+                <span>I accept the <b style="color:var(--primary); text-decoration:underline; cursor:pointer;" onclick="showTerms()">Strict Terms & Policy</b></span>
             </div>
+            <button class="btn-login" onclick="startLogin()">LOG IN</button>
+        </div>
+    </div>
 
-            <div style="text-align:center;"><i class="fas fa-shield-halved" style="color:var(--accent); font-size:1.2rem;"></i><div style="font-size:0.5rem; letter-spacing:1px; opacity:0.5;">ENCRYPTED</div></div>
-
-            <div class="status-container" id="partnerStatusBox">
-                <div style="text-align:right;"><div id="partnerName" style="font-size:0.8rem; font-weight:600;">Partner</div><div id="pStatusText" style="font-size:0.6rem; color:#64748b;">Offline</div></div>
-                <div class="pfp-orbit"><img id="partnerPfp" src="https://api.dicebear.com/7.x/avataaars/svg?seed=p"></div>
+    <div id="appLayer">
+        <header>
+            <div class="chat-header-info">
+                <div style="font-family:'Orbitron'; color:var(--primary); font-size:1.1rem;" id="chatTitle">NEON</div>
+                <span id="blockedBadge" class="blocked-badge">🚫 BLOCKED</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-ban block-btn" id="blockBtn" style="display:none;" onclick="toggleBlockUser()"></i>
+                
+                <i class="fas fa-search" onclick="toggleScreen('searchScreen')" style="font-size:1.1rem; color:#555; cursor:pointer;"></i>
+                
+                <i class="fas fa-sign-out-alt" onclick="logout()" style="color:#ff4444; font-size:1.1rem; cursor:pointer; margin-left:10px;" title="Logout"></i>
+                
+                <div style="position:relative; margin-left:5px;" onclick="openRequests()">
+                    <i class="fas fa-bell" style="font-size:1.1rem; color:#555;"></i>
+                    <div id="reqBadge" style="position:absolute; top:-8px; right:-8px; background:red; color:white; border-radius:50%; width:15px; height:15px; font-size:0.6rem; display:none; align-items:center; justify-content:center;">0</div>
+                </div>
             </div>
         </header>
 
-        <div style="height:50px; background:#000; display:flex; justify-content:center; align-items:center; border-bottom:1px solid #1e293b;">
-             <script type="text/javascript">atOptions = {'key' : '697d465f55b34630746380bf6791eb54','format' : 'iframe','height' : 50,'width' : 320,'params' : {}};</script>
-             <script type="text/javascript" src="https://www.highperformanceformat.com/697d465f55b34630746380bf6791eb54/invoke.js"></script>
+        <div style="display:flex; flex:1; overflow:hidden;">
+            <div id="friendSidebar" style="width:70px; background:white; border-right:1px solid #eee; display:flex; flex-direction:column; align-items:center; padding:10px 0; gap:15px; overflow-y:auto;"></div>
+            <div id="chatDisplay"></div>
         </div>
 
-        <div id="chatDisplay"></div>
-
-        <div class="typing-pill" id="typingBox">
-            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-        </div>
-
-        <div id="replyBar" style="display:none; background:rgba(255,255,255,0.05); padding:10px 20px; border-left:4px solid var(--accent);">
-            <div style="font-size:0.7rem; color:var(--accent);" id="replyUser">Replying to...</div>
-            <div id="replyTxt" style="font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
-        </div>
-
-        <div class="bottom-bar">
-            <div class="input-wrap">
-                <button class="btn-circle" onclick="toggleScreen('userModal')" style="background:var(--glass);"><i class="fas fa-users"></i></button>
-                <input type="file" id="pfpInput" hidden onchange="uploadPFP(this)">
-                <input type="text" id="msgInput" placeholder="Message..." enterkeyhint="send" oninput="handleTyping()">
-                <button class="btn-circle" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
+        <div class="bottom-container">
+            <div class="input-bar">
+                <i class="fas fa-gamepad" style="color:#ff9800; font-size:1.4rem;" onclick="toggleScreen('gameScreen')"></i>
+                <i class="fas fa-image" style="color:#4caf50; font-size:1.4rem;" onclick="document.getElementById('imgFile').click()"></i>
+                <input type="file" id="imgFile" hidden accept="image/*" onchange="processImg(this)">
+                <input type="text" id="msgInput" placeholder="Write a message...">
+                <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div id="ad-box">
+                <script type="text/javascript">atOptions = {'key' : '697d465f55b34630746380bf6791eb54','format' : 'iframe','height' : 50,'width' : 320,'params' : {}};</script>
+                <script type="text/javascript" src="https://www.highperformanceformat.com/697d465f55b34630746380bf6791eb54/invoke.js"></script>
             </div>
         </div>
     </div>
 
-    <div id="userModal">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="font-family:'Orbitron';">Discovery</h2>
-            <i class="fas fa-times" onclick="toggleScreen('userModal')" style="font-size:1.5rem;"></i>
+    <div id="searchScreen" class="overlay">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Find Friends</h2><i class="fas fa-times" onclick="toggleScreen('searchScreen')"></i></div>
+        <input type="text" style="width:100%; padding:15px; border-radius:12px; border:1px solid #eee; margin-top:10px;" placeholder="Search username..." oninput="doSearch(this.value)">
+        <div id="searchResults" style="margin-top:20px;"></div>
+    </div>
+    <div id="gameScreen" class="overlay">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Games</h2><i class="fas fa-times" onclick="toggleScreen('gameScreen')"></i></div>
+        <div style="display:grid; grid-template-columns:1fr; gap:15px; margin-top:20px;">
+            <button onclick="initGame()" style="padding:25px; border-radius:15px; border:1px solid var(--primary); background:#161e2d; color:white; font-weight:bold;">🎮 START LIVE TIC-TAC-TOE</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                <button onclick="playGame('DICE')" style="padding:25px; border-radius:15px; border:none; background:#f1f3f4; font-weight:bold;">🎲 ROLL DICE</button>
+                <button onclick="playGame('RPS')" style="padding:25px; border-radius:15px; border:none; background:#f1f3f4; font-weight:bold;">✂️ PLAY RPS</button>
+            </div>
         </div>
-        <input type="text" id="searchInp" style="width:100%; padding:15px; border-radius:15px; background:var(--glass); border:none; color:white; margin-bottom:20px;" placeholder="Search by name..." oninput="doSearch(this.value)">
-        <div id="userList" style="flex:1; overflow-y:auto;"></div>
+    </div>
+    <div id="requestScreen" class="overlay">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Requests</h2><i class="fas fa-times" onclick="toggleScreen('requestScreen')"></i></div>
+        <div id="requestList" style="margin-top:15px;"></div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
@@ -197,176 +194,244 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const APP_SECRET = "NEON_AUTO_SECURE_2026_X";
 
-        let myName, partner, chatId, replyData = null;
+        // --- GLOBAL & SECURITY ---
+        let myIp, myName, partner, chatId;
+        let activeGameId = null, mySymbol = null;
+        
+        // FIXED INTERNAL KEY (Replaces manual key)
+        const APP_SECRET = "NEON_AUTO_SECURE_2026_X"; 
 
-        // --- 1. SESSION & LOGIN ---
+        if(localStorage.getItem('isPermanentlyBanned') === 'true') {
+            document.addEventListener('DOMContentLoaded', showRedScreen);
+        }
+
+        // --- 1. PERSISTENT LOGIN (AUTO-LOGIN) ---
         document.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem('currentUser');
-            if(saved) { myName = saved; loginOK(); }
-            
-            document.getElementById('msgInput').addEventListener('keypress', (e) => {
-                if(e.key === 'Enter') sendTxt();
-            });
+            const savedUser = localStorage.getItem('currentUser');
+            if(savedUser && savedUser !== 'null') {
+                myName = savedUser;
+                document.getElementById('authLayer').style.display='none';
+                document.getElementById('appLayer').style.display='flex';
+                fetchIpAndStart();
+                loadFriends();
+                monitorRequests();
+            } else {
+                fetchIpAndStart();
+            }
         });
 
-        function loginOK() {
-            document.getElementById('authLayer').style.display = 'none';
-            document.getElementById('appLayer').style.display = 'flex';
-            
-            // Manage Online Status
-            const myStatusRef = db.ref('status/' + myName);
-            myStatusRef.set('online');
-            myStatusRef.onDisconnect().set(Date.now());
-
-            // Load My PFP
-            db.ref('users/' + myName + '/pfp').on('value', s => {
-                if(s.val()) document.getElementById('myPfp').src = s.val();
-            });
-
-            // Monitor Me (Orbit Glow)
-            document.getElementById('myStatusBox').classList.add('is-online');
-        }
-
-        function startLogin() {
-            myName = document.getElementById('uName').value.trim().toLowerCase();
-            const p = document.getElementById('uPass').value.trim();
-            if(!myName || !p) return alert("Fill all details!");
-            const hp = CryptoJS.SHA256(p).toString();
-            db.ref('users/' + myName).once('value', s => {
-                if(s.exists() && s.val().pass !== hp) return alert("Wrong password");
-                if(!s.exists()) db.ref('users/' + myName).set({ pass: hp });
-                localStorage.setItem('currentUser', myName);
-                loginOK();
-            });
-        }
-
-        // --- 2. USER DISCOVERY & PARTNER ---
-        function doSearch(q) {
-            const list = document.getElementById('userList'); list.innerHTML = "";
-            db.ref('users').once('value', s => {
-                s.forEach(u => {
-                    if(u.key.includes(q) && u.key !== myName) {
-                        list.innerHTML += `
-                            <div class="user-card" onclick="selectPartner('${u.key}')">
-                                <b>${u.key.toUpperCase()}</b>
-                                <button class="btn-main" style="width:80px; margin:0; padding:8px;">CHAT</button>
-                            </div>
-                        `;
-                    }
+        function fetchIpAndStart() {
+            fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { 
+                myIp = d.ip; 
+                db.ref('security/bans/' + myIp.replace(/\./g, '_')).on('value', s => {
+                    if(s.exists()) permanentBanTrigger();
                 });
+                if(myName) db.ref('users/' + myName + '/ip').set(myIp);
             });
         }
 
-        function selectPartner(name) {
-            partner = name;
-            chatId = [myName, partner].sort().join("_");
-            document.getElementById('partnerName').innerText = partner.toUpperCase();
-            toggleScreen('userModal');
+        function permanentBanTrigger() { localStorage.setItem('isPermanentlyBanned', 'true'); showRedScreen(); }
+        function showRedScreen() {
+            document.getElementById('banOverlay').style.display = 'flex';
+            document.getElementById('authLayer')?.remove();
+            document.getElementById('appLayer')?.remove();
+        }
 
-            // Sync Partner Status & PFP
-            db.ref('users/' + partner + '/pfp').on('value', s => {
-                document.getElementById('partnerPfp').src = s.val() || `https://api.dicebear.com/7.x/avataaars/svg?seed=${partner}`;
+        // --- AUTH (UPDATED: PASSWORD HASHING) ---
+        function showTerms() { document.getElementById('termsModal').style.display = 'flex'; }
+        function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
+        function agreeTerms() { document.getElementById('legalCheck').checked = true; closeTerms(); }
+        
+        function startLogin() {
+            if(!document.getElementById('legalCheck').checked) return alert("Accept Terms first.");
+            myName = document.getElementById('uName').value.trim().toLowerCase();
+            let p = document.getElementById('uPass').value.trim();
+            if(!myName || p.length < 4) return alert("Invalid credentials");
+            
+            // HASH PASSWORD (SHA-256)
+            let hashedPass = CryptoJS.SHA256(p).toString();
+
+            db.ref('users/' + myName).once('value', s => {
+                let data = s.val();
+                if(data && data.banned === true) { permanentBanTrigger(); return; }
+                
+                // Compare HASHED password
+                if(s.exists() && data.pass !== hashedPass) return alert("Wrong pass");
+                
+                localStorage.setItem('currentUser', myName);
+                
+                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: hashedPass, ip: myIp, joinedAt: Date.now() });
+                else if(myIp) db.ref('users/' + myName + '/ip').set(myIp);
+
+                document.getElementById('authLayer').style.display='none';
+                document.getElementById('appLayer').style.display='flex';
+                loadFriends();
+                monitorRequests();
             });
+        }
 
-            db.ref('status/' + partner).on('value', s => {
-                const st = s.val();
-                const box = document.getElementById('partnerStatusBox');
-                const text = document.getElementById('pStatusText');
-                if(st === 'online') {
-                    box.classList.add('is-online'); text.innerText = "Active"; text.style.color = "var(--accent)";
-                } else {
-                    box.classList.remove('is-online');
-                    const lastSeen = st ? new Date(st).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:true}) : "---";
-                    text.innerText = "Last seen " + lastSeen; text.style.color = "#64748b";
+        function logout() {
+            if(confirm("Are you sure you want to Logout?")) {
+                localStorage.removeItem('currentUser');
+                location.reload(); 
+            }
+        }
+
+        // --- CRYPTO (AUTO INTERNAL KEY) ---
+        function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
+        function decrypt(c) { 
+            try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } 
+        }
+
+        // --- APP LOGIC ---
+        function loadFriends() { db.ref('friends/' + myName).on('value', s => { const bar = document.getElementById('friendSidebar'); bar.innerHTML = ""; s.forEach(f => { let d = document.createElement('div'); d.style = "width:50px; height:50px; cursor:pointer;"; d.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}" style="width:100%; border-radius:50%; border:2px solid transparent;" id="av-${f.key}">`; d.onclick = () => { partner = f.key; document.querySelectorAll('#friendSidebar img').forEach(i=>i.style.borderColor='transparent'); document.getElementById('av-'+f.key).style.borderColor='#007bff'; openChat(); }; bar.appendChild(d); }); }); }
+        
+        function openChat() { 
+            chatId = [myName, partner].sort().join("_");
+            const box = document.getElementById('chatDisplay');
+            document.getElementById('chatTitle').innerText = partner;
+            document.getElementById('blockBtn').style.display = 'block';
+            
+            checkBlockStatus();
+            renderNotice(box);
+
+            db.ref('chats/' + chatId).limitToLast(25).on('value', s => { 
+                renderNotice(box);
+                s.forEach(m => { 
+                    let d = document.createElement('div'); 
+                    let dat = m.val(); 
+                    let msgKey = m.key;
+                    d.className = `msg ${dat.from === myName ? 'msg-me' : 'msg-them'}`; 
+                    
+                    let nameTag = document.createElement('span');
+                    nameTag.className = "msg-name";
+                    nameTag.innerText = dat.from;
+                    d.appendChild(nameTag);
+
+                    if(dat.type === 'game_invite') {
+                        let btnDiv = document.createElement('div');
+                        btnDiv.innerHTML = `<div style="text-align:center;">🎮 LIVE GAME<br><button onclick="joinGame('${dat.gameId}')" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:5px; margin-top:5px; cursor:pointer;">PLAY NOW</button></div>`;
+                        d.appendChild(btnDiv);
+                    } else if(dat.type === 'img') { 
+                        let decryptedImg = decrypt(dat.val); 
+                        if(decryptedImg) {
+                            let img = document.createElement('img'); img.src = decryptedImg; img.style.width = "100%"; img.style.borderRadius="10px"; d.appendChild(img);
+                        }
+                    } else { 
+                        let txt = document.createElement('span'); txt.innerText = decrypt(dat.val); 
+                        d.appendChild(txt);
+                    } 
+                    
+                    if(dat.from === myName) {
+                        let delBtn = document.createElement('i'); delBtn.className = "fas fa-trash delete-btn"; delBtn.onclick = () => deleteMsg(msgKey); d.appendChild(delBtn);
+                    } else {
+                        let rep = document.createElement('span'); rep.className = "report-link"; rep.innerHTML = '<i class="fas fa-flag"></i> Report'; rep.onclick = () => { if(confirm("Report to Admin?")) { db.ref('reports').push({ reporter: myName, user: dat.from, msg: dat.val, time: Date.now() }); alert("Report Sent!"); } }; d.appendChild(rep); 
+                    } 
+                    box.appendChild(d); 
+                }); 
+                box.scrollTop = box.scrollHeight; 
+            }); 
+        }
+
+        function renderNotice(box) { box.innerHTML = `<div class="enc-notice"><i class="fas fa-lock"></i><b>End-to-End Encrypted</b><span>Messages are secured.</span></div>`; }
+
+        function checkBlockStatus() { db.ref('users/' + myName + '/blocked/' + partner).on('value', s => { let btn = document.getElementById('blockBtn'); if(s.exists()) { btn.className = "fas fa-unlock block-btn"; btn.style.color = "#2ed573"; } else { btn.className = "fas fa-ban block-btn"; btn.style.color = "#ff4444"; } }); }
+        function toggleBlockUser() { db.ref('users/' + myName + '/blocked/' + partner).once('value', s => { if(s.exists()) { if(confirm("Unblock " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).remove(); } else { if(confirm("Block " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).set(true); } }); }
+        function deleteMsg(key) { if(confirm("Delete for everyone?")) db.ref('chats/' + chatId + '/' + key).remove(); }
+        
+        function sendTxt() { 
+            let t = document.getElementById('msgInput').value.trim(); 
+            if(!t || !partner) return; 
+            db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
+                if(s.exists()) { alert("🚫 Message Failed: User blocked you."); } else {
+                    db.ref('users/' + myName + '/blocked/' + partner).once('value', myS => {
+                        if(myS.exists()) { alert("🚫 You blocked this user."); } else {
+                             db.ref('chats/' + chatId).push({ from: myName, val: encrypt(t), time: Date.now() }); 
+                             document.getElementById('msgInput').value = ""; 
+                        }
+                    });
                 }
             });
+        }
 
-            // Sync Typing
-            db.ref('typing/' + chatId + '/' + partner).on('value', s => {
-                document.getElementById('typingBox').style.display = s.val() ? 'flex' : 'none';
+        // --- FIXED GAME LOGIC ---
+        function initGame() { 
+            activeGameId = Date.now(); 
+            let gameData = { board: [0,0,0, 0,0,0, 0,0,0], turn: myName, xPlayer: myName, status: 'active', winner: null };
+            db.ref('games/' + chatId).set(gameData); 
+            db.ref('chats/' + chatId).push({ from: myName, type: 'game_invite', val: encrypt("🎮 Started Game"), gameId: activeGameId, time: Date.now() }); 
+            toggleScreen('gameScreen'); 
+            openGameUI(); 
+        }
+
+        function joinGame(gId) { 
+            activeGameId = gId; 
+            toggleScreen('gameScreen'); 
+            openGameUI(); 
+        }
+
+        function openGameUI() { 
+            document.getElementById('gameOverlay').style.display = 'flex'; 
+            db.ref('games/' + chatId).on('value', s => { 
+                let g = s.val(); if(!g) return; 
+                if(g.xPlayer === myName) { mySymbol = 'X'; } else { mySymbol = 'O'; }
+
+                let cells = document.querySelectorAll('.cell'); 
+                g.board.forEach((val, idx) => { 
+                    if(val === 0) { cells[idx].innerText = ''; cells[idx].className = 'cell'; } 
+                    else { cells[idx].innerText = val; cells[idx].className = 'cell ' + val; }
+                }); 
+
+                let statusDiv = document.getElementById('gameStatus'); 
+                if(g.winner) { 
+                    statusDiv.innerText = g.winner === 'DRAW' ? "🤝 IT'S A DRAW!" : `🏆 ${g.winner} WON!`; 
+                    statusDiv.style.color = '#2ed573'; 
+                } else { 
+                    if(g.turn === myName) { statusDiv.innerText = `👉 Your Turn (${mySymbol})`; statusDiv.style.color = '#00d2ff'; } 
+                    else { statusDiv.innerText = `⏳ Waiting for ${g.turn}...`; statusDiv.style.color = '#64748b'; }
+                } 
+            }); 
+        }
+
+        function makeMove(idx) { 
+            db.ref('games/' + chatId).once('value', s => { 
+                let g = s.val(); 
+                if(g.winner || g.turn !== myName || g.board[idx] !== 0) return; 
+                g.board[idx] = mySymbol; 
+                g.turn = partner; 
+                g.winner = checkWin(g.board); 
+                db.ref('games/' + chatId).set(g); 
+            }); 
+        }
+
+        function checkWin(b) { 
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; 
+            for(let w of wins) { if(b[w[0]] !== 0 && b[w[0]] === b[w[1]] && b[w[1]] === b[w[2]]) return b[w[0]]; } 
+            if(!b.includes(0)) return 'DRAW'; 
+            return null; 
+        }
+        function closeGame() { document.getElementById('gameOverlay').style.display = 'none'; db.ref('games/' + chatId).off(); }
+
+        function playGame(type) { 
+            db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
+                 if(s.exists()) return alert("User blocked you.");
+                 let res = (type === 'DICE') ? "🎲 Rolled: " + (Math.floor(Math.random()*6)+1) : "✂️ Chose Rock"; 
+                 db.ref('chats/' + chatId).push({ from: myName, val: encrypt(res), time: Date.now() }); toggleScreen('gameScreen'); 
             });
-
-            loadChat();
         }
-
-        // --- 3. CHAT LOGIC ---
-        function loadChat() {
-            const box = document.getElementById('chatDisplay');
-            db.ref('chats/' + chatId).limitToLast(30).on('value', s => {
-                box.innerHTML = `<div style="text-align:center; opacity:0.3; font-size:0.6rem; margin-top:20px;"><i class="fas fa-lock"></i> END-TO-END ENCRYPTED CHAT</div>`;
-                s.forEach(m => {
-                    const dat = m.val();
-                    const isMe = dat.from === myName;
-                    const d = document.createElement('div');
-                    d.className = `msg ${isMe ? 'msg-me' : 'msg-them'} ${(isMe && dat.seen) ? 'seen-glow' : ''}`;
-                    
-                    // Seen Logic
-                    if(!isMe && !dat.seen) db.ref('chats/' + chatId + '/' + m.key + '/seen').set(true);
-
-                    // Double Tap Animation & Reply
-                    let lastTap = 0;
-                    d.onclick = () => {
-                        let cur = new Date().getTime();
-                        if(cur - lastTap < 300) {
-                            d.classList.add('reply-pop');
-                            setTimeout(()=>d.classList.remove('reply-pop'), 400);
-                            replyData = { text: decrypt(dat.val), from: dat.from };
-                            document.getElementById('replyBar').style.display = 'block';
-                            document.getElementById('replyUser').innerText = "Replying to " + dat.from;
-                            document.getElementById('replyTxt').innerText = replyData.text;
-                        }
-                        lastTap = cur;
-                    };
-
-                    let html = "";
-                    if(dat.reply) html += `<div style="font-size:0.7rem; opacity:0.6; border-left:2px solid #fff; padding-left:8px; margin-bottom:5px;"><b>${dat.reply.from}</b>: ${dat.reply.text}</div>`;
-                    html += `<div>${decrypt(dat.val)}</div>`;
-                    d.innerHTML = html;
-                    box.appendChild(d);
-                });
-                box.scrollTop = box.scrollHeight;
+        function processImg(i) { 
+            db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
+                 if(s.exists()) return alert("User blocked you.");
+                 const r = new FileReader(); r.onload = e => { let secureImg = encrypt(e.target.result); db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: secureImg, time: Date.now() }); }; r.readAsDataURL(i.files[0]); 
             });
         }
-
-        function sendTxt() {
-            const inp = document.getElementById('msgInput');
-            const val = inp.value.trim();
-            if(!val || !chatId) return;
-
-            const msg = { from: myName, val: encrypt(val), time: Date.now(), seen: false };
-            if(replyData) { msg.reply = replyData; cancelReply(); }
-            
-            db.ref('chats/' + chatId).push(msg);
-            inp.value = ""; inp.focus();
-            db.ref('typing/' + chatId + '/' + myName).set(false);
-        }
-
-        // --- 4. EXTRAS ---
-        function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
-        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } }
         
-        function handleTyping() {
-            if(!chatId) return;
-            db.ref('typing/' + chatId + '/' + myName).set(true);
-            clearTimeout(window.tOut);
-            window.tOut = setTimeout(()=> db.ref('typing/' + chatId + '/' + myName).set(false), 2000);
-        }
-
-        function uploadPFP(inp) {
-            const r = new FileReader();
-            r.onload = (e) => db.ref('users/' + myName + '/pfp').set(e.target.result);
-            r.readAsDataURL(inp.files[0]);
-        }
-
-        function toggleScreen(id) {
-            const e = document.getElementById(id);
-            e.style.display = (e.style.display === 'none' || e.style.display === '') ? 'flex' : 'none';
-        }
-
-        function cancelReply() { replyData = null; document.getElementById('replyBar').style.display = 'none'; }
-        function logout() { localStorage.removeItem('currentUser'); location.reload(); }
+        function toggleScreen(id) { let e = document.getElementById(id); e.style.display = e.style.display==='flex'?'none':'flex'; }
+        function doSearch(q) { const res = document.getElementById('searchResults'); res.innerHTML = ""; db.ref('users').once('value', s => { s.forEach(u => { if(u.key.includes(q.toLowerCase()) && u.key !== myName) { res.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${u.key}</b> <button onclick="db.ref('requests/${u.key}/${myName}').set(true);alert('Request Sent')" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button></div>`; } }); }); }
+        function monitorRequests() { db.ref('requests/'+myName).on('value', s => { let c = s.numChildren(); document.getElementById('reqBadge').innerText = c; document.getElementById('reqBadge').style.display = c>0?'flex':'none'; }); }
+        function openRequests() { toggleScreen('requestScreen'); const list = document.getElementById('requestList'); db.ref('requests/'+myName).once('value', s => { list.innerHTML = ""; s.forEach(r => { list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${r.key}</b> <button onclick="accept('${r.key}')" style="background:#4caf50; color:white; border:none; padding:8px 15px; border-radius:8px;">Accept</button></div>`; }); }); }
+        function accept(user) { db.ref('friends/'+myName+'/'+user).set(true); db.ref('friends/'+user+'/'+myName).set(true); db.ref('requests/'+myName+'/'+user).remove(); openRequests(); }
     </script>
 </body>
 </html>
