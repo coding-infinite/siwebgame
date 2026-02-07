@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
     <style>
         :root { --primary: #007bff; --bg: #dcdcd5; --gold: #ffd32a; }
@@ -18,7 +19,8 @@
         .msg-name { font-size: 0.65rem; color: #555; margin-bottom: 2px; font-weight: bold; opacity: 0.8; display: block; }
         .report-link { font-size: 0.65rem; color: #ff4444; cursor: pointer; margin-top: 5px; display: block; text-align: right; font-weight: bold; opacity: 0.7; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 4px; }
         .report-link:hover { opacity: 1; text-decoration: underline; }
-        .chat-header-info { display: flex; align-items: center; gap: 10px; }
+        .chat-header-info { display: flex; flex-direction: column; justify-content: center; } /* Adjusted for status */
+        .status-text { font-size: 0.7rem; color: #666; font-weight: bold; } /* New Status Text */
         .block-btn { color: #ff4444; font-size: 1.1rem; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
         .block-btn:hover { background: rgba(255, 68, 68, 0.1); }
         .blocked-badge { font-size: 0.6rem; background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; display: none; }
@@ -123,6 +125,7 @@
         <header>
             <div class="chat-header-info">
                 <div style="font-family:'Orbitron'; color:var(--primary); font-size:1.1rem;" id="chatTitle">NEON</div>
+                <div id="chatStatus" class="status-text"></div>
                 <span id="blockedBadge" class="blocked-badge">🚫 BLOCKED</span>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
@@ -149,7 +152,7 @@
                 <i class="fas fa-gamepad" style="color:#ff9800; font-size:1.4rem;" onclick="toggleScreen('gameScreen')"></i>
                 <i class="fas fa-image" style="color:#4caf50; font-size:1.4rem;" onclick="document.getElementById('imgFile').click()"></i>
                 <input type="file" id="imgFile" hidden accept="image/*" onchange="processImg(this)">
-                <input type="text" id="msgInput" placeholder="Write a message...">
+                <input type="text" id="msgInput" placeholder="Write a message..." oninput="handleTyping()">
                 <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
             </div>
             <div id="ad-box">
@@ -196,7 +199,7 @@
         const db = firebase.database();
 
         // --- GLOBAL & SECURITY ---
-        let myIp, myName, partner, chatId;
+        let myIp, myName, partner, chatId, typingTimeout;
         let activeGameId = null, mySymbol = null;
         
         // FIXED INTERNAL KEY (Replaces manual key)
@@ -213,6 +216,8 @@
                 myName = savedUser;
                 document.getElementById('authLayer').style.display='none';
                 document.getElementById('appLayer').style.display='flex';
+                // ADDED: Set Online
+                setupPresence();
                 fetchIpAndStart();
                 loadFriends();
                 monitorRequests();
@@ -220,6 +225,18 @@
                 fetchIpAndStart();
             }
         });
+
+        // ADDED: Presence Logic
+        function setupPresence() {
+            const connectedRef = db.ref(".info/connected");
+            connectedRef.on("value", (snap) => {
+                if (snap.val() === true) {
+                    const con = db.ref(`users/${myName}/status`);
+                    con.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
+                    con.set("online");
+                }
+            });
+        }
 
         function fetchIpAndStart() {
             fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { 
@@ -264,6 +281,7 @@
                 if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: hashedPass, ip: myIp, joinedAt: Date.now() });
                 else if(myIp) db.ref('users/' + myName + '/ip').set(myIp);
 
+                setupPresence(); // Set online on login
                 document.getElementById('authLayer').style.display='none';
                 document.getElementById('appLayer').style.display='flex';
                 loadFriends();
@@ -273,6 +291,7 @@
 
         function logout() {
             if(confirm("Are you sure you want to Logout?")) {
+                db.ref(`users/${myName}/status`).set(firebase.database.ServerValue.TIMESTAMP); // Set offline
                 localStorage.removeItem('currentUser');
                 location.reload(); 
             }
@@ -293,6 +312,9 @@
             document.getElementById('chatTitle').innerText = partner;
             document.getElementById('blockBtn').style.display = 'block';
             
+            // ADDED: Monitor Partner Status & Typing
+            monitorStatusAndTyping();
+
             checkBlockStatus();
             renderNotice(box);
 
@@ -332,6 +354,47 @@
                 }); 
                 box.scrollTop = box.scrollHeight; 
             }); 
+        }
+
+        // ADDED: Status & Typing Logic
+        function monitorStatusAndTyping() {
+            // Status
+            db.ref(`users/${partner}/status`).on('value', s => {
+                const status = s.val();
+                const el = document.getElementById('chatStatus');
+                if(status === 'online') {
+                    el.innerText = 'Online';
+                    el.style.color = '#2ed573';
+                } else {
+                    el.innerText = status ? 'Last seen ' + moment(status).fromNow() : 'Offline';
+                    el.style.color = '#666';
+                }
+            });
+
+            // Typing Listener
+            db.ref(`chats/${chatId}/typing/${partner}`).on('value', s => {
+                if(s.val()) {
+                    document.getElementById('chatStatus').innerText = 'Typing...';
+                    document.getElementById('chatStatus').style.color = '#007bff';
+                } else {
+                    // Revert to status logic (will be updated by status listener above)
+                    db.ref(`users/${partner}/status`).once('value', s => {
+                         const status = s.val();
+                         const el = document.getElementById('chatStatus');
+                         if(status === 'online') { el.innerText = 'Online'; el.style.color = '#2ed573'; }
+                         else { el.innerText = status ? 'Last seen ' + moment(status).fromNow() : 'Offline'; el.style.color = '#666'; }
+                    });
+                }
+            });
+        }
+
+        // ADDED: Handle Typing Input
+        function handleTyping() {
+            db.ref(`chats/${chatId}/typing/${myName}`).set(true);
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                db.ref(`chats/${chatId}/typing/${myName}`).set(false);
+            }, 2000);
         }
 
         function renderNotice(box) { box.innerHTML = `<div class="enc-notice"><i class="fas fa-lock"></i><b>End-to-End Encrypted</b><span>Messages are secured.</span></div>`; }
@@ -428,7 +491,22 @@
         }
         
         function toggleScreen(id) { let e = document.getElementById(id); e.style.display = e.style.display==='flex'?'none':'flex'; }
-        function doSearch(q) { const res = document.getElementById('searchResults'); res.innerHTML = ""; db.ref('users').once('value', s => { s.forEach(u => { if(u.key.includes(q.toLowerCase()) && u.key !== myName) { res.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${u.key}</b> <button onclick="db.ref('requests/${u.key}/${myName}').set(true);alert('Request Sent')" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button></div>`; } }); }); }
+        
+        // MODIFIED: Search startsWith Logic
+        function doSearch(q) { 
+            const res = document.getElementById('searchResults'); 
+            res.innerHTML = ""; 
+            if(!q) return; // Don't search empty
+            
+            db.ref('users').orderByKey().startAt(q.toLowerCase()).endAt(q.toLowerCase()+"\uf8ff").limitToFirst(10).once('value', s => { 
+                s.forEach(u => { 
+                    if(u.key !== myName) { 
+                        res.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${u.key}</b> <button onclick="db.ref('requests/${u.key}/${myName}').set(true);alert('Request Sent')" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button></div>`; 
+                    } 
+                }); 
+            }); 
+        }
+        
         function monitorRequests() { db.ref('requests/'+myName).on('value', s => { let c = s.numChildren(); document.getElementById('reqBadge').innerText = c; document.getElementById('reqBadge').style.display = c>0?'flex':'none'; }); }
         function openRequests() { toggleScreen('requestScreen'); const list = document.getElementById('requestList'); db.ref('requests/'+myName).once('value', s => { list.innerHTML = ""; s.forEach(r => { list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${r.key}</b> <button onclick="accept('${r.key}')" style="background:#4caf50; color:white; border:none; padding:8px 15px; border-radius:8px;">Accept</button></div>`; }); }); }
         function accept(user) { db.ref('friends/'+myName+'/'+user).set(true); db.ref('friends/'+user+'/'+myName).set(true); db.ref('requests/'+myName+'/'+user).remove(); openRequests(); }
