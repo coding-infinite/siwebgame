@@ -19,8 +19,8 @@
         .msg-name { font-size: 0.65rem; color: #555; margin-bottom: 2px; font-weight: bold; opacity: 0.8; display: block; }
         .report-link { font-size: 0.65rem; color: #ff4444; cursor: pointer; margin-top: 5px; display: block; text-align: right; font-weight: bold; opacity: 0.7; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 4px; }
         .report-link:hover { opacity: 1; text-decoration: underline; }
-        .chat-header-info { display: flex; flex-direction: column; justify-content: center; } /* Adjusted for status */
-        .status-text { font-size: 0.7rem; color: #666; font-weight: bold; } /* New Status Text */
+        .chat-header-info { display: flex; flex-direction: column; justify-content: center; } 
+        .status-text { font-size: 0.7rem; color: #666; font-weight: bold; } 
         .block-btn { color: #ff4444; font-size: 1.1rem; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
         .block-btn:hover { background: rgba(255, 68, 68, 0.1); }
         .blocked-badge { font-size: 0.6rem; background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; display: none; }
@@ -65,7 +65,6 @@
         .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000; background: white; border-top: 1px solid #eee; }
         .input-bar { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: white; }
         
-        /* UPDATED: enterkeyhint for keypad */
         #msgInput { flex: 1; padding: 12px 18px; border-radius: 30px; border: 1.5px solid #eee; background: #f1f3f4; font-size: 1rem; }
         
         .btn-send { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
@@ -133,11 +132,8 @@
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
                 <i class="fas fa-ban block-btn" id="blockBtn" style="display:none;" onclick="toggleBlockUser()"></i>
-                
                 <i class="fas fa-search" onclick="toggleScreen('searchScreen')" style="font-size:1.1rem; color:#555; cursor:pointer;"></i>
-                
                 <i class="fas fa-sign-out-alt" onclick="logout()" style="color:#ff4444; font-size:1.1rem; cursor:pointer; margin-left:10px;" title="Logout"></i>
-                
                 <div style="position:relative; margin-left:5px;" onclick="openRequests()">
                     <i class="fas fa-bell" style="font-size:1.1rem; color:#555;"></i>
                     <div id="reqBadge" style="position:absolute; top:-8px; right:-8px; background:red; color:white; border-radius:50%; width:15px; height:15px; font-size:0.6rem; display:none; align-items:center; justify-content:center;">0</div>
@@ -201,34 +197,31 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- GLOBAL & SECURITY ---
         let myIp, myName, partner, chatId, typingTimeout;
         let activeGameId = null, mySymbol = null;
-        
-        // FIXED INTERNAL KEY (Replaces manual key)
         const APP_SECRET = "NEON_AUTO_SECURE_2026_X"; 
 
         if(localStorage.getItem('isPermanentlyBanned') === 'true') {
             document.addEventListener('DOMContentLoaded', showRedScreen);
         }
 
-        // --- 1. PERSISTENT LOGIN (AUTO-LOGIN) ---
+        // --- STARTUP LOGIC (Fixed for Broadcasts & Enter Key) ---
         document.addEventListener('DOMContentLoaded', () => {
             const savedUser = localStorage.getItem('currentUser');
             if(savedUser && savedUser !== 'null') {
                 myName = savedUser;
                 document.getElementById('authLayer').style.display='none';
                 document.getElementById('appLayer').style.display='flex';
-                // ADDED: Set Online
                 setupPresence();
                 fetchIpAndStart();
                 loadFriends();
                 monitorRequests();
+                listenForBroadcasts(); // NEW: Listen for system messages
             } else {
                 fetchIpAndStart();
             }
 
-            // ADDED: Enter key to Send
+            // ENTER KEY TO SEND
             document.getElementById('msgInput').addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -237,7 +230,25 @@
             });
         });
 
-        // ADDED: Presence Logic
+        // --- NEW: GLOBAL BROADCAST LISTENER ---
+        function listenForBroadcasts() {
+            // This listens to any message sent to 'chats' with name '🚨 SYSTEM'
+            // Since we can't easily filter by child value in simple rules, 
+            // the efficient way in this architecture is to just render them in the open chat.
+            // But if you want a POPUP for everyone, we use a separate 'broadcasts' node if admin uses it,
+            // OR we scan chats. 
+            // FIX: We will add a check for 'broadcasts' node which Admin panel might use.
+            
+            db.ref('broadcasts').limitToLast(1).on('child_added', (snap) => {
+                const data = snap.val();
+                // Check if message is recent (within last 10 seconds of login/now) to avoid spam on reload
+                if (Date.now() - data.time < 30000) { 
+                    alert("📢 SYSTEM BROADCAST:\n\n" + data.msg); 
+                }
+            });
+        }
+
+        // --- PRESENCE & IP ---
         function setupPresence() {
             const connectedRef = db.ref(".info/connected");
             connectedRef.on("value", (snap) => {
@@ -266,75 +277,81 @@
             document.getElementById('appLayer')?.remove();
         }
 
-        // --- AUTH (UPDATED: PASSWORD HASHING) ---
+        // --- AUTH & LOCKDOWN FIX ---
         function showTerms() { document.getElementById('termsModal').style.display = 'flex'; }
         function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
         function agreeTerms() { document.getElementById('legalCheck').checked = true; closeTerms(); }
         
         function startLogin() {
-            if(!document.getElementById('legalCheck').checked) return alert("Accept Terms first.");
-            myName = document.getElementById('uName').value.trim().toLowerCase();
-            let p = document.getElementById('uPass').value.trim();
-            if(!myName || p.length < 4) return alert("Invalid credentials");
-            
-            // HASH PASSWORD (SHA-256)
-            let hashedPass = CryptoJS.SHA256(p).toString();
+            // FIX: Check Lockdown FIRST
+            db.ref('config/lockdown').once('value', snap => {
+                if(snap.val() === true) {
+                    alert("⛔ SYSTEM LOCKED\nAdmin has disabled logins temporarily.");
+                    return;
+                }
+                
+                // Proceed if not locked
+                if(!document.getElementById('legalCheck').checked) return alert("Accept Terms first.");
+                myName = document.getElementById('uName').value.trim().toLowerCase();
+                let p = document.getElementById('uPass').value.trim();
+                if(!myName || p.length < 4) return alert("Invalid credentials");
+                
+                let hashedPass = CryptoJS.SHA256(p).toString();
 
-            db.ref('users/' + myName).once('value', s => {
-                let data = s.val();
-                if(data && data.banned === true) { permanentBanTrigger(); return; }
-                
-                // Compare HASHED password
-                if(s.exists() && data.pass !== hashedPass) return alert("Wrong pass");
-                
-                localStorage.setItem('currentUser', myName);
-                
-                if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: hashedPass, ip: myIp, joinedAt: Date.now() });
-                else if(myIp) db.ref('users/' + myName + '/ip').set(myIp);
+                db.ref('users/' + myName).once('value', s => {
+                    let data = s.val();
+                    if(data && data.banned === true) { permanentBanTrigger(); return; }
+                    if(s.exists() && data.pass !== hashedPass) return alert("Wrong pass");
+                    
+                    localStorage.setItem('currentUser', myName);
+                    
+                    if(!s.exists()) db.ref('users/' + myName).set({ username: myName, pass: hashedPass, ip: myIp, joinedAt: Date.now() });
+                    else if(myIp) db.ref('users/' + myName + '/ip').set(myIp);
 
-                setupPresence(); // Set online on login
-                document.getElementById('authLayer').style.display='none';
-                document.getElementById('appLayer').style.display='flex';
-                loadFriends();
-                monitorRequests();
+                    setupPresence(); 
+                    document.getElementById('authLayer').style.display='none';
+                    document.getElementById('appLayer').style.display='flex';
+                    loadFriends();
+                    monitorRequests();
+                    listenForBroadcasts(); // Start listener
+                });
             });
         }
 
         function logout() {
-            if(confirm("Are you sure you want to Logout?")) {
-                db.ref(`users/${myName}/status`).set(firebase.database.ServerValue.TIMESTAMP); // Set offline
+            if(confirm("Logout?")) {
+                db.ref(`users/${myName}/status`).set(firebase.database.ServerValue.TIMESTAMP);
                 localStorage.removeItem('currentUser');
                 location.reload(); 
             }
         }
 
-        // --- CRYPTO (AUTO INTERNAL KEY) ---
         function encrypt(t) { return CryptoJS.AES.encrypt(t, APP_SECRET).toString(); }
-        function decrypt(c) { 
-            try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } 
-        }
+        function decrypt(c) { try { return CryptoJS.AES.decrypt(c, APP_SECRET).toString(CryptoJS.enc.Utf8); } catch(e) { return ""; } }
 
-        // --- APP LOGIC ---
         function loadFriends() { db.ref('friends/' + myName).on('value', s => { const bar = document.getElementById('friendSidebar'); bar.innerHTML = ""; s.forEach(f => { let d = document.createElement('div'); d.style = "width:50px; height:50px; cursor:pointer;"; d.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${f.key}" style="width:100%; border-radius:50%; border:2px solid transparent;" id="av-${f.key}">`; d.onclick = () => { partner = f.key; document.querySelectorAll('#friendSidebar img').forEach(i=>i.style.borderColor='transparent'); document.getElementById('av-'+f.key).style.borderColor='#007bff'; openChat(); }; bar.appendChild(d); }); }); }
         
+        // --- CHAT LOGIC (UNDEFINED MESSAGE FIX) ---
         function openChat() { 
             chatId = [myName, partner].sort().join("_");
             const box = document.getElementById('chatDisplay');
             document.getElementById('chatTitle').innerText = partner;
             document.getElementById('blockBtn').style.display = 'block';
             
-            // ADDED: Monitor Partner Status & Typing
             monitorStatusAndTyping();
-
             checkBlockStatus();
             renderNotice(box);
 
             db.ref('chats/' + chatId).limitToLast(25).on('value', s => { 
                 renderNotice(box);
                 s.forEach(m => { 
-                    let d = document.createElement('div'); 
                     let dat = m.val(); 
+                    
+                    // 🛑 FIX: Filter out bad data/typing nodes
+                    if (!dat || !dat.from || !dat.val) return;
+
                     let msgKey = m.key;
+                    let d = document.createElement('div'); 
                     d.className = `msg ${dat.from === myName ? 'msg-me' : 'msg-them'}`; 
                     
                     let nameTag = document.createElement('span');
@@ -367,28 +384,16 @@
             }); 
         }
 
-        // ADDED: Status & Typing Logic
         function monitorStatusAndTyping() {
-            // Status
             db.ref(`users/${partner}/status`).on('value', s => {
                 const status = s.val();
                 const el = document.getElementById('chatStatus');
-                if(status === 'online') {
-                    el.innerText = 'Online';
-                    el.style.color = '#2ed573';
-                } else {
-                    el.innerText = status ? 'Last seen ' + moment(status).fromNow() : 'Offline';
-                    el.style.color = '#666';
-                }
+                if(status === 'online') { el.innerText = 'Online'; el.style.color = '#2ed573'; } 
+                else { el.innerText = status ? 'Last seen ' + moment(status).fromNow() : 'Offline'; el.style.color = '#666'; }
             });
-
-            // Typing Listener
             db.ref(`chats/${chatId}/typing/${partner}`).on('value', s => {
-                if(s.val()) {
-                    document.getElementById('chatStatus').innerText = 'Typing...';
-                    document.getElementById('chatStatus').style.color = '#007bff';
-                } else {
-                    // Revert to status logic (will be updated by status listener above)
+                if(s.val()) { document.getElementById('chatStatus').innerText = 'Typing...'; document.getElementById('chatStatus').style.color = '#007bff'; } 
+                else { 
                     db.ref(`users/${partner}/status`).once('value', s => {
                          const status = s.val();
                          const el = document.getElementById('chatStatus');
@@ -399,123 +404,84 @@
             });
         }
 
-        // ADDED: Handle Typing Input
         function handleTyping() {
             db.ref(`chats/${chatId}/typing/${myName}`).set(true);
             clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                db.ref(`chats/${chatId}/typing/${myName}`).set(false);
-            }, 2000);
+            typingTimeout = setTimeout(() => { db.ref(`chats/${chatId}/typing/${myName}`).set(false); }, 2000);
         }
 
         function renderNotice(box) { box.innerHTML = `<div class="enc-notice"><i class="fas fa-lock"></i><b>End-to-End Encrypted</b><span>Messages are secured.</span></div>`; }
-
         function checkBlockStatus() { db.ref('users/' + myName + '/blocked/' + partner).on('value', s => { let btn = document.getElementById('blockBtn'); if(s.exists()) { btn.className = "fas fa-unlock block-btn"; btn.style.color = "#2ed573"; } else { btn.className = "fas fa-ban block-btn"; btn.style.color = "#ff4444"; } }); }
         function toggleBlockUser() { db.ref('users/' + myName + '/blocked/' + partner).once('value', s => { if(s.exists()) { if(confirm("Unblock " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).remove(); } else { if(confirm("Block " + partner + "?")) db.ref('users/' + myName + '/blocked/' + partner).set(true); } }); }
         function deleteMsg(key) { if(confirm("Delete for everyone?")) db.ref('chats/' + chatId + '/' + key).remove(); }
         
+        // --- SEND TEXT (THREAT SCAN + STICKY KEYBOARD) ---
         function sendTxt() { 
             let t = document.getElementById('msgInput').value.trim(); 
             if(!t || !partner) return; 
 
-            // --- 🛑 UPDATED: THREAT & ABUSE SCANNER (3 Languages) ---
+            // THREAT & ABUSE SCANNER (3 Languages)
             const threats = [
-                // English
-                "bomb", "kill", "attack", "murder", "gun", "shoot", "blast", "terrorist",
-                // Hindi
-                "maro", "uda do", "goli", "hatyar", "barood", "dhamaka", "hamla", 
-                // Urdu
-                "qatl", "tabahi", "dehshat", "khun", "mardo", "halak",
-                // Abusive/Bad Words (Generic List)
-                "abuse", "badword", "stupid", "idiot" 
+                "bomb", "kill", "attack", "murder", "gun", "shoot", "blast", "terrorist", // English
+                "maro", "uda do", "goli", "hatyar", "barood", "dhamaka", "hamla", // Hindi
+                "qatl", "tabahi", "dehshat", "khun", "mardo", "halak", // Urdu
+                "abuse", "badword", "stupid", "idiot" // Generic
             ];
 
             const lowerT = t.toLowerCase();
             const foundThreat = threats.find(word => lowerT.includes(word));
 
             if(foundThreat) {
-                alert(`🚨 SECURITY ALERT\nMessage Blocked: Restricted word "${foundThreat}" detected.\nThis incident is flagged.`);
-                // You can optionally log this to DB for Admin
-                // db.ref('security/alerts').push({ user: myName, msg: t, time: Date.now() });
+                alert(`🚨 BLOCKED: Message contains restricted word: "${foundThreat}"`);
                 return;
             }
-            // -----------------------------------------------------------
 
             db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
                 if(s.exists()) { alert("🚫 Message Failed: User blocked you."); } else {
                     db.ref('users/' + myName + '/blocked/' + partner).once('value', myS => {
                         if(myS.exists()) { alert("🚫 You blocked this user."); } else {
                              db.ref('chats/' + chatId).push({ from: myName, val: encrypt(t), time: Date.now() }); 
-                             
-                             // --- 🛑 UPDATED: STICKY KEYBOARD FIX ---
+                             // Sticky Keyboard Fix
                              const inp = document.getElementById('msgInput');
                              inp.value = ""; 
-                             setTimeout(() => inp.focus(), 10); // Keep keyboard open
-                             // ---------------------------------------
+                             setTimeout(() => inp.focus(), 10);
                         }
                     });
                 }
             });
         }
 
-        // --- FIXED GAME LOGIC ---
+        // --- GAMES & UTILS ---
         function initGame() { 
             activeGameId = Date.now(); 
             let gameData = { board: [0,0,0, 0,0,0, 0,0,0], turn: myName, xPlayer: myName, status: 'active', winner: null };
             db.ref('games/' + chatId).set(gameData); 
             db.ref('chats/' + chatId).push({ from: myName, type: 'game_invite', val: encrypt("🎮 Started Game"), gameId: activeGameId, time: Date.now() }); 
-            toggleScreen('gameScreen'); 
-            openGameUI(); 
+            toggleScreen('gameScreen'); openGameUI(); 
         }
-
-        function joinGame(gId) { 
-            activeGameId = gId; 
-            toggleScreen('gameScreen'); 
-            openGameUI(); 
-        }
-
+        function joinGame(gId) { activeGameId = gId; toggleScreen('gameScreen'); openGameUI(); }
         function openGameUI() { 
             document.getElementById('gameOverlay').style.display = 'flex'; 
             db.ref('games/' + chatId).on('value', s => { 
                 let g = s.val(); if(!g) return; 
                 if(g.xPlayer === myName) { mySymbol = 'X'; } else { mySymbol = 'O'; }
-
                 let cells = document.querySelectorAll('.cell'); 
-                g.board.forEach((val, idx) => { 
-                    if(val === 0) { cells[idx].innerText = ''; cells[idx].className = 'cell'; } 
-                    else { cells[idx].innerText = val; cells[idx].className = 'cell ' + val; }
-                }); 
-
+                g.board.forEach((val, idx) => { if(val === 0) { cells[idx].innerText = ''; cells[idx].className = 'cell'; } else { cells[idx].innerText = val; cells[idx].className = 'cell ' + val; } }); 
                 let statusDiv = document.getElementById('gameStatus'); 
-                if(g.winner) { 
-                    statusDiv.innerText = g.winner === 'DRAW' ? "🤝 IT'S A DRAW!" : `🏆 ${g.winner} WON!`; 
-                    statusDiv.style.color = '#2ed573'; 
-                } else { 
-                    if(g.turn === myName) { statusDiv.innerText = `👉 Your Turn (${mySymbol})`; statusDiv.style.color = '#00d2ff'; } 
-                    else { statusDiv.innerText = `⏳ Waiting for ${g.turn}...`; statusDiv.style.color = '#64748b'; }
-                } 
+                if(g.winner) { statusDiv.innerText = g.winner === 'DRAW' ? "🤝 DRAW!" : `🏆 ${g.winner} WON!`; statusDiv.style.color = '#2ed573'; } 
+                else { if(g.turn === myName) { statusDiv.innerText = `👉 Your Turn (${mySymbol})`; statusDiv.style.color = '#00d2ff'; } else { statusDiv.innerText = `⏳ Waiting...`; statusDiv.style.color = '#64748b'; } } 
             }); 
         }
-
         function makeMove(idx) { 
             db.ref('games/' + chatId).once('value', s => { 
                 let g = s.val(); 
                 if(g.winner || g.turn !== myName || g.board[idx] !== 0) return; 
-                g.board[idx] = mySymbol; 
-                g.turn = partner; 
-                g.winner = checkWin(g.board); 
+                g.board[idx] = mySymbol; g.turn = partner; g.winner = checkWin(g.board); 
                 db.ref('games/' + chatId).set(g); 
             }); 
         }
-
-        function checkWin(b) { 
-            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; 
-            for(let w of wins) { if(b[w[0]] !== 0 && b[w[0]] === b[w[1]] && b[w[1]] === b[w[2]]) return b[w[0]]; } 
-            if(!b.includes(0)) return 'DRAW'; 
-            return null; 
-        }
+        function checkWin(b) { const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; for(let w of wins) { if(b[w[0]] !== 0 && b[w[0]] === b[w[1]] && b[w[1]] === b[w[2]]) return b[w[0]]; } if(!b.includes(0)) return 'DRAW'; return null; }
         function closeGame() { document.getElementById('gameOverlay').style.display = 'none'; db.ref('games/' + chatId).off(); }
-
         function playGame(type) { 
             db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
                  if(s.exists()) return alert("User blocked you.");
@@ -529,24 +495,13 @@
                  const r = new FileReader(); r.onload = e => { let secureImg = encrypt(e.target.result); db.ref('chats/' + chatId).push({ from: myName, type: 'img', val: secureImg, time: Date.now() }); }; r.readAsDataURL(i.files[0]); 
             });
         }
-        
         function toggleScreen(id) { let e = document.getElementById(id); e.style.display = e.style.display==='flex'?'none':'flex'; }
-        
-        // MODIFIED: Search startsWith Logic
         function doSearch(q) { 
-            const res = document.getElementById('searchResults'); 
-            res.innerHTML = ""; 
-            if(!q) return; // Don't search empty
-            
+            const res = document.getElementById('searchResults'); res.innerHTML = ""; if(!q) return; 
             db.ref('users').orderByKey().startAt(q.toLowerCase()).endAt(q.toLowerCase()+"\uf8ff").limitToFirst(10).once('value', s => { 
-                s.forEach(u => { 
-                    if(u.key !== myName) { 
-                        res.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${u.key}</b> <button onclick="db.ref('requests/${u.key}/${myName}').set(true);alert('Request Sent')" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button></div>`; 
-                    } 
-                }); 
+                s.forEach(u => { if(u.key !== myName) { res.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${u.key}</b> <button onclick="db.ref('requests/${u.key}/${myName}').set(true);alert('Request Sent')" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px;">Add</button></div>`; } }); 
             }); 
         }
-        
         function monitorRequests() { db.ref('requests/'+myName).on('value', s => { let c = s.numChildren(); document.getElementById('reqBadge').innerText = c; document.getElementById('reqBadge').style.display = c>0?'flex':'none'; }); }
         function openRequests() { toggleScreen('requestScreen'); const list = document.getElementById('requestList'); db.ref('requests/'+myName).once('value', s => { list.innerHTML = ""; s.forEach(r => { list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px; background:#f8f9fa; border-radius:12px; margin-bottom:10px;"><b>${r.key}</b> <button onclick="accept('${r.key}')" style="background:#4caf50; color:white; border:none; padding:8px 15px; border-radius:8px;">Accept</button></div>`; }); }); }
         function accept(user) { db.ref('friends/'+myName+'/'+user).set(true); db.ref('friends/'+user+'/'+myName).set(true); db.ref('requests/'+myName+'/'+user).remove(); openRequests(); }
