@@ -19,8 +19,8 @@
         .msg-name { font-size: 0.65rem; color: #555; margin-bottom: 2px; font-weight: bold; opacity: 0.8; display: block; }
         .report-link { font-size: 0.65rem; color: #ff4444; cursor: pointer; margin-top: 5px; display: block; text-align: right; font-weight: bold; opacity: 0.7; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 4px; }
         .report-link:hover { opacity: 1; text-decoration: underline; }
-        .chat-header-info { display: flex; flex-direction: column; justify-content: center; } /* Adjusted for status */
-        .status-text { font-size: 0.7rem; color: #666; font-weight: bold; } /* New Status Text */
+        .chat-header-info { display: flex; flex-direction: column; justify-content: center; } 
+        .status-text { font-size: 0.7rem; color: #666; font-weight: bold; } 
         .block-btn { color: #ff4444; font-size: 1.1rem; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
         .block-btn:hover { background: rgba(255, 68, 68, 0.1); }
         .blocked-badge { font-size: 0.6rem; background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; display: none; }
@@ -64,7 +64,10 @@
         
         .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000; background: white; border-top: 1px solid #eee; }
         .input-bar { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: white; }
+        
+        /* ADDED: enterkeyhint for keyboard to show 'Send' */
         #msgInput { flex: 1; padding: 12px 18px; border-radius: 30px; border: 1.5px solid #eee; background: #f1f3f4; font-size: 1rem; }
+        
         .btn-send { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         #ad-box { height: 60px; width: 100%; display: flex; justify-content: center; align-items: center; }
         .overlay { position: fixed; inset: 0; background: white; z-index: 4000; display: none; flex-direction: column; padding: 25px; }
@@ -152,7 +155,7 @@
                 <i class="fas fa-gamepad" style="color:#ff9800; font-size:1.4rem;" onclick="toggleScreen('gameScreen')"></i>
                 <i class="fas fa-image" style="color:#4caf50; font-size:1.4rem;" onclick="document.getElementById('imgFile').click()"></i>
                 <input type="file" id="imgFile" hidden accept="image/*" onchange="processImg(this)">
-                <input type="text" id="msgInput" placeholder="Write a message..." oninput="handleTyping()">
+                <input type="text" id="msgInput" placeholder="Write a message..." oninput="handleTyping()" enterkeyhint="send">
                 <button class="btn-send" onclick="sendTxt()"><i class="fas fa-paper-plane"></i></button>
             </div>
             <div id="ad-box">
@@ -216,7 +219,7 @@
                 myName = savedUser;
                 document.getElementById('authLayer').style.display='none';
                 document.getElementById('appLayer').style.display='flex';
-                // ADDED: Set Online
+                // Set Online
                 setupPresence();
                 fetchIpAndStart();
                 loadFriends();
@@ -224,9 +227,17 @@
             } else {
                 fetchIpAndStart();
             }
+
+            // ADDED: Enter key listener
+            document.getElementById('msgInput').addEventListener('keydown', (e) => {
+                if(e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendTxt();
+                }
+            });
         });
 
-        // ADDED: Presence Logic
+        // Presence Logic
         function setupPresence() {
             const connectedRef = db.ref(".info/connected");
             connectedRef.on("value", (snap) => {
@@ -312,7 +323,7 @@
             document.getElementById('chatTitle').innerText = partner;
             document.getElementById('blockBtn').style.display = 'block';
             
-            // ADDED: Monitor Partner Status & Typing
+            // Monitor Partner Status & Typing
             monitorStatusAndTyping();
 
             checkBlockStatus();
@@ -356,7 +367,7 @@
             }); 
         }
 
-        // ADDED: Status & Typing Logic
+        // Status & Typing Logic
         function monitorStatusAndTyping() {
             // Status
             db.ref(`users/${partner}/status`).on('value', s => {
@@ -377,7 +388,7 @@
                     document.getElementById('chatStatus').innerText = 'Typing...';
                     document.getElementById('chatStatus').style.color = '#007bff';
                 } else {
-                    // Revert to status logic (will be updated by status listener above)
+                    // Revert to status logic
                     db.ref(`users/${partner}/status`).once('value', s => {
                          const status = s.val();
                          const el = document.getElementById('chatStatus');
@@ -388,7 +399,7 @@
             });
         }
 
-        // ADDED: Handle Typing Input
+        // Handle Typing Input
         function handleTyping() {
             db.ref(`chats/${chatId}/typing/${myName}`).set(true);
             clearTimeout(typingTimeout);
@@ -406,12 +417,36 @@
         function sendTxt() { 
             let t = document.getElementById('msgInput').value.trim(); 
             if(!t || !partner) return; 
+
+            // ADDED: THREAT & ABUSE SCANNER
+            const threats = [
+                // Threats (English)
+                "bomb", "kill", "attack", "suicide", "murder", "gun", "shoot",
+                // Threats (Hindi)
+                "maro", "uda do", "goli", "hatyar", "barood", "dhamaka",
+                // Threats (Urdu)
+                "qatl", "hamla", "halak", "tabahi", "dehshat",
+                // Abusive Words
+                "abuse1", "abuse2", "badword" // Replace with real list if needed
+            ];
+
+            const lowerT = t.toLowerCase();
+            const foundThreat = threats.find(word => lowerT.includes(word));
+
+            if(foundThreat) {
+                alert(`⚠️ MESSAGE BLOCKED\nYour message contains restricted words: "${foundThreat}"\nThis incident has been flagged.`);
+                return; // Stop sending
+            }
+
             db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
                 if(s.exists()) { alert("🚫 Message Failed: User blocked you."); } else {
                     db.ref('users/' + myName + '/blocked/' + partner).once('value', myS => {
                         if(myS.exists()) { alert("🚫 You blocked this user."); } else {
                              db.ref('chats/' + chatId).push({ from: myName, val: encrypt(t), time: Date.now() }); 
-                             document.getElementById('msgInput').value = ""; 
+                             const inp = document.getElementById('msgInput');
+                             inp.value = ""; 
+                             // ADDED: Sticky Keyboard Fix
+                             setTimeout(() => inp.focus(), 10);
                         }
                     });
                 }
