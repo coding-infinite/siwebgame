@@ -19,8 +19,8 @@
         .msg-name { font-size: 0.65rem; color: #555; margin-bottom: 2px; font-weight: bold; opacity: 0.8; display: block; }
         .report-link { font-size: 0.65rem; color: #ff4444; cursor: pointer; margin-top: 5px; display: block; text-align: right; font-weight: bold; opacity: 0.7; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 4px; }
         .report-link:hover { opacity: 1; text-decoration: underline; }
-        .chat-header-info { display: flex; flex-direction: column; justify-content: center; } 
-        .status-text { font-size: 0.7rem; color: #666; font-weight: bold; } 
+        .chat-header-info { display: flex; flex-direction: column; justify-content: center; } /* Adjusted for status */
+        .status-text { font-size: 0.7rem; color: #666; font-weight: bold; } /* New Status Text */
         .block-btn { color: #ff4444; font-size: 1.1rem; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
         .block-btn:hover { background: rgba(255, 68, 68, 0.1); }
         .blocked-badge { font-size: 0.6rem; background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; display: none; }
@@ -65,7 +65,7 @@
         .bottom-container { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000; background: white; border-top: 1px solid #eee; }
         .input-bar { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: white; }
         
-        /* ADDED: enterkeyhint for keyboard to show 'Send' */
+        /* UPDATED: enterkeyhint for keypad */
         #msgInput { flex: 1; padding: 12px 18px; border-radius: 30px; border: 1.5px solid #eee; background: #f1f3f4; font-size: 1rem; }
         
         .btn-send { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
@@ -219,7 +219,7 @@
                 myName = savedUser;
                 document.getElementById('authLayer').style.display='none';
                 document.getElementById('appLayer').style.display='flex';
-                // Set Online
+                // ADDED: Set Online
                 setupPresence();
                 fetchIpAndStart();
                 loadFriends();
@@ -228,16 +228,16 @@
                 fetchIpAndStart();
             }
 
-            // ADDED: Enter key listener
+            // ADDED: Enter key to Send
             document.getElementById('msgInput').addEventListener('keydown', (e) => {
-                if(e.key === 'Enter' && !e.shiftKey) {
+                if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendTxt();
                 }
             });
         });
 
-        // Presence Logic
+        // ADDED: Presence Logic
         function setupPresence() {
             const connectedRef = db.ref(".info/connected");
             connectedRef.on("value", (snap) => {
@@ -323,7 +323,7 @@
             document.getElementById('chatTitle').innerText = partner;
             document.getElementById('blockBtn').style.display = 'block';
             
-            // Monitor Partner Status & Typing
+            // ADDED: Monitor Partner Status & Typing
             monitorStatusAndTyping();
 
             checkBlockStatus();
@@ -367,7 +367,7 @@
             }); 
         }
 
-        // Status & Typing Logic
+        // ADDED: Status & Typing Logic
         function monitorStatusAndTyping() {
             // Status
             db.ref(`users/${partner}/status`).on('value', s => {
@@ -388,7 +388,7 @@
                     document.getElementById('chatStatus').innerText = 'Typing...';
                     document.getElementById('chatStatus').style.color = '#007bff';
                 } else {
-                    // Revert to status logic
+                    // Revert to status logic (will be updated by status listener above)
                     db.ref(`users/${partner}/status`).once('value', s => {
                          const status = s.val();
                          const el = document.getElementById('chatStatus');
@@ -399,7 +399,7 @@
             });
         }
 
-        // Handle Typing Input
+        // ADDED: Handle Typing Input
         function handleTyping() {
             db.ref(`chats/${chatId}/typing/${myName}`).set(true);
             clearTimeout(typingTimeout);
@@ -418,35 +418,40 @@
             let t = document.getElementById('msgInput').value.trim(); 
             if(!t || !partner) return; 
 
-            // ADDED: THREAT & ABUSE SCANNER
+            // --- 🛑 UPDATED: THREAT & ABUSE SCANNER (3 Languages) ---
             const threats = [
-                // Threats (English)
-                "bomb", "kill", "attack", "suicide", "murder", "gun", "shoot",
-                // Threats (Hindi)
-                "maro", "uda do", "goli", "hatyar", "barood", "dhamaka",
-                // Threats (Urdu)
-                "qatl", "hamla", "halak", "tabahi", "dehshat",
-                // Abusive Words
-                "abuse1", "abuse2", "badword" // Replace with real list if needed
+                // English
+                "bomb", "kill", "attack", "murder", "gun", "shoot", "blast", "terrorist",
+                // Hindi
+                "maro", "uda do", "goli", "hatyar", "barood", "dhamaka", "hamla", 
+                // Urdu
+                "qatl", "tabahi", "dehshat", "khun", "mardo", "halak",
+                // Abusive/Bad Words (Generic List)
+                "abuse", "badword", "stupid", "idiot" 
             ];
 
             const lowerT = t.toLowerCase();
             const foundThreat = threats.find(word => lowerT.includes(word));
 
             if(foundThreat) {
-                alert(`⚠️ MESSAGE BLOCKED\nYour message contains restricted words: "${foundThreat}"\nThis incident has been flagged.`);
-                return; // Stop sending
+                alert(`🚨 SECURITY ALERT\nMessage Blocked: Restricted word "${foundThreat}" detected.\nThis incident is flagged.`);
+                // You can optionally log this to DB for Admin
+                // db.ref('security/alerts').push({ user: myName, msg: t, time: Date.now() });
+                return;
             }
+            // -----------------------------------------------------------
 
             db.ref('users/' + partner + '/blocked/' + myName).once('value', s => {
                 if(s.exists()) { alert("🚫 Message Failed: User blocked you."); } else {
                     db.ref('users/' + myName + '/blocked/' + partner).once('value', myS => {
                         if(myS.exists()) { alert("🚫 You blocked this user."); } else {
                              db.ref('chats/' + chatId).push({ from: myName, val: encrypt(t), time: Date.now() }); 
+                             
+                             // --- 🛑 UPDATED: STICKY KEYBOARD FIX ---
                              const inp = document.getElementById('msgInput');
                              inp.value = ""; 
-                             // ADDED: Sticky Keyboard Fix
-                             setTimeout(() => inp.focus(), 10);
+                             setTimeout(() => inp.focus(), 10); // Keep keyboard open
+                             // ---------------------------------------
                         }
                     });
                 }
